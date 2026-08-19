@@ -71,7 +71,7 @@ docker compose up --build
 
 Posteriormente, ingresar a:
 
-- Estado de la API: http://127.0.0.1:8000/health
+- Estado de la API: http://127.0.0.1:8000/
 - Documentación interactiva: http://127.0.0.1:8000/docs
 
 Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
