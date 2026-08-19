@@ -11,9 +11,9 @@ docker info
 
 Docker Desktop debe estar abierto y funcionando antes de iniciar el proyecto.
 
-### Instalar uv (opcional)
+### Instalar uv para desarrollo local
 
-`uv` solamente es necesario para ejecutar Python o administrar dependencias fuera de Docker.
+`uv` no es necesario para levantar el proyecto con Docker, porque se instala dentro de la imagen. Sin embargo, es necesario para ejecutar el proyecto, agregar dependencias o utilizar herramientas de Python directamente desde Windows.
 
 ```powershell
 winget install --id astral-sh.uv -e
@@ -27,20 +27,15 @@ uv --version
 
 > No es necesario instalar PostgreSQL ni FastAPI manualmente. Docker Compose prepara ambos servicios utilizando la configuración del proyecto.
 
-Luego ejecutar
-```
-cd "C:\ruta\Proyecto_Clínica_Veterinaria"
-docker compose up --build
-```
-
-Posteriormente ingresar a:
-```
-http://127.0.0.1:8000/
-http://127.0.0.1:8000/docs
-```
-### Configurar la contraseña de PostgreSQL
+## Configurar la contraseña de PostgreSQL
 
 El proyecto utiliza un archivo local para proporcionar la contraseña de PostgreSQL sin escribirla directamente en `compose.yaml`.
+
+Abrir una terminal en la carpeta del proyecto:
+
+```powershell
+cd "C:\ruta\Proyecto_Clínica_Veterinaria"
+```
 
 Crear la carpeta `db` si todavía no existe:
 
@@ -65,3 +60,22 @@ Get-ChildItem db
 > El archivo `db/password.txt` contiene información sensible y no debe guardarse en Git. Debe estar incluido en `.gitignore`.
 >
 > Cada integrante del equipo debe crear su propio archivo `db/password.txt` después de descargar el proyecto.
+
+## Ejecutar el proyecto
+
+Construir las imágenes e iniciar los contenedores:
+
+```powershell
+docker compose up --build
+```
+
+Posteriormente, ingresar a:
+
+- Estado de la API: http://127.0.0.1:8000/health
+- Documentación interactiva: http://127.0.0.1:8000/docs
+
+Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
+
+```powershell
+docker compose down
+```
