@@ -46,10 +46,10 @@ New-Item -ItemType Directory -Force db
 Crear el archivo de contraseña:
 
 ```powershell
-Set-Content -Path db/password.txt -Value "CAMBIAR_POR_UNA_CONTRASEÑA"
+Set-Content -Path db/password.txt -Value "CAMBIAR_POR_UNA_CONTRASENA"
 ```
 
-Reemplazar `CAMBIAR_POR_UNA_CONTRASEÑA` por una contraseña local.
+Reemplazar `CAMBIAR_POR_UNA_CONTRASENA` por una contraseña local.
 
 Comprobar que el archivo fue creado:
 
