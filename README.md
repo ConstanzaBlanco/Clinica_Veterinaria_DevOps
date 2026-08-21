@@ -79,3 +79,4 @@ Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
 ```powershell
 docker compose down
 ```
+
