@@ -15,8 +15,8 @@ from app.login.service import LoginService
 
 
 router = APIRouter(
-    prefix="/login",
-    tags=["Login"],
+    prefix="/auth",
+    tags=["Autenticación"],
 )
 
 
@@ -27,7 +27,7 @@ def crear_service(session):
 
 
 @router.post(
-    "",
+    "/login",
     response_model=LoginResponse,
     status_code=status.HTTP_200_OK,
 )
