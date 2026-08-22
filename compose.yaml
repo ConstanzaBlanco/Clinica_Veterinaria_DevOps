@@ -9,10 +9,15 @@ services:
     
     # Datos para que FastAPI encuentre PostgreSQL
     environment:
-      - POSTGRES_SERVER=db
-      - POSTGRES_USER=petcore_app
-      - POSTGRES_DB=postgres
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+      POSTGRES_SERVER: db
+      POSTGRES_USER: petcore_app
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/db-password
+
+      JWT_SECRET_KEY_FILE: /run/secrets/jwt-secret
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      LOGIN_MAX_INTENTOS: 5
+      LOGIN_BLOQUEO_MINUTOS: 15
     
     # Esperar a que PostgreSQL este saludable antes de iniciar FastAPI
     depends_on:
@@ -22,6 +27,7 @@ services:
     # Deja a FastAPI leer la contraseña
     secrets:
       - db-password
+      - jwt-secret
 
   # Servicio de PostgreSQL
   db:
@@ -64,3 +70,6 @@ volumes:
 secrets:
   db-password:
     file: db/password.txt
+
+  jwt-secret:
+    file: db/jwt-secret.txt
