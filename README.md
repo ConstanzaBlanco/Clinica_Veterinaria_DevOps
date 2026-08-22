@@ -46,10 +46,10 @@ New-Item -ItemType Directory -Force db
 Crear el archivo de contraseña:
 
 ```powershell
-Set-Content -Path db/password.txt -Value "CAMBIAR_POR_UNA_CONTRASEÑA"
+Set-Content -Path db/password.txt -Value "CAMBIAR_POR_UNA_CONTRASENA"
 ```
 
-Reemplazar `CAMBIAR_POR_UNA_CONTRASEÑA` por una contraseña local.
+Reemplazar `CAMBIAR_POR_UNA_CONTRASENA` por una contraseña local.
 
 Comprobar que el archivo fue creado:
 
@@ -71,7 +71,7 @@ docker compose up --build
 
 Posteriormente, ingresar a:
 
-- Estado de la API: http://127.0.0.1:8000/health
+- Estado de la API: http://127.0.0.1:8000/
 - Documentación interactiva: http://127.0.0.1:8000/docs
 
 Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
@@ -79,4 +79,3 @@ Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
 ```powershell
 docker compose down
 ```
-
