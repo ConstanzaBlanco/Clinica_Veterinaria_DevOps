@@ -10,7 +10,7 @@ services:
     # Datos para que FastAPI encuentre PostgreSQL
     environment:
       - POSTGRES_SERVER=db
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=petcore_app
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
     
@@ -28,7 +28,7 @@ services:
     image: postgres:18
     container_name: postgres-dev
 
-    # Reinicia PostgreSQL automaticamente si el proceso falla
+    # Reinicia PostgreSQL automáticamente si el contenedor se detiene
     restart: always
     user: postgres
 
@@ -46,6 +46,7 @@ services:
     
     volumes:
       - postgres_data:/var/lib/postgresql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
 
     # Comprueba cada 10 segundos si PostgreSQL acepta conexiones
     healthcheck:
@@ -55,7 +56,7 @@ services:
       retries: 5
 
 # Crea un volumen para guardar los datos de PostgreSQL
-# Con el volumen los datos permanecen incluso si el contenedor se elimina
+# Los datos permanecen aunque se elimine el contenedor, mientras no se elimine el volumen
 volumes:
   postgres_data:
 
