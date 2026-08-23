@@ -16,6 +16,7 @@ function Confirm-NativeCommand {
 # Permite ejecutar el script desde cualquier carpeta
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $passwordFile = Join-Path $projectRoot "db\password.txt"
+$jwtSecretFile = Join-Path $projectRoot "db\jwt-secret.txt"
 
 # Archivos necesarios para construir y levantar el proyecto.
 $requiredFiles = @(
@@ -26,7 +27,8 @@ $requiredFiles = @(
     "k8s\api-service.yaml",
     "db\init\01_schema.sql",
     "db\init\02_permisos.sql",
-    "db\init\03_excepcion_disponibilidad.sql"
+    "db\init\03_excepcion_disponibilidad.sql",
+    "db\init\04_datos_prueba.sql"
 )
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
@@ -43,6 +45,14 @@ if (-not (Test-Path -LiteralPath $passwordFile -PathType Leaf)) {
 
 if ((Get-Item -LiteralPath $passwordFile).Length -eq 0) {
     throw "El archivo db\password.txt esta vacio."
+}
+
+if (-not (Test-Path -LiteralPath $jwtSecretFile -PathType Leaf)) {
+    throw "No existe db\jwt-secret.txt. Crealo antes de ejecutar este script."
+}
+
+if ((Get-Item -LiteralPath $jwtSecretFile).Length -lt 32) {
+    throw "La clave de db\jwt-secret.txt debe tener al menos 32 caracteres."
 }
 
 foreach ($relativePath in $requiredFiles) {
@@ -72,12 +82,17 @@ try {
     minikube kubectl -- apply -f k8s\namespace.yaml
     Confirm-NativeCommand -Step "crear el namespace"
 
-    Write-Host "[5/9] Creando o actualizando el Secret de PostgreSQL..."
+    Write-Host "[5/9] Creando o actualizando los Secrets..."
     # dry-run genera el YAML sin guardar el Secret; apply lo crea o actualiza
     $secretManifest = minikube kubectl -- create secret generic postgres-secret --from-file=db-password=db/password.txt --namespace=clinica-veterinaria --dry-run=client -o yaml
     Confirm-NativeCommand -Step "generar el Secret de PostgreSQL"
     $secretManifest | minikube kubectl -- apply -f -
     Confirm-NativeCommand -Step "aplicar el Secret de PostgreSQL"
+
+    $jwtSecretManifest = minikube kubectl -- create secret generic jwt-secret --from-file=jwt-secret=db/jwt-secret.txt --namespace=clinica-veterinaria --dry-run=client -o yaml
+    Confirm-NativeCommand -Step "generar el Secret JWT"
+    $jwtSecretManifest | minikube kubectl -- apply -f -
+    Confirm-NativeCommand -Step "aplicar el Secret JWT"
 
     Write-Host "[6/9] Creando o actualizando el ConfigMap con los SQL..."
     # Se usa el mismo mecanismo para que el comando pueda repetirse

@@ -67,11 +67,31 @@ spec:
             - name: POSTGRES_PASSWORD_FILE
               value: /run/secrets/db-password
 
+            # Archivo que contiene la clave utilizada para firmar los JWT
+            - name: JWT_SECRET_KEY_FILE
+              value: /run/jwt-secret/jwt-secret
+
+            # Duración de los tokens de acceso
+            - name: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+              value: "15"
+
+            # Cantidad maxima de intentos fallidos
+            - name: LOGIN_MAX_INTENTOS
+              value: "5"
+
+            # Minutos durante los que se bloquea la cuenta
+            - name: LOGIN_BLOQUEO_MINUTOS
+              value: "15"
+
 
           # Permite que FastAPI lea el archivo con la contrasenia
           volumeMounts:
             - name: postgres-secret
               mountPath: /run/secrets
+              readOnly: true
+
+            - name: jwt-secret
+              mountPath: /run/jwt-secret
               readOnly: true
 
           # Comprueba si FastAPI esta preparado para recibir solicitudes
@@ -97,4 +117,8 @@ spec:
         - name: postgres-secret
           secret:
             secretName: postgres-secret
+
+        - name: jwt-secret
+          secret:
+            secretName: jwt-secret
 

@@ -149,7 +149,7 @@ Desde la carpeta principal del proyecto, ejecutar:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-up.ps1
 ```
 
-El script inicia Minikube, construye la imagen Blue `v1`, crea o actualiza el Secret y el ConfigMap, aplica los manifiestos y espera a que PostgreSQL y FastAPI estén disponibles.
+El script inicia Minikube, construye la imagen Blue `v1`, crea o actualiza los Secrets y el ConfigMap, aplica los manifiestos y espera a que PostgreSQL y FastAPI estén disponibles.
 
 Para obtener una URL local de la API:
 
