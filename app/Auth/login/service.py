@@ -7,12 +7,12 @@ from pwdlib.exceptions import UnknownHashError
 from pwdlib.hashers.bcrypt import BcryptHasher
 
 from app.config import settings
-from app.login.dto import (
+from app.Auth.login.dto import (
     LoginRequest,
     LoginResponse,
     UsuarioLoginResponse,
 )
-from app.login.repository import LoginRepository
+from app.Auth.login.repository import LoginRepository
 
 
 password_context = PasswordHash(
