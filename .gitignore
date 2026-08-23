@@ -14,3 +14,4 @@ __pycache__/
 # Acá se guardan dalos locales, acá podrían guardarse las contraseñas
 
 db/password.txt
+db/jwt-secret.txt

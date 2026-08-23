@@ -1,16 +1,37 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.tipos_atencion.controller import router as tipos_atencion_router
+from app.Middleware.middleware import JWTMiddleware
+from app.Auth.login.controller import router as login_router
+from app.Auth.me.controller import router as me_router
+from app.Auth.Register.clients.controller import router as register_client_router
+from app.tipos_atencion.controller import (
+    router as tipos_atencion_router,
+)
 
 
 app = FastAPI(
     title="Pet-Core API",
 )
 
+# Permite que el frontend (Vite, en desarrollo) llame a la API desde el navegador.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+app.add_middleware(JWTMiddleware)
+
+app.include_router(login_router)
+app.include_router(register_client_router)
+app.include_router(me_router)
 app.include_router(tipos_atencion_router)
 
 
+
 @app.get("/")
-def hello() -> str:
+def hello():
     return "Hello, Docker!"
