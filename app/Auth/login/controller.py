@@ -6,12 +6,12 @@ from fastapi import (
 )
 
 from app.database import get_session
-from app.login.dto import (
+from app.Auth.login.dto import (
     LoginRequest,
     LoginResponse,
 )
-from app.login.repository import LoginRepository
-from app.login.service import LoginService
+from app.Auth.login.repository import LoginRepository
+from app.Auth.login.service import LoginService
 
 
 router = APIRouter(

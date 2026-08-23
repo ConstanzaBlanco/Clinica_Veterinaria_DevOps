@@ -1,10 +1,12 @@
 import { Navigate } from 'react-router-dom'
-import { ROL_ACTUAL } from '../../app/rolActual'
+import { useAuth } from '../../app/AuthContext'
 
-// Redirige si el rol simulado no coincide con el permitido para esta sección.
-// No es un sistema de auth real: solo evita que un rol vea rutas de otro.
+// Redirige si el rol del usuario autenticado no coincide con el permitido
+// para esta sección. Se usa dentro de RutaProtegida, así que ya hay usuario.
 function RoleGuard({ rolPermitido, children }) {
-  if (ROL_ACTUAL !== rolPermitido) {
+  const { usuario } = useAuth()
+
+  if (usuario.rol.toLowerCase() !== rolPermitido) {
     return <Navigate to="/" replace />
   }
 
