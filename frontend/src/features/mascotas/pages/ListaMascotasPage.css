@@ -1,0 +1,149 @@
+.mascotas-page {
+  padding: 28px;
+}
+
+.mascotas-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.mascotas-resumen {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.mascotas-acciones-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.mascotas-tabs {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--white);
+}
+
+.tab {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 9px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.tab-activo {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.mascotas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.mascota-card-encabezado {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.mascota-foto {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gray-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-secondary);
+  flex: none;
+}
+
+.mascota-card-titulo {
+  flex: 1;
+}
+
+.mascota-nombre {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.mascota-especie {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.mascota-datos {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.mascota-dato-valor {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.mascota-acciones {
+  margin-top: 18px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mascota-form {
+  margin-top: 20px;
+  background: var(--white);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.mascota-form-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.mascota-form-campo label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.mascota-form-campo input {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.mascota-form-acciones {
+  display: flex;
+  gap: 8px;
+}

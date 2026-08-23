@@ -1,5 +1,17 @@
 services:
 
+  # Servicio del frontend (React + Vite)
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - 5173:5173
+
+    # Monta el código para que los cambios se vean sin reconstruir la imagen
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
   # Servicio de FastAPI
   server:
     build:
