@@ -100,6 +100,28 @@ Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
 docker compose down
 ```
 
+## Datos de prueba
+
+La primera vez que se levanta el proyecto (con el volumen de PostgreSQL vacío), se cargan usuarios y datos de ejemplo desde `db/init/04_datos_prueba.sql`.
+
+La contraseña de todos los usuarios de prueba es `Password123!`:
+
+| Correo | Rol |
+| --- | --- |
+| ana.cliente@petcore.com | CLIENTE |
+| bruno.vet@petcore.com | VETERINARIO |
+| carla.admin@petcore.com | ADMINISTRADOR |
+
+También incluye 2 mascotas, 3 tipos de atención, la disponibilidad semanal del veterinario y un turno ya agendado.
+
+Si el volumen ya existía antes de agregar este archivo, hay que recrearlo para que los datos se carguen:
+
+```powershell
+docker compose down
+docker volume rm clinica_veterinaria_devops_postgres_data
+docker compose up
+```
+
 ## Proteger endpoints con el middleware
 
 El middleware JWT debe estar registrado en `app/main.py`:
