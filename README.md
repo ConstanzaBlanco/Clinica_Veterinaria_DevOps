@@ -79,3 +79,62 @@ Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
 ```powershell
 docker compose down
 ```
+
+## Ejecutar con Kubernetes y Minikube
+
+Esta configuración permite ejecutar PostgreSQL y la API de FastAPI dentro de un clúster local de Kubernetes.
+
+### Requisitos de Kubernetes
+
+Docker Desktop debe estar abierto y funcionando.
+
+Comprobar que `kubectl` y Minikube estén instalados:
+
+```powershell
+kubectl version --client
+minikube version
+```
+
+Si todavía no están instalados:
+
+```powershell
+winget install -e --id Kubernetes.kubectl
+winget install -e --id Kubernetes.minikube
+```
+
+Después de instalarlos, cerrar y volver a abrir la terminal.
+
+### Iniciar Minikube
+
+Desde la carpeta del proyecto:
+
+```powershell
+minikube start --driver=docker
+```
+
+Comprobar el estado:
+
+```powershell
+minikube status
+minikube kubectl -- get nodes
+```
+
+### Levantar el proyecto automáticamente
+
+Antes de ejecutar el script, crear `db/password.txt` como se explica en la sección de configuración de PostgreSQL.
+
+Desde la carpeta principal del proyecto, ejecutar:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-up.ps1
+```
+
+El script inicia Minikube, construye la imagen Blue `v1`, crea o actualiza el Secret y el ConfigMap, aplica los manifiestos y espera a que PostgreSQL y FastAPI estén disponibles.
+
+Para obtener una URL local de la API:
+
+```powershell
+minikube service api --namespace=clinica-veterinaria --url
+```
+
+En Windows con el driver de Docker, mantener abierta la terminal que ejecuta este último comando. Presionar `Ctrl+C` para cerrar solamente el túnel.
