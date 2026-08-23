@@ -1,0 +1,108 @@
+.reservar-page {
+  padding: 28px;
+  max-width: 640px;
+}
+
+.reservar-stepper {
+  margin: 20px 0 24px;
+}
+
+.paso-etiqueta {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.paso-titulo {
+  margin-top: 6px;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.paso-ayuda {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.paso-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.paso-acciones {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.paso-acciones-fin {
+  justify-content: flex-end;
+}
+
+.horario-franjas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.horario-franja-titulo {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.horario-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.horario-slot {
+  padding: 12px 0;
+  text-align: center;
+  border: 1.5px solid var(--navy);
+  border-radius: 8px;
+  background: var(--white);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.horario-slot-activo {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.horario-slot-ocupado {
+  border: 1px solid var(--border);
+  background: var(--gray-card);
+  color: #9daeb8;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.resumen-turno {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resumen-fila {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--gray-card);
+  border-radius: 8px;
+  font-size: 13.5px;
+}
