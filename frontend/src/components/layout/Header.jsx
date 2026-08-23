@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import NavLink from './NavLink'
-import { ROL_ACTUAL, NOMBRE_USUARIO_ACTUAL } from '../../app/rolActual'
+import { useAuth } from '../../app/AuthContext'
 import './Header.css'
 
 const LINKS_POR_ROL = {
@@ -23,7 +24,17 @@ function obtenerIniciales(nombre) {
 
 function Header() {
   const [menuAbierto, setMenuAbierto] = useState(false)
-  const links = LINKS_POR_ROL[ROL_ACTUAL] ?? []
+  const { usuario, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const rol = usuario.rol.toLowerCase()
+  const nombreCompleto = `${usuario.nombre} ${usuario.apellido}`
+  const links = LINKS_POR_ROL[rol] ?? []
+
+  function manejarLogout() {
+    logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <header className="header">
@@ -41,10 +52,10 @@ function Header() {
         </div>
 
         <div className="header-usuario">
-          <span className="header-badge-rol">{ROL_ACTUAL}</span>
-          <span className="header-nombre">{NOMBRE_USUARIO_ACTUAL}</span>
-          <span className="header-avatar">{obtenerIniciales(NOMBRE_USUARIO_ACTUAL)}</span>
-          <button type="button" className="header-logout">
+          <span className="header-badge-rol">{usuario.rol}</span>
+          <span className="header-nombre">{nombreCompleto}</span>
+          <span className="header-avatar">{obtenerIniciales(nombreCompleto)}</span>
+          <button type="button" className="header-logout" onClick={manejarLogout}>
             Cerrar sesión
           </button>
         </div>

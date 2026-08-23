@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.Middleware.middleware import JWTMiddleware
 from app.Auth.login.controller import router as login_router
@@ -11,6 +12,15 @@ from app.tipos_atencion.controller import (
 
 app = FastAPI(
     title="Pet-Core API",
+)
+
+# Permite que el frontend (Vite, en desarrollo) llame a la API desde el navegador.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.add_middleware(JWTMiddleware)

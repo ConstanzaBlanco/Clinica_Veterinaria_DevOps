@@ -82,6 +82,12 @@
   text-decoration: none;
 }
 
+.auth-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger, #c0392b);
+}
+
 .auth-nota {
   margin-top: 18px;
   font-size: 12px;
