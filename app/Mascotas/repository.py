@@ -137,3 +137,21 @@ class MascotaRepository:
                 {"id": id_mascota, "id_cliente": id_cliente}
             )
             return result.fetchone()
+
+    def actualizar(self, id_mascota: int, id_cliente: int, datos: dict):
+        if not datos:
+            return self.obtener_mascota_por_id(id_mascota, id_cliente)
+
+        columnas = ", ".join(f"{campo} = :{campo}" for campo in datos)
+        parametros = {**datos, "id_mascota": id_mascota, "id_cliente": id_cliente}
+
+        resultado = self.session.execute(
+            f"""
+            UPDATE mascota SET {columnas}
+            WHERE id_mascota = :id_mascota AND id_cliente = :id_cliente
+            RETURNING *
+            """,
+            parametros,
+        )
+        self.session.commit()
+        return resultado.fetchone()

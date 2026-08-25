@@ -7,6 +7,7 @@ from app.database import get_session
 from app.Mascotas.dto import (
     MascotaCreate,
     MascotaResponse,
+    MascotaUpdate,
 )
 from app.Mascotas.repository import MascotaRepository
 from app.Mascotas.service import MascotaService
@@ -129,3 +130,18 @@ def ver_mascota(
     service: MascotaService = crear_service(session)
 
     return service.obtener_mascota_por_id(id_mascota, id_cliente)
+
+@router.patch("/{id_mascota}", response_model=MascotaResponse)
+def actualizar_mascota(
+    id_mascota: int,
+    datos: MascotaUpdate,
+    usuario: dict[str, Any] = Depends(requerir_rol("CLIENTE")),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    id_cliente: int = usuario["id_usuario"]
+    service: MascotaService = crear_service(session)
+
+    try:
+        return service.actualizar(id_mascota, id_cliente, datos)
+    except LookupError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error

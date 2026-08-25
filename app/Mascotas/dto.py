@@ -28,3 +28,11 @@ class MascotaResponse(BaseModel):
     sexo: str | None
     observaciones: str | None
     estado: str
+
+class MascotaUpdate(BaseModel):
+    nombre: str | None = None
+    raza: str | None = None
+    fecha_nacimiento: date | None = None
+    sexo: str | None = None
+    observaciones: str | None = None
+    estado: str | None = None

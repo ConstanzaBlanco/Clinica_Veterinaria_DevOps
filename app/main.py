@@ -10,6 +10,7 @@ from app.tipos_atencion.controller import (
     router as tipos_atencion_router,
 )
 from app.veterinarios.controller import router as veterinarios_router
+from app.turnos.controller import router as turnos_router
 
 
 app = FastAPI(
@@ -33,7 +34,7 @@ app.include_router(me_router)
 app.include_router(tipos_atencion_router)
 app.include_router(mascotas_router)
 app.include_router(veterinarios_router)
-
+app.include_router(turnos_router)
 
 @app.get("/")
 def hello():

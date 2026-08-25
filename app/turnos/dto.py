@@ -1,40 +1,24 @@
-from datetime import date
+from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 
-class TurnoCreate(BaseModel):
-    """
-    Representa los datos necesarios para registrar una mascota.
-    """
-    fecha_hora_inicio: date = Field(
-        ...,
-        description="Fecha y hora de inicio del turno en formato ISO 8601.",
-    )
-    fecha_hora_fin: date = Field(
-        ...,
-        description="Fecha y hora de fin del turno en formato ISO 8601.",
-    )
-    duracion_minutos: int = Field(
-        ...,
-        description="Duracion del turno en minutos.",
-    )
-    estado: str = Field(
-        ...,
-        description="Estado del turno.",
-    )
-    canal_origen: str = Field(
-        ...,
-        description="Canal de origen del turno.",
-    )
-    
+class MascotaResumen(BaseModel):
+    id_mascota: int
+    nombre: str
+    especie: str
+    estado: str
 
 
 class TurnoResponse(BaseModel):
-    """
-    Representa los datos de un turno enviados al frontend.
-    """
-
     model_config = ConfigDict(from_attributes=True)
 
-    
+    id_turno: int
+    fecha_hora_inicio: datetime
+    duracion_minutos: int
+    tipo: str
+    mascota: MascotaResumen
+    veterinario: str
+    estado: str
+    puede_cancelar: bool
+    canal_origen: str

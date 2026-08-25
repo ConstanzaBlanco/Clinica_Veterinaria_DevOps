@@ -1,139 +1,71 @@
-from typing import Any
-
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.database import get_session
 
-
-class MascotaRepository:
-    """
-    Administra las consultas de mascotas en la base de datos.
-    """
-
+class TurnoRepository:
     def __init__(self, session: Session) -> None:
-        """
-        Inicializa el repositorio.
-            session: Sesion de SQLAlchemy utilizada para acceder
-                a PostgreSQL.
-        """
         self.session: Session = session
 
-    def listar_por_cliente(
-        self,
-        id_cliente: int,
-    ) -> list[dict[str, Any]]:
-        """
-        Busca las mascotas pertenecientes a un cliente.
-            id_cliente: Identificador del cliente autenticado.
+    def listar_por_cliente(self, id_cliente: int, periodo: str) -> list:
+        condicion_periodo = {
+            "proximos": "AND t.fecha_hora_inicio >= now()",
+            "pasados": "AND t.fecha_hora_inicio < now()",
+            "todos": "",
+        }[periodo]
 
-        Retorna lista de mascotas del cliente.
-        """
-        consulta = text(
+        resultado = self.session.execute(
+            f"""
+            SELECT
+                t.id_turno, t.fecha_hora_inicio, t.duracion_minutos,
+                t.estado, t.canal_origen,
+                ta.nombre AS tipo,
+                m.id_mascota, m.nombre AS mascota_nombre,
+                m.especie, m.estado AS mascota_estado,
+                u.nombre || ' ' || u.apellido AS veterinario
+            FROM turno t
+            JOIN mascota m ON m.id_mascota = t.id_mascota
+            JOIN tipo_atencion ta ON ta.id_tipo_atencion = t.id_tipo_atencion
+            JOIN usuario u ON u.id_usuario = t.id_veterinario
+            WHERE m.id_cliente = :id_cliente
+            {condicion_periodo}
+            ORDER BY t.fecha_hora_inicio DESC
+            """,
+            {"id_cliente": id_cliente},
+        )
+        return resultado.fetchall()
+
+    def obtener_por_id(self, id_turno: int, id_cliente: int):
+        resultado = self.session.execute(
             """
             SELECT
-                m.id_mascota,
-                m.nombre,
-                m.especie,
-                m.raza,
-                m.fecha_nacimiento,
-                m.sexo,
-                m.observaciones,
-                m.estado
-            FROM mascota AS m
-            INNER JOIN cliente AS c
-                ON c.id_usuario = m.id_cliente
-            WHERE c.id_usuario = :id_cliente
-            ORDER BY m.nombre
-            """
+                t.id_turno, t.fecha_hora_inicio, t.duracion_minutos,
+                t.estado, t.canal_origen,
+                ta.nombre AS tipo,
+                m.id_mascota, m.nombre AS mascota_nombre,
+                m.especie, m.estado AS mascota_estado,
+                u.nombre || ' ' || u.apellido AS veterinario
+            FROM turno t
+            JOIN mascota m ON m.id_mascota = t.id_mascota
+            JOIN tipo_atencion ta ON ta.id_tipo_atencion = t.id_tipo_atencion
+            JOIN usuario u ON u.id_usuario = t.id_veterinario
+            WHERE t.id_turno = :id_turno AND m.id_cliente = :id_cliente
+            """,
+            {"id_turno": id_turno, "id_cliente": id_cliente},
         )
+        return resultado.fetchone()
 
-        filas = self.session.execute(
-            consulta,
-            {
-                "id_cliente": id_cliente,
-            },
-        ).mappings().all()
-
-        mascotas: list[dict[str, Any]] = []
-
-        for fila in filas:
-            mascotas.append(dict(fila))
-
-        return mascotas
-
-    def crear(
-        self,
-        id_cliente: int,
-        nombre: str,
-        especie: str,
-        raza: str | None,
-    ) -> dict[str, Any]:
-        """
-        Registra una mascota para el cliente autenticado.
-            id_cliente: Identificador del cliente autenticado.
-            nombre: Nombre de la mascota.
-            especie: Especie de la mascota.
-            raza: Raza de la mascota.
-
-        Return:
-            Datos de la mascota registrada.
-
-        Raises:
-            LookupError: Si no existe el cliente.
-        """
-        consulta = text(
+    def cancelar(self, id_turno: int, id_cliente: int):
+        resultado = self.session.execute(
             """
-            INSERT INTO mascota (
-                id_cliente,
-                nombre,
-                especie,
-                raza
-            )
-            SELECT
-                c.id_usuario,
-                :nombre,
-                :especie,
-                :raza
-            FROM cliente AS c
-            WHERE c.id_usuario = :id_cliente
-            RETURNING
-                id_mascota,
-                nombre,
-                especie,
-                raza,
-                fecha_nacimiento,
-                sexo,
-                observaciones,
-                estado
-            """
+            UPDATE turno t SET estado = 'CANCELADO'
+            FROM mascota m
+            WHERE t.id_mascota = m.id_mascota
+              AND t.id_turno = :id_turno
+              AND m.id_cliente = :id_cliente
+              AND t.estado = 'CONFIRMADO'
+              AND t.fecha_hora_inicio > now() + interval '1 hour'
+            RETURNING t.id_turno
+            """,
+            {"id_turno": id_turno, "id_cliente": id_cliente},
         )
-
-        valores: dict[str, Any] = {
-            "id_cliente": id_cliente,
-            "nombre": nombre,
-            "especie": especie,
-            "raza": raza,
-        }
-
-        fila = self.session.execute(
-            consulta,
-            valores,
-        ).mappings().first()
-
-        if fila is None:
-            raise LookupError(
-                "No se encontro el cliente autenticado."
-            )
-
         self.session.commit()
-
-        return dict(fila)
-
-    def obtener_mascota_por_id(id_mascota: int, id_cliente: int):
-        with get_session() as session:
-            result = session.execute(
-                "SELECT * FROM mascotas WHERE id = :id AND id_cliente = :id_cliente",
-                {"id": id_mascota, "id_cliente": id_cliente}
-            )
-            return result.fetchone()
+        return resultado.fetchone()

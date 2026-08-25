@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.Mascotas.dto import MascotaCreate
+from app.Mascotas.dto import MascotaCreate, MascotaUpdate
 from app.Mascotas.repository import MascotaRepository
 from fastapi import HTTPException
 
@@ -113,4 +113,11 @@ class MascotaService:
                 status_code=404,
                 detail="Mascota no encontrada."
             )
+        return dict(mascota)
+
+    def actualizar(self, id_mascota: int, id_cliente: int, datos: MascotaUpdate) -> dict:
+        campos = datos.model_dump(exclude_unset=True)  # solo lo que el cliente mandó
+        mascota = self.repository.actualizar(id_mascota, id_cliente, campos)
+        if not mascota:
+            raise LookupError("Mascota no encontrada.")
         return dict(mascota)
