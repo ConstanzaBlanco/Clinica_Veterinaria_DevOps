@@ -23,6 +23,6 @@ def crear_service(session: Session) -> VeterinarioService:
 
     return VeterinarioService(repository)
 
-@router.get("/veterinarios", response_model=list[VeterinarioResponse])
+@router.get("", response_model=list[VeterinarioResponse])
 def obtener_veterinarios(session: Session = Depends(get_session)):
     return crear_service(session).listar_veterinarios()

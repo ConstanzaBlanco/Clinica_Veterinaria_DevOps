@@ -11,7 +11,6 @@ from app.Mascotas.dto import (
 from app.Mascotas.repository import MascotaRepository
 from app.Mascotas.service import MascotaService
 from app.Middleware.middleware import obtener_usuario_actual, requerir_rol
-from app.veterinarios import service
 
 
 router = APIRouter(
@@ -111,6 +110,22 @@ def crear_mascota(
         ) from error
 
 
-@router.get("/mascotas/{id_mascota}", response_model=MascotaResponse)
-def ver_mascota(id_mascota: int, usuario: dict = Depends(obtener_usuario_actual)):
-    return service.obtener_mascota_por_id(id_mascota, usuario["id_usuario"])
+@router.get("/{id_mascota}", response_model=MascotaResponse)
+def ver_mascota(
+    id_mascota: int,
+    usuario: dict[str, Any] = Depends(obtener_usuario_actual),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """
+    Devuelve la ficha de una mascota del cliente autenticado.
+        id_mascota: Identificador de la mascota.
+        usuario: Informacion del usuario obtenida del token JWT.
+        session: Sesion de SQLAlchemy proporcionada por FastAPI.
+
+    Return:
+        Datos de la mascota.
+    """
+    id_cliente: int = usuario["id_usuario"]
+    service: MascotaService = crear_service(session)
+
+    return service.obtener_mascota_por_id(id_mascota, id_cliente)
