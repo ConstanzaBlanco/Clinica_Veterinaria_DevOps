@@ -25,6 +25,13 @@ $requiredFiles = @(
     "k8s\postgres-statefulset.yaml",
     "k8s\api-blue-deployment.yaml",
     "k8s\api-service.yaml",
+    "k8s\frontend-blue-deployment.yaml",
+    "k8s\frontend-service.yaml",
+    "frontend\Dockerfile.k8s",
+    "frontend\nginx.conf",
+    "frontend\.dockerignore",
+    "frontend\package.json",
+    "frontend\package-lock.json",
     "db\init\01_schema.sql",
     "db\init\02_permisos.sql",
     "db\init\03_excepcion_disponibilidad.sql",
@@ -74,9 +81,12 @@ try {
     minikube start --driver=docker
     Confirm-NativeCommand -Step "iniciar Minikube"
 
-    Write-Host "[3/9] Construyendo la imagen Blue v1 dentro de Minikube..."
+    Write-Host "[3/9] Construyendo las imagenes Blue v1 dentro de Minikube..."
     minikube image build -t clinica-veterinaria:v1 .
-    Confirm-NativeCommand -Step "construir la imagen Blue"
+    Confirm-NativeCommand -Step "construir la imagen Blue de FastAPI"
+
+    minikube image build -t clinica-frontend:v1 -f Dockerfile.k8s frontend
+    Confirm-NativeCommand -Step "construir la imagen Blue del frontend"
 
     Write-Host "[4/9] Creando el namespace..."
     minikube kubectl -- apply -f k8s\namespace.yaml
@@ -106,9 +116,12 @@ try {
     minikube kubectl -- apply -f k8s
     Confirm-NativeCommand -Step "aplicar los manifiestos de Kubernetes"
 
-    Write-Host "[8/9] Reiniciando FastAPI para utilizar la imagen recien construida..."
+    Write-Host "[8/9] Reiniciando FastAPI y el frontend para utilizar las imagenes recien construidas..."
     minikube kubectl -- rollout restart deployment/api-blue --namespace=clinica-veterinaria
     Confirm-NativeCommand -Step "reiniciar el Deployment Blue"
+
+    minikube kubectl -- rollout restart deployment/frontend-blue --namespace=clinica-veterinaria
+    Confirm-NativeCommand -Step "reiniciar el Deployment Blue del frontend"
 
     Write-Host "Esperando a PostgreSQL..."
     minikube kubectl -- rollout status statefulset/postgres --namespace=clinica-veterinaria --timeout=180s
@@ -118,12 +131,19 @@ try {
     minikube kubectl -- rollout status deployment/api-blue --namespace=clinica-veterinaria --timeout=180s
     Confirm-NativeCommand -Step "esperar a FastAPI Blue"
 
+    Write-Host "Esperando al frontend Blue..."
+    minikube kubectl -- rollout status deployment/frontend-blue --namespace=clinica-veterinaria --timeout=180s
+    Confirm-NativeCommand -Step "esperar al frontend Blue"
+
     Write-Host "[9/9] Estado final de los recursos:"
     minikube kubectl -- get all,pvc,configmap,secret --namespace=clinica-veterinaria
     Confirm-NativeCommand -Step "consultar el estado final"
 
     Write-Host ""
-    Write-Host "Kubernetes quedo preparado. Para obtener la URL de la API ejecuta:"
+    Write-Host "Kubernetes quedo preparado. Para obtener la URL del frontend ejecuta:"
+    Write-Host "minikube service frontend --namespace=clinica-veterinaria --url"
+    Write-Host ""
+    Write-Host "Para obtener la URL directa de la API ejecuta:"
     Write-Host "minikube service api --namespace=clinica-veterinaria --url"
 }
 finally {

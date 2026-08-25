@@ -49,7 +49,10 @@ Proyecto_Clínica_Veterinaria/
 |   `-- jwt-secret.txt                Clave JWT local; no se guarda en Git
 |
 |-- frontend/                         Aplicación React y Vite
-|   |-- Dockerfile                    Imagen del frontend
+|   |-- Dockerfile                    Entorno de desarrollo usado por Compose
+|   |-- Dockerfile.k8s                Imagen de producción usada por Kubernetes
+|   |-- nginx.conf                    Sirve React y reenvía /api hacia FastAPI
+|   |-- .dockerignore                 Excluye archivos del contexto del frontend
 |   |-- package.json                  Dependencias generales de JavaScript
 |   |-- package-lock.json             Versiones exactas de esas dependencias
 |   `-- src/                          Código del frontend
@@ -59,7 +62,9 @@ Proyecto_Clínica_Veterinaria/
 |   |-- postgres-service.yaml
 |   |-- postgres-statefulset.yaml
 |   |-- api-blue-deployment.yaml
-|   `-- api-service.yaml
+|   |-- api-service.yaml
+|   |-- frontend-blue-deployment.yaml
+|   `-- frontend-service.yaml
 |
 |-- scripts/
 |   `-- k8s-up.ps1                    Automatiza el inicio en Minikube
@@ -194,7 +199,43 @@ Construye el entorno del frontend:
 5. Copia el código restante.
 6. Inicia Vite en el puerto 5173.
 
-Actualmente este Dockerfile se usa desde Docker Compose. El frontend todavía no tiene un Deployment ni un Service en Kubernetes.
+Este Dockerfile se usa desde Docker Compose para trabajar con el servidor de desarrollo de Vite. Kubernetes utiliza otro Dockerfile preparado para servir la versión ya construida del frontend.
+
+### `frontend/Dockerfile.k8s`
+
+Construye la imagen de producción `clinica-frontend:v1` que utiliza Kubernetes. Está dividido en dos etapas:
+
+1. La etapa `build` usa Node 22, instala las dependencias con `npm ci` y ejecuta `npm run build`.
+2. Vite genera en `/app/dist` los archivos HTML, CSS y JavaScript listos para publicar.
+3. `ARG` y `ENV` entregan `VITE_API_URL=/api` durante la construcción. Esta dirección queda incorporada en el frontend y no contiene un secreto.
+4. La etapa `runner` comienza desde `nginxinc/nginx-unprivileged`, una imagen de Nginx preparada para ejecutarse sin permisos de administrador.
+5. Copia `nginx.conf` y solamente el resultado de `/app/dist`; no necesita llevar Node ni el código fuente completo a la imagen final.
+6. Nginx escucha en el puerto 8080 y sirve el frontend ya construido.
+
+El resultado de la primera etapa se copia a la segunda mediante `COPY --from=build`. Esto se denomina **construcción multietapa** y permite que la imagen final tenga solamente lo necesario para ejecutar el frontend.
+
+### `frontend/nginx.conf`
+
+Configura cómo Nginx atiende las solicitudes dentro del Pod del frontend:
+
+- sirve los archivos construidos desde `/usr/share/nginx/html`;
+- escucha en el puerto 8080, que no requiere permisos de administrador;
+- usa `try_files $uri /index.html` para que las rutas manejadas por React vuelvan a `index.html`;
+- comprime contenido con gzip y configura caché para los archivos estáticos;
+- intercepta las solicitudes que comienzan con `/api/` y las reenvía a `http://api:8000/`.
+
+`api` no es una IP fija: es el nombre del Service de FastAPI dentro del mismo Namespace. Por ejemplo, el navegador solicita `/api/auth/login`, Nginx quita el prefijo `/api` y envía `/auth/login` al Service `api`.
+
+Este proxy permite que el navegador acceda al frontend y a la API desde la misma dirección externa. El nombre interno `api` solamente necesita ser conocido por Nginx dentro de Kubernetes.
+
+### `frontend/.dockerignore`
+
+Define qué elementos de `frontend/` no se envían al construir su imagen:
+
+- `node_modules`, porque las dependencias se reconstruyen con `npm ci`;
+- `dist`, porque se vuelve a generar con `npm run build`;
+- `.vite/` y archivos de log, porque son temporales;
+- archivos `.env`, para no incluir configuración local accidentalmente.
 
 ## 4. Carpeta `app`: cómo se organiza FastAPI
 
@@ -383,6 +424,37 @@ Esto significa que solamente envía tráfico a Pods Blue que estén marcados com
 
 El Service recibe tráfico en su puerto 8000 y lo dirige al puerto llamado `http` del contenedor de FastAPI, que también corresponde al 8000.
 
+### `k8s/frontend-blue-deployment.yaml`
+
+Crea y administra el Pod de Nginx que sirve la versión Blue del frontend.
+
+Sus partes principales son:
+
+- `replicas: 1`: solicita una instancia del frontend;
+- `image: clinica-frontend:v1`: utiliza la imagen construida con `frontend/Dockerfile.k8s`;
+- `imagePullPolicy: Never`: utiliza la imagen guardada dentro de Minikube y no intenta descargarla de Docker Hub;
+- etiquetas `app: clinica-frontend` y `version: blue`: identifican la aplicación y la versión;
+- `containerPort: 8080`: coincide con el puerto donde escucha Nginx;
+- `readinessProbe`: consulta `/` para comprobar que Nginx puede entregar el frontend;
+- `automountServiceAccountToken: false`: evita entregar al Pod credenciales internas de Kubernetes que no necesita.
+
+El Deployment puede reemplazar el Pod si deja de existir. Como el frontend no guarda datos importantes dentro del Pod, no necesita un StatefulSet ni un volumen persistente.
+
+### `k8s/frontend-service.yaml`
+
+Crea el punto de entrada estable para el frontend. Es de tipo `NodePort`, por lo que Minikube puede proporcionar una URL accesible desde Windows.
+
+Su selector actual es:
+
+```yaml
+app: clinica-frontend
+version: blue
+```
+
+Por eso dirige el tráfico solamente al Pod `frontend-blue` que esté preparado. Recibe tráfico en el puerto 8080 y lo envía al puerto llamado `http` del contenedor.
+
+Este Service también queda preparado como interruptor Blue/Green. Cuando exista y se haya comprobado `frontend-green`, cambiar `version: blue` por `version: green` permitirá dirigir el tráfico a la nueva versión.
+
 ## Recursos de Kubernetes creados automáticamente
 
 Algunos son creados por `scripts/k8s-up.ps1` a partir de archivos locales:
@@ -395,8 +467,8 @@ Algunos son creados por `scripts/k8s-up.ps1` a partir de archivos locales:
 
 Otros son creados automáticamente por Kubernetes:
 
-- El Deployment crea un ReplicaSet.
-- El ReplicaSet crea el Pod de FastAPI.
+- Cada Deployment crea su propio ReplicaSet.
+- Los ReplicaSets crean los Pods de FastAPI y del frontend.
 - El StatefulSet crea el Pod `postgres-0` y solicita un PVC.
 - Minikube proporciona el PersistentVolume solicitado por el PVC.
 
@@ -411,13 +483,13 @@ Su recorrido completo es:
 3. Comprueba que la contraseña no esté vacía y que la clave JWT tenga al menos 32 caracteres.
 4. Verifica que Docker Desktop esté funcionando.
 5. Inicia Minikube usando Docker como driver.
-6. Construye `clinica-veterinaria:v1` dentro de Minikube.
+6. Construye `clinica-veterinaria:v1` y `clinica-frontend:v1` dentro de Minikube.
 7. Crea el Namespace.
 8. Crea o actualiza los Secrets desde los archivos locales.
 9. Crea o actualiza el ConfigMap desde `db/init/`.
 10. Aplica todos los manifiestos de `k8s/`.
-11. Reinicia el Deployment Blue para que use la imagen recién construida.
-12. Espera a que PostgreSQL y FastAPI estén preparados.
+11. Reinicia los Deployments Blue de FastAPI y del frontend para que usen las imágenes recién construidas.
+12. Espera a que PostgreSQL, FastAPI y Nginx estén preparados.
 13. Muestra el estado final de los recursos.
 
 El script puede ejecutarse con:
@@ -465,12 +537,18 @@ Compose crea automáticamente una red para que los servicios se encuentren por n
 
 ```mermaid
 flowchart LR
-    D[Dockerfile] --> I[Imagen clinica-veterinaria:v1]
-    I --> AB[Deployment api-blue]
+    DAPI[Dockerfile] --> IAPI[Imagen clinica-veterinaria:v1]
+    IAPI --> AB[Deployment api-blue]
     AB --> PAPI[Pod FastAPI Blue]
 
-    U[Usuario o Swagger] --> MS[minikube service]
-    MS --> SAPI[Service api NodePort]
+    DF[frontend/Dockerfile.k8s] --> IF[Imagen clinica-frontend:v1]
+    IF --> FB[Deployment frontend-blue]
+    FB --> PF[Pod Nginx Blue]
+
+    U[Usuario] --> MSF[minikube service frontend]
+    MSF --> SF[Service frontend NodePort]
+    SF -->|selector version: blue| PF
+    PF -->|solicitudes /api| SAPI[Service api]
     SAPI -->|selector version: blue| PAPI
 
     SP[Secret PostgreSQL] --> PAPI
@@ -486,25 +564,27 @@ flowchart LR
 
 Explicado paso a paso:
 
-1. El script construye la imagen Blue desde el Dockerfile.
-2. El Deployment usa esa imagen para crear un Pod de FastAPI.
+1. El script construye las imágenes Blue de FastAPI y del frontend dentro de Minikube.
+2. `api-blue` crea el Pod de FastAPI y `frontend-blue` crea el Pod de Nginx.
 3. El StatefulSet crea `postgres-0` y su almacenamiento persistente.
 4. El ConfigMap coloca los SQL dentro de PostgreSQL.
 5. El Secret coloca la contraseña dentro de PostgreSQL.
 6. Si el volumen está vacío, la imagen de PostgreSQL ejecuta los SQL.
 7. El Service `db` permite que FastAPI encuentre PostgreSQL como `db:5432`.
 8. FastAPI lee sus variables y Secrets, y crea la conexión.
-9. El Service `api` selecciona el Pod cuya versión es `blue`.
-10. `minikube service ... --url` crea o muestra una URL local para llegar al Service.
-11. Una petición entra por el Service, llega a FastAPI y, si necesita datos, continúa hasta PostgreSQL.
+9. El Service `api` selecciona el Pod de FastAPI cuya versión es `blue`.
+10. El Service `frontend` selecciona el Pod de Nginx cuya versión es `blue`.
+11. `minikube service frontend ... --url` mantiene un túnel y proporciona una URL local para el navegador.
+12. Nginx sirve React. Cuando una solicitud comienza con `/api`, la reenvía al Service interno `api`.
+13. FastAPI procesa la solicitud y, si necesita datos, continúa mediante el Service `db` hasta PostgreSQL.
 
 Para obtener la URL:
 
 ```powershell
-minikube service api --namespace=clinica-veterinaria --url
+minikube service frontend --namespace=clinica-veterinaria --url
 ```
 
-En Windows con el driver Docker, la terminal que mantiene ese túnel debe permanecer abierta.
+En Windows con el driver Docker, la terminal que mantiene ese túnel debe permanecer abierta. La API también puede exponerse directamente con `minikube service api --namespace=clinica-veterinaria --url`, por ejemplo para usar Swagger sin pasar por Nginx.
 
 ## 10. Qué le proporciona cada componente al siguiente
 
@@ -513,6 +593,7 @@ En Windows con el driver Docker, la terminal que mantiene ese túnel debe perman
 | `pyproject.toml` | Decisiones del equipo sobre dependencias | Lista general de paquetes Python. |
 | `uv.lock` | `pyproject.toml` y resolución de `uv` | Versiones exactas reproducibles. |
 | `Dockerfile` | Código de `app/`, `pyproject.toml` y `uv.lock` | Imagen ejecutable de FastAPI. |
+| `frontend/Dockerfile.k8s` | Código del frontend, dependencias y `nginx.conf` | Imagen de producción del frontend. |
 | `compose.yaml` | Dockerfiles, imagen de PostgreSQL, Secrets y SQL | Entorno local completo de tres servicios. |
 | `namespace.yaml` | Nombre elegido para el proyecto | Espacio separado dentro del clúster. |
 | Secrets | Archivos secretos locales | Contraseña y clave JWT montadas en los Pods. |
@@ -521,28 +602,36 @@ En Windows con el driver Docker, la terminal que mantiene ese túnel debe perman
 | Service `db` | Pods con `app: postgres` | Nombre estable `db:5432`. |
 | Deployment Blue | Imagen `v1`, variables y Secrets | Pod de FastAPI con etiqueta `version: blue`. |
 | Service `api` | Pods preparados con etiquetas coincidentes | Punto de entrada estable hacia Blue. |
+| Deployment `frontend-blue` | Imagen `clinica-frontend:v1` | Pod de Nginx con etiqueta `version: blue`. |
+| Service `frontend` | Pods preparados de `clinica-frontend` | Entrada externa al frontend Blue. |
+| `nginx.conf` | Archivos de React y Service interno `api` | Interfaz web y proxy de `/api` hacia FastAPI. |
 | `k8s-up.ps1` | Todos los archivos anteriores | Automatización que construye y aplica el entorno. |
 
 ## 11. Estado actual de Blue/Green
 
-Actualmente está implementada solamente la infraestructura **Blue**:
+Actualmente está implementada la infraestructura **Blue** de FastAPI y del frontend:
 
 - imagen `clinica-veterinaria:v1`;
 - Deployment `api-blue`;
 - etiqueta `version: blue`;
-- Service `api` apuntando a `version: blue`.
+- Service `api` apuntando a `version: blue`;
+- imagen `clinica-frontend:v1`;
+- Deployment `frontend-blue`;
+- Service `frontend` apuntando a `version: blue`.
 
 Esto deja preparado el mecanismo para agregar Green, pero todavía no constituye un cambio Blue/Green completo.
 
 Cuando la versión 2 esté desarrollada, la idea será:
 
-1. Construir otra imagen, por ejemplo `clinica-veterinaria:v2`.
-2. Crear `api-green` con la etiqueta `version: green`.
-3. Mantener Blue y Green ejecutándose al mismo tiempo.
-4. Probar Green sin enviarle todavía el tráfico principal.
-5. Cambiar únicamente el selector del Service `api` de `version: blue` a `version: green`.
-6. Aplicar el Service para dirigir las nuevas solicitudes a Green.
-7. Si aparece un problema, devolver el selector a Blue.
+1. Construir otra imagen de la API, por ejemplo `clinica-veterinaria:v2`.
+2. Si el frontend también cambia, construir `clinica-frontend:v2`.
+3. Crear `api-green` y, si corresponde, `frontend-green`, ambos con la etiqueta `version: green`.
+4. Mantener Blue y Green ejecutándose al mismo tiempo.
+5. Probar Green sin enviarle todavía el tráfico principal.
+6. Cambiar el selector del Service `api` de `version: blue` a `version: green`.
+7. Si existe un frontend Green, hacer el mismo cambio en el Service `frontend`.
+8. Aplicar los Services para dirigir las nuevas solicitudes a Green.
+9. Si aparece un problema, devolver los selectores a Blue.
 
 No es necesario duplicar el código en dos carpetas. Las dos versiones quedan representadas por imágenes Docker distintas.
 
@@ -551,16 +640,17 @@ Para demostrarlo al docente se podrán mostrar:
 ```powershell
 minikube kubectl -- get pods -L version --namespace=clinica-veterinaria
 minikube kubectl -- get service api --namespace=clinica-veterinaria -o yaml
+minikube kubectl -- get service frontend --namespace=clinica-veterinaria -o yaml
 ```
 
-El primer comando mostrará ambos Pods y sus versiones. El segundo permitirá ver qué versión está seleccionando el Service.
+El primer comando mostrará los Pods y sus versiones. Los otros dos permitirán ver qué versión seleccionan los Services de la API y del frontend.
 
 ## 12. Diferencia entre Compose y Kubernetes en este proyecto
 
 | Docker Compose | Kubernetes con Minikube |
 | --- | --- |
 | Pensado para desarrollo local sencillo. | Pensado para practicar orquestación y despliegues. |
-| Levanta frontend, API y PostgreSQL. | Actualmente levanta API Blue y PostgreSQL. |
+| Levanta frontend, API y PostgreSQL. | Levanta frontend Blue, API Blue y PostgreSQL. |
 | `compose.yaml` concentra toda la definición. | La configuración se divide en varios manifiestos. |
 | Usa contenedores directamente. | Administra los contenedores dentro de Pods. |
 | Usa `postgres_data` como volumen nombrado. | Usa PVC y PV para PostgreSQL. |
@@ -580,7 +670,7 @@ El primer comando mostrará ambos Pods y sus versiones. El segundo permitirá ve
 - Una readiness probe decide si un Pod está preparado para recibir tráfico; no es lo mismo que una liveness probe.
 - Los SQL de inicialización solamente se ejecutan sobre una base vacía.
 - `minikube stop` detiene el clúster, pero no está pensado para borrar los datos persistentes.
-- La infraestructura de Kubernetes todavía no incluye el frontend ni el Deployment Green.
+- La infraestructura de Kubernetes incluye el frontend Blue y la API Blue; los Deployments Green todavía no están implementados.
 
 ## 14. Documentación oficial utilizada
 
@@ -621,9 +711,9 @@ La documentación de la imagen oficial también establece que los archivos de `/
 - [Comando `minikube status`](https://minikube.sigs.k8s.io/docs/commands/status/): se utilizó para comprobar el estado del clúster.
 - [Usar kubectl incluido en Minikube](https://minikube.sigs.k8s.io/docs/handbook/kubectl/): se utilizó para ejecutar comandos mediante `minikube kubectl --` y evitar problemas de diferencia de versiones.
 - [Interactuar con el clúster de Minikube](https://minikube.sigs.k8s.io/docs/start/): se utilizó como referencia para consultar nodos y Pods.
-- [Construir imágenes dentro de Minikube](https://minikube.sigs.k8s.io/docs/handbook/pushing/#8-building-images-to-in-cluster-container-runtime): se utilizó para construir `clinica-veterinaria:v1` dentro del runtime del clúster.
+- [Construir imágenes dentro de Minikube](https://minikube.sigs.k8s.io/docs/handbook/pushing/#8-building-images-to-in-cluster-container-runtime): se utilizó para construir `clinica-veterinaria:v1` y `clinica-frontend:v1` dentro del runtime del clúster.
 - [Comandos de imágenes de Minikube](https://minikube.sigs.k8s.io/docs/commands/image/): se utilizó para `minikube image build` y `minikube image ls`.
-- [Comando `minikube service`](https://minikube.sigs.k8s.io/docs/commands/service/): se utilizó para obtener una URL local del Service `api`.
+- [Comando `minikube service`](https://minikube.sigs.k8s.io/docs/commands/service/): se utilizó para obtener URLs locales de los Services `api` y `frontend`.
 
 ### 14.5. Namespace, aplicación de manifiestos y recursos de configuración
 
@@ -666,7 +756,18 @@ La documentación de la imagen oficial también establece que los archivos de `/
 - [Readiness, liveness y startup probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/): se utilizó para configurar la comprobación HTTP de disponibilidad de FastAPI.
 - [Services de Kubernetes](https://kubernetes.io/docs/concepts/services-networking/service/): se utilizó para crear `api-service.yaml`, exponer la API mediante `NodePort` y dirigir el tráfico utilizando las etiquetas `app` y `version`.
 
-### 14.9. Automatización y preparación de Blue/Green
+### 14.9. Frontend de producción en Kubernetes
+
+- [Guía oficial de Docker para React](https://docs.docker.com/guides/reactjs/): se utilizó como base para la construcción multietapa, `npm ci`, la generación de `dist`, la imagen de Nginx y el `.dockerignore` del frontend.
+- [Variables de construcción de Docker](https://docs.docker.com/build/building/variables/#env-usage-example): se utilizó para entregar `VITE_API_URL` mediante `ARG` y `ENV` durante la construcción de la imagen.
+- [Variables de entorno y modos de Vite](https://vite.dev/guide/env-and-mode.html): se utilizó para explicar por qué las variables con prefijo `VITE_` quedan incorporadas en el frontend durante `npm run build` y no deben contener secretos.
+- [Reverse proxy de Nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): se utilizó para configurar `location /api/`, `proxy_pass` y los encabezados que Nginx entrega a FastAPI.
+- [Deployments de Kubernetes](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/): se utilizó para crear `frontend-blue` y mantener su Pod.
+- [Política de descarga de imágenes](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy): se utilizó para hacer que el Deployment consuma `clinica-frontend:v1` desde Minikube.
+- [Readiness, liveness y startup probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/): se utilizó para comprobar que Nginx puede servir `/` antes de enviarle tráfico.
+- [Service de tipo NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport): se utilizó para crear el punto de entrada externo `frontend`.
+
+### 14.10. Automatización y preparación de Blue/Green
 
 `scripts/k8s-up.ps1` no fue copiado de una sola página. Reúne en orden los comandos oficiales ya mencionados para construir la imagen, crear los recursos, aplicar los manifiestos y esperar los rollouts.
 
