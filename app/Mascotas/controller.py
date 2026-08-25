@@ -10,7 +10,7 @@ from app.Mascotas.dto import (
 )
 from app.Mascotas.repository import MascotaRepository
 from app.Mascotas.service import MascotaService
-from app.Middleware.middleware import obtener_usuario_actual, requerir_rol, obtener_mascota_por_id
+from app.Middleware.middleware import obtener_usuario_actual, requerir_rol
 from app.veterinarios import service
 
 
