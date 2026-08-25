@@ -3,6 +3,8 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.database import get_session
+
 
 class MascotaRepository:
     """
@@ -127,3 +129,11 @@ class MascotaRepository:
         self.session.commit()
 
         return dict(fila)
+
+    def obtener_mascota_por_id(id_mascota: int, id_cliente: int):
+        with get_session() as session:
+            result = session.execute(
+                "SELECT * FROM mascotas WHERE id = :id AND id_cliente = :id_cliente",
+                {"id": id_mascota, "id_cliente": id_cliente}
+            )
+            return result.fetchone()

@@ -2,6 +2,7 @@ from typing import Any
 
 from app.Mascotas.dto import MascotaCreate
 from app.Mascotas.repository import MascotaRepository
+from fastapi import HTTPException
 
 
 class MascotaService:
@@ -90,3 +91,26 @@ class MascotaService:
             especie=especie_limpia,
             raza=raza_limpia,
         )
+
+    def obtener_mascota_por_id(
+        self,
+        id_mascota: int,
+        id_cliente: int,
+    ) -> dict[str, Any]:
+        """
+        Obtiene una mascota por su identificador y el del cliente.
+            id_mascota: Identificador de la mascota.
+            id_cliente: Identificador del cliente autenticado.
+
+        Returns:
+            Datos de la mascota.
+        Raises:
+            HTTPException: Si la mascota no es encontrada.
+        """
+        mascota = self.repository.obtener_mascota_por_id(id_mascota, id_cliente)
+        if not mascota:
+            raise HTTPException(
+                status_code=404,
+                detail="Mascota no encontrada."
+            )
+        return dict(mascota)

@@ -9,6 +9,7 @@ from app.Mascotas.controller import router as mascotas_router
 from app.tipos_atencion.controller import (
     router as tipos_atencion_router,
 )
+from app.veterinarios.controller import router as veterinarios_router
 
 
 app = FastAPI(
@@ -31,9 +32,14 @@ app.include_router(register_client_router)
 app.include_router(me_router)
 app.include_router(tipos_atencion_router)
 app.include_router(mascotas_router)
-
+app.include_router(veterinarios_router)
 
 
 @app.get("/")
 def hello():
     return "Hello, Docker!"
+
+#Verifica que la API esté funcionando correctamente.
+@app.get("/health")
+def health() -> dict:
+    return {"status": "ok"}
