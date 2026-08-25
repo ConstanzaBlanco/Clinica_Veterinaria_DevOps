@@ -147,3 +147,24 @@
   display: flex;
   gap: 8px;
 }
+
+.mascotas-mensaje {
+  margin-top: 22px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.mascotas-mensaje-error {
+  color: var(--danger, #c0392b);
+}
+
+.mascota-form-error {
+  width: 100%;
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger, #c0392b);
+}

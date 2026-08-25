@@ -5,6 +5,7 @@ from app.Middleware.middleware import JWTMiddleware
 from app.Auth.login.controller import router as login_router
 from app.Auth.me.controller import router as me_router
 from app.Auth.Register.clients.controller import router as register_client_router
+from app.Mascotas.controller import router as mascotas_router
 from app.tipos_atencion.controller import (
     router as tipos_atencion_router,
 )
@@ -29,6 +30,7 @@ app.include_router(login_router)
 app.include_router(register_client_router)
 app.include_router(me_router)
 app.include_router(tipos_atencion_router)
+app.include_router(mascotas_router)
 
 
 
