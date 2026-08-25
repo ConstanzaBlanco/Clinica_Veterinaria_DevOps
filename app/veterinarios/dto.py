@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 class VeterinarioResponse(BaseModel):
-    id: int
+    id_usuario: int
     nombre: str
-    matricula: str
-    activo: bool
+    apellido: str
+    matricula_profesional: str

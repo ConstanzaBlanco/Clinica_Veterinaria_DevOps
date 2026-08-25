@@ -11,6 +11,7 @@ from app.Mascotas.dto import (
 from app.Mascotas.repository import MascotaRepository
 from app.Mascotas.service import MascotaService
 from app.Middleware.middleware import obtener_usuario_actual, requerir_rol, obtener_mascota_por_id
+from app.veterinarios import service
 
 
 router = APIRouter(
@@ -111,5 +112,5 @@ def crear_mascota(
 
 
 @router.get("/mascotas/{id_mascota}", response_model=MascotaResponse)
-def ver_mascota(id_mascota: int, usuario=Depends(obtener_usuario_actual)):
-    return obtener_mascota_por_id(id_mascota, usuario.id)
+def ver_mascota(id_mascota: int, usuario: dict = Depends(obtener_usuario_actual)):
+    return service.obtener_mascota_por_id(id_mascota, usuario["id_usuario"])
