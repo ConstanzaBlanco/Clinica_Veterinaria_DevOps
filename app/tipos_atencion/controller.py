@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.database import get_session
+from app.Middleware.middleware import requerir_rol
 from app.tipos_atencion.dto import (
     TipoAtencionCreate,
     TipoAtencionResponse,
@@ -24,6 +25,7 @@ def crear_service(session):
 @router.get("", response_model=list[TipoAtencionResponse])
 def listar_tipos_atencion(
     session=Depends(get_session),
+    _usuario: dict = Depends(requerir_rol("CLIENTE")),
 ):
     service = crear_service(session)
 

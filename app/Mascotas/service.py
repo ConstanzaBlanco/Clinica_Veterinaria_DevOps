@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any
 
 from app.Mascotas.dto import MascotaCreate, MascotaUpdate
@@ -85,11 +86,20 @@ class MascotaService:
                 "La especie de la mascota no puede estar vacia."
             )
 
+        if (
+            datos.fecha_nacimiento is not None
+            and datos.fecha_nacimiento > date.today()
+        ):
+            raise ValueError(
+                "La fecha de nacimiento no puede ser una fecha futura."
+            )
+
         return self.repository.crear(
             id_cliente=id_cliente,
             nombre=nombre_limpio,
             especie=especie_limpia,
             raza=raza_limpia,
+            fecha_nacimiento=datos.fecha_nacimiento,
         )
 
     def obtener_mascota_por_id(

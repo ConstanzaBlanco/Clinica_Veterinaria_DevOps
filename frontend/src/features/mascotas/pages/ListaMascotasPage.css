@@ -110,44 +110,6 @@
   flex-wrap: wrap;
 }
 
-.mascota-form {
-  margin-top: 20px;
-  background: var(--white);
-  border-radius: 14px;
-  padding: 20px;
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.mascota-form-campo {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-  min-width: 160px;
-}
-
-.mascota-form-campo label {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 12.5px;
-}
-
-.mascota-form-campo input {
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-family: var(--font-body);
-  font-size: 14px;
-}
-
-.mascota-form-acciones {
-  display: flex;
-  gap: 8px;
-}
-
 .mascotas-mensaje {
   margin-top: 22px;
   padding: 20px;
@@ -162,9 +124,8 @@
   color: var(--danger, #c0392b);
 }
 
-.mascota-form-error {
-  width: 100%;
-  margin: 0;
-  font-size: 13px;
-  color: var(--danger, #c0392b);
+.mascotas-mensaje-exito {
+  color: var(--success);
+  border-color: var(--success);
+  background: #e3f1ea;
 }
