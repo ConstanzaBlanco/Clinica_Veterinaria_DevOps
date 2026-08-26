@@ -7,10 +7,11 @@ from app.database import get_session
 from app.Mascotas.dto import (
     MascotaCreate,
     MascotaResponse,
+    MascotaUpdate,
 )
 from app.Mascotas.repository import MascotaRepository
 from app.Mascotas.service import MascotaService
-from app.Middleware.middleware import requerir_rol
+from app.Middleware.middleware import obtener_usuario_actual, requerir_rol
 
 
 router = APIRouter(
@@ -108,3 +109,39 @@ def crear_mascota(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(error),
         ) from error
+
+
+@router.get("/{id_mascota}", response_model=MascotaResponse)
+def ver_mascota(
+    id_mascota: int,
+    usuario: dict[str, Any] = Depends(obtener_usuario_actual),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """
+    Devuelve la ficha de una mascota del cliente autenticado.
+        id_mascota: Identificador de la mascota.
+        usuario: Informacion del usuario obtenida del token JWT.
+        session: Sesion de SQLAlchemy proporcionada por FastAPI.
+
+    Return:
+        Datos de la mascota.
+    """
+    id_cliente: int = usuario["id_usuario"]
+    service: MascotaService = crear_service(session)
+
+    return service.obtener_mascota_por_id(id_mascota, id_cliente)
+
+@router.patch("/{id_mascota}", response_model=MascotaResponse)
+def actualizar_mascota(
+    id_mascota: int,
+    datos: MascotaUpdate,
+    usuario: dict[str, Any] = Depends(requerir_rol("CLIENTE")),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    id_cliente: int = usuario["id_usuario"]
+    service: MascotaService = crear_service(session)
+
+    try:
+        return service.actualizar(id_mascota, id_cliente, datos)
+    except LookupError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
