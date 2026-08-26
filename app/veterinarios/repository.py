@@ -16,3 +16,4 @@ class VeterinarioRepository:
             """
         )
         return self.session.execute(consulta).mappings().all()
+    
