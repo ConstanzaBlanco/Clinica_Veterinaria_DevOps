@@ -68,6 +68,7 @@ class MascotaRepository:
         nombre: str,
         especie: str,
         raza: str | None,
+        fecha_nacimiento=None,
     ) -> dict[str, Any]:
         """
         Registra una mascota para el cliente autenticado.
@@ -75,6 +76,7 @@ class MascotaRepository:
             nombre: Nombre de la mascota.
             especie: Especie de la mascota.
             raza: Raza de la mascota.
+            fecha_nacimiento: Fecha de nacimiento de la mascota.
 
         Return:
             Datos de la mascota registrada.
@@ -88,13 +90,15 @@ class MascotaRepository:
                 id_cliente,
                 nombre,
                 especie,
-                raza
+                raza,
+                fecha_nacimiento
             )
             SELECT
                 c.id_usuario,
                 :nombre,
                 :especie,
-                :raza
+                :raza,
+                :fecha_nacimiento
             FROM cliente AS c
             WHERE c.id_usuario = :id_cliente
             RETURNING
@@ -114,6 +118,7 @@ class MascotaRepository:
             "nombre": nombre,
             "especie": especie,
             "raza": raza,
+            "fecha_nacimiento": fecha_nacimiento,
         }
 
         fila = self.session.execute(

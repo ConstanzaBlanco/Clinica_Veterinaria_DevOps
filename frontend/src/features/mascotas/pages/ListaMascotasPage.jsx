@@ -74,6 +74,7 @@ function ListaMascotasPage() {
     useState(false)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+  const [mensajeExito, setMensajeExito] = useState('')
 
   useEffect(() => {
     const controlador = new AbortController()
@@ -183,6 +184,8 @@ function ListaMascotasPage() {
     ])
 
     setFormularioAbierto(false)
+    setMensajeExito(`${mascotaCreada.nombre} se registró correctamente.`)
+    setTimeout(() => setMensajeExito(''), 4000)
   }
 
   return (
@@ -245,6 +248,12 @@ function ListaMascotasPage() {
             setFormularioAbierto(false)
           }
         />
+      )}
+
+      {mensajeExito && (
+        <div className="mascotas-mensaje mascotas-mensaje-exito">
+          {mensajeExito}
+        </div>
       )}
 
       {cargando && (

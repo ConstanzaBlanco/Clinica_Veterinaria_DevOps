@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from app.database import get_session
+from app.Middleware.middleware import requerir_rol
 from app.veterinarios.repository import VeterinarioRepository
 from app.veterinarios.service import VeterinarioService
 from app.veterinarios.dto import VeterinarioResponse
@@ -24,5 +25,8 @@ def crear_service(session: Session) -> VeterinarioService:
     return VeterinarioService(repository)
 
 @router.get("", response_model=list[VeterinarioResponse])
-def obtener_veterinarios(session: Session = Depends(get_session)):
+def obtener_veterinarios(
+    session: Session = Depends(get_session),
+    _usuario: dict = Depends(requerir_rol("CLIENTE")),
+):
     return crear_service(session).listar_veterinarios()

@@ -18,7 +18,7 @@ function PasoConfirmar({ mascota, tipoAtencion, veterinario, horario, onVolver, 
         </div>
         <div className="resumen-fila">
           <span>Veterinario</span>
-          <strong>{veterinario.nombre}</strong>
+          <strong>{`${veterinario.nombre} ${veterinario.apellido}`}</strong>
         </div>
         <div className="resumen-fila">
           <span>Horario</span>

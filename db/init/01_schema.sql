@@ -65,6 +65,20 @@ CREATE TABLE administrador (
 
 
 -- ============================================
+-- ESPECIES (catálogo)
+-- ============================================
+
+CREATE TABLE especie (
+    id_especie BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+
+    estado VARCHAR(15) NOT NULL DEFAULT 'ACTIVO'
+        CHECK (estado IN ('ACTIVO', 'INACTIVO'))
+);
+
+
+-- ============================================
 -- MASCOTAS
 -- ============================================
 

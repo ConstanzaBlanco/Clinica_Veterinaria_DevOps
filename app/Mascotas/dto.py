@@ -11,6 +11,7 @@ class MascotaCreate(BaseModel):
     nombre: str = Field(min_length=1, max_length=100)
     especie: str = Field(min_length=1, max_length=100)
     raza: str | None = Field(default=None, max_length=100)
+    fecha_nacimiento: date | None = Field(default=None)
 
 
 class MascotaResponse(BaseModel):
