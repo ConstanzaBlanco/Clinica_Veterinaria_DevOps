@@ -130,28 +130,36 @@ class MascotaRepository:
 
         return dict(fila)
 
-    def obtener_mascota_por_id(id_mascota: int, id_cliente: int):
-        with get_session() as session:
-            result = session.execute(
-                "SELECT * FROM mascotas WHERE id = :id AND id_cliente = :id_cliente",
-                {"id": id_mascota, "id_cliente": id_cliente}
-            )
-            return result.fetchone()
+    def obtener_mascota_por_id(self, id_mascota: int, id_cliente: int) -> dict[str, Any] | None:
+        consulta = text(
+            """
+            SELECT id_mascota, nombre, especie, raza, fecha_nacimiento, sexo, observaciones, estado
+            FROM mascota
+            WHERE id_mascota = :id_mascota AND id_cliente = :id_cliente
+            """
+        )
+        fila = self.session.execute(
+            consulta,
+            {"id_mascota": id_mascota, "id_cliente": id_cliente},
+        ).mappings().first()
 
-    def actualizar(self, id_mascota: int, id_cliente: int, datos: dict):
+        return dict(fila) if fila else None
+
+    def actualizar(self, id_mascota: int, id_cliente: int, datos: dict) -> dict[str, Any] | None:
         if not datos:
             return self.obtener_mascota_por_id(id_mascota, id_cliente)
 
         columnas = ", ".join(f"{campo} = :{campo}" for campo in datos)
         parametros = {**datos, "id_mascota": id_mascota, "id_cliente": id_cliente}
 
-        resultado = self.session.execute(
+        consulta = text(
             f"""
             UPDATE mascota SET {columnas}
             WHERE id_mascota = :id_mascota AND id_cliente = :id_cliente
-            RETURNING *
-            """,
-            parametros,
+            RETURNING id_mascota, nombre, especie, raza, fecha_nacimiento, sexo, observaciones, estado
+            """
         )
+        fila = self.session.execute(consulta, parametros).mappings().first()
         self.session.commit()
-        return resultado.fetchone()
+
+        return dict(fila) if fila else None

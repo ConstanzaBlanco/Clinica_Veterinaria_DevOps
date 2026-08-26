@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 
@@ -12,7 +13,7 @@ class TurnoRepository:
             "todos": "",
         }[periodo]
 
-        resultado = self.session.execute(
+        consulta = text(
             f"""
             SELECT
                 t.id_turno, t.fecha_hora_inicio, t.duracion_minutos,
@@ -28,13 +29,12 @@ class TurnoRepository:
             WHERE m.id_cliente = :id_cliente
             {condicion_periodo}
             ORDER BY t.fecha_hora_inicio DESC
-            """,
-            {"id_cliente": id_cliente},
+            """
         )
-        return resultado.fetchall()
+        return self.session.execute(consulta, {"id_cliente": id_cliente}).mappings().all()
 
     def obtener_por_id(self, id_turno: int, id_cliente: int):
-        resultado = self.session.execute(
+        consulta = text(
             """
             SELECT
                 t.id_turno, t.fecha_hora_inicio, t.duracion_minutos,
@@ -48,13 +48,14 @@ class TurnoRepository:
             JOIN tipo_atencion ta ON ta.id_tipo_atencion = t.id_tipo_atencion
             JOIN usuario u ON u.id_usuario = t.id_veterinario
             WHERE t.id_turno = :id_turno AND m.id_cliente = :id_cliente
-            """,
-            {"id_turno": id_turno, "id_cliente": id_cliente},
+            """
         )
-        return resultado.fetchone()
+        return self.session.execute(
+            consulta, {"id_turno": id_turno, "id_cliente": id_cliente}
+        ).mappings().first()
 
     def cancelar(self, id_turno: int, id_cliente: int):
-        resultado = self.session.execute(
+        consulta = text(
             """
             UPDATE turno t SET estado = 'CANCELADO'
             FROM mascota m
@@ -64,8 +65,10 @@ class TurnoRepository:
               AND t.estado = 'CONFIRMADO'
               AND t.fecha_hora_inicio > now() + interval '1 hour'
             RETURNING t.id_turno
-            """,
-            {"id_turno": id_turno, "id_cliente": id_cliente},
+            """
         )
+        resultado = self.session.execute(
+            consulta, {"id_turno": id_turno, "id_cliente": id_cliente}
+        ).mappings().first()
         self.session.commit()
-        return resultado.fetchone()
+        return resultado

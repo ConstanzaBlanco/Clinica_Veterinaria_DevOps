@@ -9,24 +9,24 @@ class TurnoService:
         from datetime import datetime, timezone
 
         puede_cancelar = (
-            fila.estado == "CONFIRMADO"
-            and fila.fecha_hora_inicio > datetime.now(timezone.utc)
+            fila["estado"] == "CONFIRMADO"
+            and fila["fecha_hora_inicio"] > datetime.now(timezone.utc)
         )
 
         return {
-            "id_turno": fila.id_turno,
-            "fecha_hora_inicio": fila.fecha_hora_inicio,
-            "duracion_minutos": fila.duracion_minutos,
-            "tipo": fila.tipo,
-            "estado": fila.estado,
-            "canal_origen": fila.canal_origen,
-            "veterinario": fila.veterinario,
+            "id_turno": fila["id_turno"],
+            "fecha_hora_inicio": fila["fecha_hora_inicio"],
+            "duracion_minutos": fila["duracion_minutos"],
+            "tipo": fila["tipo"],
+            "estado": fila["estado"],
+            "canal_origen": fila["canal_origen"],
+            "veterinario": fila["veterinario"],
             "puede_cancelar": puede_cancelar,
             "mascota": {
-                "id_mascota": fila.id_mascota,
-                "nombre": fila.mascota_nombre,
-                "especie": fila.especie,
-                "estado": fila.mascota_estado,
+                "id_mascota": fila["id_mascota"],
+                "nombre": fila["mascota_nombre"],
+                "especie": fila["especie"],
+                "estado": fila["mascota_estado"],
             },
         }
 
