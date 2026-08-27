@@ -1,0 +1,269 @@
+.agenda-page {
+  padding: 28px;
+}
+
+.agenda-encabezado {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.agenda-resumen-texto {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+}
+
+.agenda-navegacion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.agenda-aviso-cambios {
+  margin-top: 18px;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid #acd3e3;
+  border-radius: 9px;
+  background: #e6f4fa;
+  color: #145b78;
+  font-size: 13px;
+}
+
+.agenda-leyenda {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.agenda-leyenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.agenda-leyenda-marca {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  border-radius: 3px;
+}
+
+.agenda-leyenda-confirmado {
+  border-left: 3px solid var(--navy);
+  background: var(--white);
+}
+
+.agenda-leyenda-atendido {
+  border-left: 3px solid var(--success);
+  background: #eef8f3;
+}
+
+.agenda-leyenda-en-curso {
+  background: var(--navy);
+}
+
+.agenda-panel,
+.agenda-mensaje {
+  margin-top: 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.agenda-panel {
+  padding: 22px 18px 12px;
+}
+
+.agenda-mensaje {
+  padding: 22px;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+}
+
+.agenda-mensaje-error {
+  color: var(--error);
+}
+
+.agenda-calendario-desplazable {
+  overflow-x: auto;
+}
+
+.agenda-calendario {
+  min-width: 760px;
+  display: grid;
+  grid-template-columns: 68px minmax(620px, 1fr);
+}
+
+.agenda-horas,
+.agenda-linea-tiempo {
+  position: relative;
+}
+
+.agenda-hora {
+  position: absolute;
+  right: 14px;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.agenda-linea-tiempo {
+  border-left: 1px solid var(--border);
+}
+
+.agenda-linea-hora {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #edf1f3;
+}
+
+.agenda-turno {
+  position: absolute;
+  left: 10px;
+  right: 6px;
+  z-index: 1;
+  min-height: 15px;
+  padding: 3px 10px;
+  display: grid;
+  grid-template-columns: minmax(260px, 1.5fr) minmax(150px, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  overflow: hidden;
+  border: 1px solid #d7e2e7;
+  border-left: 3px solid var(--navy);
+  border-radius: 7px;
+  background: var(--white);
+  font-size: 11.5px;
+}
+
+.agenda-turno-atendido {
+  border-left-color: var(--success);
+  background: #f3faf6;
+}
+
+.agenda-turno-en-curso {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: var(--white);
+}
+
+.agenda-turno-paciente {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  white-space: nowrap;
+}
+
+.agenda-turno-paciente span,
+.agenda-turno-tipo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agenda-turno-paciente b {
+  font-weight: 700;
+}
+
+.agenda-turno-tipo {
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.agenda-turno-en-curso .agenda-turno-tipo {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.agenda-estado {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #e8f3f8;
+  color: #17627d;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.agenda-estado-atendido {
+  background: #dcefe5;
+  color: var(--success);
+}
+
+.agenda-estado-en-curso {
+  background: var(--white);
+  color: var(--navy);
+}
+
+.agenda-estado-no-asistio {
+  background: #fff1d7;
+  color: var(--warning);
+}
+
+.agenda-turno-administracion {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 10.5px;
+}
+
+.agenda-turno-en-curso .agenda-turno-administracion {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.agenda-vacia {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+}
+
+.agenda-nota {
+  margin: 18px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #edf1f3;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+}
+
+@media (max-width: 720px) {
+  .agenda-page {
+    padding: 20px 16px;
+  }
+
+  .agenda-encabezado {
+    align-items: flex-start;
+  }
+
+  .agenda-navegacion {
+    width: 100%;
+  }
+
+  .agenda-aviso-cambios {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .agenda-panel {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}

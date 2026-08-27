@@ -57,7 +57,10 @@ class TurnoRepository:
     def cancelar(self, id_turno: int, id_cliente: int):
         consulta = text(
             """
-            UPDATE turno t SET estado = 'CANCELADO'
+            UPDATE turno t
+            SET estado = 'CANCELADO',
+                id_usuario_modificador = :id_cliente,
+                fecha_modificacion = CURRENT_TIMESTAMP
             FROM mascota m
             WHERE t.id_mascota = m.id_mascota
               AND t.id_turno = :id_turno
