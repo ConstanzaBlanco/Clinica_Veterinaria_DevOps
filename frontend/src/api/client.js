@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
 // Wrapper simple sobre fetch: arma la URL, manda JSON y tira un Error con
 // el mensaje que devuelve la API cuando la respuesta no es exitosa.

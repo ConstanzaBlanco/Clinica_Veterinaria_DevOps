@@ -4,8 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_session
+from app.disponibilidad.dto import DisponibilidadResponse
+from app.disponibilidad.repository import DisponibilidadRepository
+from app.disponibilidad.service import DisponibilidadService
 from app.Middleware.middleware import requerir_rol
-from app.turnos.dto import TurnoResponse
+from app.turnos.dto import TurnoCreate, TurnoResponse
+from app.turnos.excepciones import HorarioNoDisponibleError, TurnoEnPasadoError
 from app.turnos.repository import TurnoRepository
 from app.turnos.service import TurnoService
 
@@ -38,6 +42,41 @@ def ver_turno(
         return crear_service(session).obtener_por_id(id_turno, id_cliente)
     except LookupError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+
+
+@router.post("", response_model=TurnoResponse, status_code=status.HTTP_201_CREATED)
+def crear_turno(
+    datos: TurnoCreate,
+    usuario: dict[str, Any] = Depends(requerir_rol("CLIENTE")),
+    session: Session = Depends(get_session),
+) -> dict:
+    id_cliente: int = usuario["id_usuario"]
+
+    try:
+        return crear_service(session).crear(id_cliente, datos)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    except TurnoEnPasadoError as error:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(error)) from error
+    except HorarioNoDisponibleError as error:
+        disponibilidad = DisponibilidadService(DisponibilidadRepository(session)).calcular(
+            datos.id_veterinario, datos.fecha, datos.id_tipo_atencion
+        )
+        detalle = {
+            "error": "HORARIO_NO_DISPONIBLE",
+            "mensaje": "Otro cliente reservó ese horario segundos antes de tu confirmación.",
+            "seleccion_conservada": {
+                "id_mascota": datos.id_mascota,
+                "id_tipo_atencion": datos.id_tipo_atencion,
+                "id_veterinario": datos.id_veterinario,
+            },
+            "disponibilidad_actualizada": DisponibilidadResponse(**disponibilidad).model_dump(
+                mode="json", exclude_none=True
+            ),
+        }
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detalle) from error
 
 
 @router.post("/{id_turno}/cancelar", status_code=status.HTTP_204_NO_CONTENT)
