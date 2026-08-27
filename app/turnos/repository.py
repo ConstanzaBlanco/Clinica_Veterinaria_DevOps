@@ -1,10 +1,114 @@
+from datetime import datetime
+
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+
+from app.turnos.excepciones import HorarioNoDisponibleError
+
+# Código SQLSTATE de Postgres para la violación de la restricción de
+# exclusión `no_superposicion` (dos turnos que se pisan en la agenda).
+SQLSTATE_EXCLUSION_VIOLATION = "23P01"
 
 
 class TurnoRepository:
     def __init__(self, session: Session) -> None:
         self.session: Session = session
+
+    def obtener_mascota_cliente(self, id_mascota: int, id_cliente: int):
+        """Mascota activa del cliente, para validar que puede reservarle un turno."""
+        consulta = text(
+            """
+            SELECT id_mascota
+            FROM mascota
+            WHERE id_mascota = :id_mascota
+              AND id_cliente = :id_cliente
+              AND estado = 'ACTIVA'
+            """
+        )
+        return self.session.execute(
+            consulta, {"id_mascota": id_mascota, "id_cliente": id_cliente}
+        ).mappings().first()
+
+    def obtener_tipo_atencion_reservable(self, id_tipo_atencion: int):
+        """Tipo de atención activo y reservable por el cliente (no por teléfono/presencial)."""
+        consulta = text(
+            """
+            SELECT id_tipo_atencion, duracion_minutos
+            FROM tipo_atencion
+            WHERE id_tipo_atencion = :id_tipo_atencion
+              AND estado = 'ACTIVO'
+              AND reservable_cliente = TRUE
+            """
+        )
+        return self.session.execute(
+            consulta, {"id_tipo_atencion": id_tipo_atencion}
+        ).mappings().first()
+
+    def obtener_veterinario_activo(self, id_veterinario: int):
+        consulta = text(
+            """
+            SELECT u.id_usuario
+            FROM veterinario v
+            JOIN usuario u ON u.id_usuario = v.id_usuario
+            WHERE v.id_usuario = :id_veterinario
+              AND u.estado = 'ACTIVO'
+            """
+        )
+        return self.session.execute(
+            consulta, {"id_veterinario": id_veterinario}
+        ).mappings().first()
+
+    def crear_turno(
+        self,
+        id_mascota: int,
+        id_veterinario: int,
+        id_tipo_atencion: int,
+        id_usuario_creador: int,
+        fecha_hora_inicio: datetime,
+        fecha_hora_fin: datetime,
+        duracion_minutos: int,
+    ) -> int:
+        """
+        Inserta el turno como CONFIRMADO/AUTOGESTION. Si se pisa con otro turno
+        ya reservado, Postgres rechaza el INSERT con 23P01 (exclusion_violation)
+        por la restricción `no_superposicion`; acá se traduce a
+        HorarioNoDisponibleError para que el controller arme el 409.
+        """
+        consulta = text(
+            """
+            INSERT INTO turno (
+                id_mascota, id_veterinario, id_tipo_atencion, id_usuario_creador,
+                fecha_hora_inicio, fecha_hora_fin, duracion_minutos, canal_origen
+            )
+            VALUES (
+                :id_mascota, :id_veterinario, :id_tipo_atencion, :id_usuario_creador,
+                :fecha_hora_inicio, :fecha_hora_fin, :duracion_minutos, 'AUTOGESTION'
+            )
+            RETURNING id_turno
+            """
+        )
+
+        valores = {
+            "id_mascota": id_mascota,
+            "id_veterinario": id_veterinario,
+            "id_tipo_atencion": id_tipo_atencion,
+            "id_usuario_creador": id_usuario_creador,
+            "fecha_hora_inicio": fecha_hora_inicio,
+            "fecha_hora_fin": fecha_hora_fin,
+            "duracion_minutos": duracion_minutos,
+        }
+
+        try:
+            fila = self.session.execute(consulta, valores).mappings().one()
+            self.session.commit()
+            return fila["id_turno"]
+        except IntegrityError as error:
+            self.session.rollback()
+            codigo_error = getattr(getattr(error, "orig", None), "sqlstate", None)
+            if codigo_error == SQLSTATE_EXCLUSION_VIOLATION:
+                raise HorarioNoDisponibleError() from error
+            raise
 
     def listar_por_cliente(self, id_cliente: int, periodo: str) -> list:
         condicion_periodo = {

@@ -1,7 +1,8 @@
 import Boton from '../../../components/common/Boton'
 import Tarjeta from '../../../components/common/Tarjeta'
+import { etiquetaFechaLargaISO } from '../utils/fecha'
 
-function PasoConfirmar({ mascota, tipoAtencion, veterinario, horario, onVolver, onConfirmar }) {
+function PasoConfirmar({ mascota, tipoAtencion, veterinario, horario, confirmando, error, onVolver, onConfirmar }) {
   return (
     <Tarjeta>
       <div className="paso-etiqueta">Confirmación</div>
@@ -22,15 +23,21 @@ function PasoConfirmar({ mascota, tipoAtencion, veterinario, horario, onVolver, 
         </div>
         <div className="resumen-fila">
           <span>Horario</span>
-          <strong>{horario}</strong>
+          <strong>
+            {etiquetaFechaLargaISO(horario.fecha)}, {horario.inicio} a {horario.fin}
+          </strong>
         </div>
       </div>
 
+      {error && <p className="paso-error">{error}</p>}
+
       <div className="paso-acciones">
-        <Boton variant="secundario" onClick={onVolver}>
+        <Boton variant="secundario" onClick={onVolver} disabled={confirmando}>
           Volver
         </Boton>
-        <Boton onClick={onConfirmar}>Confirmar turno</Boton>
+        <Boton onClick={onConfirmar} disabled={confirmando}>
+          {confirmando ? 'Confirmando...' : 'Confirmar turno'}
+        </Boton>
       </div>
     </Tarjeta>
   )

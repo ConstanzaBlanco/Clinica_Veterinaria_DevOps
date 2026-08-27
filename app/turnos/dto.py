@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime, time
 
 from pydantic import BaseModel, ConfigDict
 
@@ -22,3 +22,11 @@ class TurnoResponse(BaseModel):
     estado: str
     puede_cancelar: bool
     canal_origen: str
+
+
+class TurnoCreate(BaseModel):
+    id_mascota: int
+    id_tipo_atencion: int
+    id_veterinario: int
+    fecha: date
+    hora_inicio: time
