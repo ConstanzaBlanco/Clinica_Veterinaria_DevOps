@@ -74,7 +74,12 @@ function ListaMascotasPage() {
     useState(false)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+  const [errorAccion, setErrorAccion] = useState('')
   const [mensajeExito, setMensajeExito] = useState('')
+  const [
+    idMascotaCambiandoEstado,
+    setIdMascotaCambiandoEstado,
+  ] = useState(null)
 
   useEffect(() => {
     const controlador = new AbortController()
@@ -144,6 +149,14 @@ function ListaMascotasPage() {
     ? mascotas.filter((mascota) => mascota.activa)
     : mascotas
 
+  function mostrarMensajeExito(mensaje) {
+    setMensajeExito(mensaje)
+
+    setTimeout(() => {
+      setMensajeExito('')
+    }, 4000)
+  }
+
   async function agregarMascota(datos) {
     if (!token) {
       throw new Error(
@@ -184,8 +197,76 @@ function ListaMascotasPage() {
     ])
 
     setFormularioAbierto(false)
-    setMensajeExito(`${mascotaCreada.nombre} se registró correctamente.`)
-    setTimeout(() => setMensajeExito(''), 4000)
+
+    mostrarMensajeExito(
+      `${mascotaCreada.nombre} se registró correctamente.`,
+    )
+  }
+
+  async function cambiarEstadoMascota(mascota) {
+    if (!token) {
+      setErrorAccion(
+        'No se encontró el token de acceso.',
+      )
+      return
+    }
+
+    const accion = mascota.activa
+      ? 'inactivar'
+      : 'activar'
+
+    setIdMascotaCambiandoEstado(mascota.id)
+    setErrorAccion('')
+    setMensajeExito('')
+
+    try {
+      const respuesta = await fetch(
+        `${API_URL}/mascotas/${mascota.id}/${accion}`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+
+      const resultado = await respuesta
+        .json()
+        .catch(() => null)
+
+      if (!respuesta.ok) {
+        throw new Error(
+          obtenerMensajeError(
+            resultado?.detail,
+            `No se pudo ${accion} la mascota.`,
+          ),
+        )
+      }
+
+      const mascotaActualizada =
+        adaptarMascota(resultado)
+
+      setMascotas((mascotasActuales) =>
+        mascotasActuales.map((mascotaActual) =>
+          mascotaActual.id === mascota.id
+            ? mascotaActualizada
+            : mascotaActual,
+        ),
+      )
+
+      const mensaje = mascotaActualizada.activa
+        ? `${mascotaActualizada.nombre} fue activada correctamente.`
+        : `${mascotaActualizada.nombre} fue inactivada correctamente.`
+
+      mostrarMensajeExito(mensaje)
+    } catch (errorPeticion) {
+      setErrorAccion(
+        errorPeticion.message ||
+          `No se pudo ${accion} la mascota.`,
+      )
+    } finally {
+      setIdMascotaCambiandoEstado(null)
+    }
   }
 
   return (
@@ -256,6 +337,12 @@ function ListaMascotasPage() {
         </div>
       )}
 
+      {errorAccion && (
+        <div className="mascotas-mensaje mascotas-mensaje-error">
+          {errorAccion}
+        </div>
+      )}
+
       {cargando && (
         <div className="mascotas-mensaje">
           Cargando mascotas...
@@ -284,6 +371,12 @@ function ListaMascotasPage() {
               <MascotaCard
                 key={mascota.id}
                 mascota={mascota}
+                onCambiarEstado={() =>
+                  cambiarEstadoMascota(mascota)
+                }
+                cambiandoEstado={
+                  idMascotaCambiandoEstado === mascota.id
+                }
               />
             ))}
           </div>
