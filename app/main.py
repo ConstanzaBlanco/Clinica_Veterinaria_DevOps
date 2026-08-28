@@ -14,7 +14,7 @@ from app.turnos.controller import router as turnos_router
 from app.especies.controller import router as especies_router
 from app.disponibilidad.controller import router as disponibilidad_router
 from app.agenda.controller import router as agenda_router
-
+from app.historial.controller import router as historial_router
 
 app = FastAPI(
     title="Pet-Core API",
@@ -41,6 +41,7 @@ app.include_router(turnos_router)
 app.include_router(especies_router)
 app.include_router(disponibilidad_router)
 app.include_router(agenda_router)
+app.include_router(historial_router)
 
 @app.get("/")
 def hello():
