@@ -38,29 +38,32 @@ class PacienteRepository:
         consulta = text(
             f"""
             SELECT
-                m.id_mascota, m.nombre, m.especie, m.raza, m.estado,
+                m.id_mascota AS id, m.nombre, m.especie, m.raza, m.estado,
                 date_part('year', age(m.fecha_nacimiento))::int AS edad_anios,
                 u.nombre || ' ' || u.apellido AS propietario_nombre,
                 u.telefono AS propietario_telefono,
 
-                (SELECT COUNT(*) FROM consulta c
-                 JOIN turno t ON t.id_turno = c.id_turno
-                 WHERE t.id_mascota = m.id_mascota) AS consultas_registradas,
+                (SELECT COUNT(*) FROM consulta_clinica c
+                 WHERE c.id_mascota = m.id_mascota
+                   AND c.id_consulta_original IS NULL) AS consultas_registradas,
 
                 (SELECT c2.fecha_registro::date
-                 FROM consulta c2 JOIN turno t3 ON t3.id_turno = c2.id_turno
-                 WHERE t3.id_mascota = m.id_mascota
+                 FROM consulta_clinica c2
+                 WHERE c2.id_mascota = m.id_mascota
+                   AND c2.id_consulta_original IS NULL
                  ORDER BY c2.fecha_registro DESC LIMIT 1) AS ultima_fecha,
 
                 (SELECT uv.nombre || ' ' || uv.apellido
-                 FROM consulta c2 JOIN turno t3 ON t3.id_turno = c2.id_turno
-                 JOIN usuario uv ON uv.id_usuario = t3.id_veterinario
-                 WHERE t3.id_mascota = m.id_mascota
+                 FROM consulta_clinica c2
+                 JOIN usuario uv ON uv.id_usuario = c2.id_veterinario
+                 WHERE c2.id_mascota = m.id_mascota
+                   AND c2.id_consulta_original IS NULL
                  ORDER BY c2.fecha_registro DESC LIMIT 1) AS ultima_veterinario,
 
-                (SELECT t3.id_veterinario = :id_veterinario
-                 FROM consulta c2 JOIN turno t3 ON t3.id_turno = c2.id_turno
-                 WHERE t3.id_mascota = m.id_mascota
+                (SELECT c2.id_veterinario = :id_veterinario
+                 FROM consulta_clinica c2
+                 WHERE c2.id_mascota = m.id_mascota
+                   AND c2.id_consulta_original IS NULL
                  ORDER BY c2.fecha_registro DESC LIMIT 1) AS ultima_fue_propia,
 
                 (SELECT to_char(t4.fecha_hora_inicio, 'HH24:MI')

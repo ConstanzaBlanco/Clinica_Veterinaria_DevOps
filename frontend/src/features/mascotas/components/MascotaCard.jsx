@@ -9,7 +9,13 @@ function MascotaCard({
   cambiandoEstado,
 }) {
   return (
-    <Tarjeta className="mascota-card">
+    <Tarjeta
+      className={
+        mascota.activa
+          ? 'mascota-card'
+          : 'mascota-card mascota-card-inactiva'
+      }
+    >
       <div className="mascota-card-encabezado">
         <div className="mascota-foto">foto</div>
 
@@ -65,7 +71,7 @@ function MascotaCard({
       <div className="mascota-acciones">
         <Boton
           as={Link}
-          to={`/turnos/${mascota.id}/historial`}
+          to={`/mascotas/${mascota.id}/historial`}
           variant="secundario"
           className="mascota-accion-boton"
         >

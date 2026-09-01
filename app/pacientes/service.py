@@ -35,11 +35,11 @@ class PacienteService:
                 }
 
             resultado.append({
-                "id": fila["id_mascota"],
+                "id": fila["id"],
                 "nombre": fila["nombre"],
                 "especie": fila["especie"],
                 "raza": fila["raza"],
-                "edad": f"{fila['edad_anios']} a",
+                "edad": f"{fila['edad_anios']} a" if fila["edad_anios"] is not None else None,
                 "estado": fila["estado"],
                 "propietario": {
                     "nombre": fila["propietario_nombre"],

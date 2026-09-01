@@ -16,7 +16,10 @@ def crear_service(session: Session) -> HistorialService:
     return HistorialService(HistorialRepository(session))
 
 
-@router.get("/mascotas/{id_mascota}/historial")
+@router.get(
+    "/mascotas/{id_mascota}/historial",
+    response_model=HistorialClienteResponse | HistorialVeterinarioResponse,
+)
 def ver_historial(
     id_mascota: int,
     limite: int = 10,

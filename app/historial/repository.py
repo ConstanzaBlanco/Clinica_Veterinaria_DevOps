@@ -14,11 +14,12 @@ class HistorialRepository:
         consulta = text(
             """
             SELECT
-                m.id_mascota, m.nombre,
+                m.id_mascota AS id, m.nombre, m.especie, m.raza, m.fecha_nacimiento,
                 (SELECT rp.peso FROM registro_peso rp
                  WHERE rp.id_mascota = m.id_mascota
                  ORDER BY rp.fecha_registro DESC LIMIT 1) AS peso_actual,
-                u.nombre || ' ' || u.apellido AS propietario
+                u.nombre || ' ' || u.apellido AS propietario,
+                u.telefono
             FROM mascota m
             JOIN usuario u ON u.id_usuario = m.id_cliente
             WHERE m.id_mascota = :id_mascota
@@ -52,6 +53,7 @@ class HistorialRepository:
             """
             SELECT
                 cc.id_consulta, cc.fecha_registro::date AS fecha,
+                to_char(cc.fecha_registro, 'HH24:MI') AS hora,
                 ta.nombre AS tipo,
                 u.nombre || ' ' || u.apellido AS veterinario,
                 cc.motivo, cc.diagnostico, cc.observaciones,
@@ -103,6 +105,7 @@ class HistorialRepository:
             f"""
             SELECT
                 cc.id_consulta, cc.fecha_registro::date AS fecha,
+                to_char(cc.fecha_registro, 'HH24:MI') AS hora,
                 ta.nombre AS tipo,
                 u.nombre || ' ' || u.apellido AS veterinario,
                 cc.motivo, cc.observaciones, cc.diagnostico,
@@ -127,8 +130,9 @@ class HistorialRepository:
         consulta = text(
             """
             SELECT
-                cor.id_consulta, cor.id_consulta_original,
+                cor.id_consulta AS id, cor.id_consulta_original,
                 cor.fecha_registro::date AS fecha,
+                to_char(cor.fecha_registro, 'HH24:MI') AS hora,
                 u.nombre || ' ' || u.apellido AS veterinario,
                 cor.motivo AS motivo_correccion,
                 cor.diagnostico, cor.observaciones, cor.tratamiento, cor.recomendaciones
