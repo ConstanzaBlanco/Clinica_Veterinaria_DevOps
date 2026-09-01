@@ -1,3 +1,28 @@
+# Pet-Core
+
+## Índice
+
+- [Requisitos](#requisitos)
+  - [Instalar uv para desarrollo local](#instalar-uv-para-desarrollo-local)
+- [Configurar la contraseña de PostgreSQL](#configurar-la-contraseña-de-postgresql)
+  - [Configurar la clave secreta JWT](#configurar-la-clave-secreta-jwt)
+- [Ejecutar con Docker Compose (opcional)](#ejecutar-con-docker-compose-opcional)
+- [Ejecutar con Kubernetes y Minikube](#ejecutar-con-kubernetes-y-minikube)
+  - [Requisitos de Kubernetes](#requisitos-de-kubernetes)
+  - [Iniciar o comprobar Minikube](#iniciar-o-comprobar-minikube)
+  - [Preparación local](#preparación-local)
+  - [Versiones utilizadas](#versiones-utilizadas)
+  - [Paso 1: levantar Blue](#paso-1-levantar-blue)
+  - [Paso 2: acceder y probar Blue](#paso-2-acceder-y-probar-blue)
+  - [Paso 3: desplegar Green junto a Blue](#paso-3-desplegar-green-junto-a-blue)
+  - [Paso 4: comprobar Blue y Green](#paso-4-comprobar-blue-y-green)
+  - [Paso 5: cambiar el tráfico a Green](#paso-5-cambiar-el-tráfico-a-green)
+  - [Paso 6: acceder y probar Green](#paso-6-acceder-y-probar-green)
+  - [Paso 7: realizar rollback a Blue](#paso-7-realizar-rollback-a-blue)
+  - [Base de datos compartida](#base-de-datos-compartida)
+- [Datos de prueba](#datos-de-prueba)
+- [Proteger endpoints con el middleware](#proteger-endpoints-con-el-middleware)
+
 ## Requisitos
 
 Antes de comenzar, comprobar que Git y Docker Desktop estén instalados:
@@ -167,11 +192,18 @@ La rama `blue` conserva la primera versión. La rama `green` contiene las funcio
 
 ### Paso 1: levantar Blue
 
-Cambiar a la rama Blue y actualizarla:
+Si la rama Blue ya existe localmente, cambiar a ella y actualizarla:
 
 ```powershell
 git switch blue
 git pull
+```
+
+Si la rama Blue todavía no existe localmente, obtener las referencias de GitHub y crearla siguiendo `origin/blue`:
+
+```powershell
+git fetch origin
+git switch -c blue --track origin/blue
 ```
 
 Desde la carpeta principal del proyecto, ejecutar:
@@ -192,13 +224,47 @@ El script:
 
 La versión de `k8s-up.ps1` presente en la rama Green se encuentra protegida para impedir que se construya accidentalmente código Green con la etiqueta `v1`.
 
-### Paso 2: desplegar Green junto a Blue
+### Paso 2: acceder y probar Blue
 
-Sin eliminar los recursos de Minikube, cambiar a la rama Green:
+Comprobar que los Services seleccionen Blue:
+
+```powershell
+minikube kubectl -- get service api --namespace=clinica-veterinaria -o jsonpath="{.spec.selector.version}"
+minikube kubectl -- get service frontend --namespace=clinica-veterinaria -o jsonpath="{.spec.selector.version}"
+```
+
+Ambos comandos deben mostrar `blue`.
+
+Para probar el frontend, abrir otra terminal, ejecutar el siguiente comando y mantenerla abierta:
+
+```powershell
+minikube service frontend --namespace=clinica-veterinaria --url
+```
+
+Para probar la API, utilizar otra terminal y mantenerla abierta:
+
+```powershell
+minikube service api --namespace=clinica-veterinaria --url
+```
+
+Agregar `/docs` al final de la URL de la API para abrir la documentación interactiva de FastAPI. Después de comprobar Blue, presionar `Ctrl+C` en las terminales de los túneles antes de continuar. Al iniciar nuevamente Minikube, las URLs locales pueden cambiar.
+
+> No ejecutar `docker compose up` durante esta prueba. Docker Compose crea otro ambiente independiente y no participa en el despliegue Blue/Green.
+
+### Paso 3: desplegar Green junto a Blue
+
+Sin eliminar los recursos de Minikube, cambiar a la rama Green. Si ya existe localmente:
 
 ```powershell
 git switch green
 git pull
+```
+
+Si la rama Green todavía no existe localmente:
+
+```powershell
+git fetch origin
+git switch -c green --track origin/green
 ```
 
 Ejecutar:
@@ -224,7 +290,7 @@ Los manifiestos nuevos utilizados por este script son:
 | `k8s/api-green-deployment.yaml` | Ejecuta FastAPI `v2` con las etiquetas `app: clinica-api` y `version: green`. |
 | `k8s/frontend-green-deployment.yaml` | Ejecuta el frontend `v2` con las etiquetas `app: clinica-frontend` y `version: green`. |
 
-### Paso 3: comprobar Blue y Green
+### Paso 4: comprobar Blue y Green
 
 Mostrar los Pods y su versión:
 
@@ -240,7 +306,7 @@ Mostrar las imágenes utilizadas:
 minikube kubectl -- get deployments api-blue api-green frontend-blue frontend-green --namespace=clinica-veterinaria -o "custom-columns=DEPLOYMENT:.metadata.name,IMAGEN:.spec.template.spec.containers[*].image,DISPONIBLES:.status.readyReplicas"
 ```
 
-### Paso 4: cambiar el tráfico a Green
+### Paso 5: cambiar el tráfico a Green
 
 Ejecutar:
 
@@ -259,7 +325,29 @@ minikube kubectl -- get service frontend --namespace=clinica-veterinaria -o json
 
 Ambos comandos deben mostrar `green`.
 
-### Paso 5: realizar rollback a Blue
+### Paso 6: acceder y probar Green
+
+En Windows con el driver de Docker, Minikube crea túneles locales para acceder a los Services. Las URLs de una ejecución anterior pueden dejar de funcionar después de reiniciar Minikube, por lo que deben obtenerse nuevamente.
+
+Abrir una terminal nueva, ejecutar el siguiente comando y mantenerla abierta:
+
+```powershell
+minikube service frontend --namespace=clinica-veterinaria --url
+```
+
+La URL mostrada corresponde al frontend Green porque el paso anterior cambió el selector del Service `frontend`.
+
+Para abrir la documentación de FastAPI, utilizar otra terminal y mantenerla abierta:
+
+```powershell
+minikube service api --namespace=clinica-veterinaria --url
+```
+
+Agregar `/docs` al final de la URL obtenida. Por ejemplo, si Minikube muestra `http://127.0.0.1:55000`, la documentación estará en `http://127.0.0.1:55000/docs`.
+
+> No ejecutar `docker compose up` durante esta prueba. Docker Compose crea otro ambiente independiente y no levanta ni modifica los Pods de Kubernetes.
+
+### Paso 7: realizar rollback a Blue
 
 Si Green presenta un problema, ejecutar:
 
@@ -267,23 +355,7 @@ Si Green presenta un problema, ejecutar:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-switch-blue.ps1
 ```
 
-Este script devuelve los selectores de ambos Services a `version: blue`. El rollback no necesita reconstruir imágenes, eliminar Green ni reiniciar PostgreSQL.
-
-### Acceder al proyecto
-
-Para obtener una URL local de la API:
-
-```powershell
-minikube service api --namespace=clinica-veterinaria --url
-```
-
-Para obtener una URL local del frontend:
-
-```powershell
-minikube service frontend --namespace=clinica-veterinaria --url
-```
-
-En Windows con el driver de Docker, mantener abierta la terminal que ejecuta cada túnel. Presionar `Ctrl+C` para cerrar solamente el túnel.
+Este script devuelve los selectores de ambos Services a `version: blue`. El rollback no necesita reconstruir imágenes, eliminar Green ni reiniciar PostgreSQL. Los túneles pueden permanecer abiertos: al actualizar el navegador, los mismos Services dirigirán las solicitudes nuevamente a Blue.
 
 ### Base de datos compartida
 
