@@ -4,17 +4,6 @@ Este documento explica, en lenguaje sencillo, cómo está organizado el proyecto
 
 El objetivo no es explicar cada endpoint, sino entender **cómo se prepara y ejecuta el sistema completo**.
 
-> Este documento describe la arquitectura completa del despliegue Blue/Green.
->
-> La rama `main` conserva el código de referencia Blue y funciona como punto de entrada a la documentación. Los manifiestos, scripts y funcionalidades específicos de la versión Green se encuentran en la rama `green`.
-
-Para consultar o ejecutar la solución completa:
-
-```powershell
-git switch green
-git pull --ff-only origin green
-```
-
 ## 1. Idea general
 
 El proyecto tiene tres partes principales:
@@ -37,7 +26,7 @@ Docker permite empaquetar cada parte con todo lo que necesita para ejecutarse. D
 | Service de Kubernetes | Una dirección estable que permite encontrar uno o varios Pods aunque sean reemplazados y cambien de IP. |
 | Volumen | Almacenamiento separado del contenedor. Permite conservar datos. |
 
-## 2. Estructura completa del proyecto en la rama Green
+## 2. Vista general de la estructura
 
 ```text
 Proyecto_Clínica_Veterinaria/
