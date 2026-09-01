@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import Boton from '../../../components/common/Boton'
 import { useAuth } from '../../../app/AuthContext'
 import { obtenerAgenda } from '../../../api/agenda'
-import { registrarConsulta } from '../../../api/turnos'
-import RegistrarConsultaModal from '../components/RegistrarConsultaModal'
 import './AgendaDiariaPage.css'
 
 const HORA_INICIO_PREDETERMINADA = 8
 const HORA_FIN_PREDETERMINADA = 18
+const PIXELES_POR_MINUTO = 1.15
+const MARGEN_VERTICAL_LINEA_TIEMPO = 20
 
 const ETIQUETAS_ESTADO = {
   ATENDIDO: 'Atendido',
@@ -24,12 +23,6 @@ function obtenerFechaLocal() {
   return new Date(ahora.getTime() - diferenciaZonaHoraria)
     .toISOString()
     .slice(0, 10)
-}
-
-function obtenerHoraActual() {
-  const ahora = new Date()
-
-  return `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`
 }
 
 function desplazarFecha(fecha, cantidadDias) {
@@ -96,61 +89,6 @@ function obtenerClaseEstado(estadoVisual) {
   return estadoVisual.toLowerCase().replaceAll('_', '-')
 }
 
-function FilaTurno({ turno, onRegistrarConsulta }) {
-  const claseEstado = obtenerClaseEstado(turno.estado_visual)
-  const puedeRegistrarConsulta = turno.estado_visual === 'EN_CURSO'
-
-  return (
-    <article className={`agenda-fila agenda-fila-${claseEstado}`}>
-      <div className="agenda-fila-info">
-        <strong>
-          {turno.hora_inicio} · {turno.duracion_minutos}'
-        </strong>
-        <span>
-          <b>{turno.mascota.nombre}</b> · {turno.mascota.especie} · {turno.propietario}
-        </span>
-      </div>
-
-      <span className="agenda-fila-tipo">{turno.tipo}</span>
-
-      <span className={`agenda-estado agenda-estado-${claseEstado}`}>
-        {ETIQUETAS_ESTADO[turno.estado_visual] ?? turno.estado_visual}
-      </span>
-
-      <div className="agenda-fila-acciones">
-        <Link className="agenda-link-historial" to={`/pacientes/${turno.mascota.id}/historial`}>
-          Historial
-        </Link>
-
-        {puedeRegistrarConsulta && (
-          <button
-            type="button"
-            className="agenda-boton-registrar"
-            onClick={() => onRegistrarConsulta(turno)}
-          >
-            Registrar consulta
-          </button>
-        )}
-      </div>
-
-      {turno.agendado_por_administracion && (
-        <span className="agenda-fila-administracion">
-          Agendado por administración · tipo no reservable
-        </span>
-      )}
-    </article>
-  )
-}
-
-function MarcadorAhora({ hora }) {
-  return (
-    <div className="agenda-ahora">
-      <span className="agenda-ahora-etiqueta">{hora}</span>
-      <span className="agenda-ahora-linea" />
-    </div>
-  )
-}
-
 function AgendaDiariaPage() {
   const { token } = useAuth()
   const [fecha, setFecha] = useState(obtenerFechaLocal)
@@ -159,8 +97,6 @@ function AgendaDiariaPage() {
   const [actualizando, setActualizando] = useState(false)
   const [error, setError] = useState('')
   const [mostrarAvisoCambios, setMostrarAvisoCambios] = useState(false)
-  const [turnoSeleccionado, setTurnoSeleccionado] = useState(null)
-  const [mensajeExito, setMensajeExito] = useState('')
 
   useEffect(() => {
     const controlador = new AbortController()
@@ -209,23 +145,13 @@ function AgendaDiariaPage() {
     }
   }
 
-  async function manejarGuardarConsulta(datosConsulta) {
-    await registrarConsulta(token, turnoSeleccionado.id, datosConsulta)
-
-    setTurnoSeleccionado(null)
-    setMensajeExito(`Consulta de ${turnoSeleccionado.mascota.nombre} registrada correctamente.`)
-    setTimeout(() => setMensajeExito(''), 4000)
-
-    const agendaActualizada = await obtenerAgenda(token, fecha)
-    setAgenda(agendaActualizada)
-  }
-
   const turnos = agenda?.turnos ?? []
   const { horaInicio, horaFin } = obtenerLimitesHorario(turnos)
   const horas = crearHoras(horaInicio, horaFin)
-  const esHoy = fecha === obtenerFechaLocal()
-  const horaActual = obtenerHoraActual()
-  const minutosAhora = esHoy ? convertirHoraAMinutos(horaActual) : null
+  const minutosInicio = horaInicio * 60
+  const altoLineaTiempo =
+    (horaFin - horaInicio) * 60 * PIXELES_POR_MINUTO +
+    MARGEN_VERTICAL_LINEA_TIEMPO * 2
 
   return (
     <section className="agenda-page">
@@ -273,12 +199,6 @@ function AgendaDiariaPage() {
         </div>
       </div>
 
-      {mensajeExito && (
-        <div className="agenda-mensaje-exito" role="status">
-          {mensajeExito}
-        </div>
-      )}
-
       {mostrarAvisoCambios && (
         <div className="agenda-aviso-cambios" role="status">
           <span>
@@ -304,12 +224,6 @@ function AgendaDiariaPage() {
           <i className="agenda-leyenda-marca agenda-leyenda-en-curso" />
           En curso
         </span>
-        {esHoy && (
-          <span>
-            <i className="agenda-leyenda-marca agenda-leyenda-ahora" />
-            Hora actual {horaActual}
-          </span>
-        )}
       </div>
 
       {cargando && <div className="agenda-mensaje">Cargando agenda...</div>}
@@ -320,68 +234,91 @@ function AgendaDiariaPage() {
 
       {!cargando && !error && agenda && (
         <div className="agenda-panel">
-          <div className="agenda-lista">
-            {horas.slice(0, -1).map((hora) => {
-              const turnosHora = turnos
-                .filter((turno) => Math.floor(convertirHoraAMinutos(turno.hora_inicio) / 60) === hora)
-                .sort((a, b) => convertirHoraAMinutos(a.hora_inicio) - convertirHoraAMinutos(b.hora_inicio))
-
-              const mostrarAhoraAqui =
-                minutosAhora != null && Math.floor(minutosAhora / 60) === hora
-
-              const items = turnosHora.map((turno) => ({ tipo: 'turno', turno }))
-
-              if (mostrarAhoraAqui) {
-                const indiceInsercion = items.findIndex(
-                  (item) => minutosAhora <= convertirHoraAMinutos(item.turno.hora_inicio),
-                )
-
-                const posicion = indiceInsercion === -1 ? items.length : indiceInsercion
-                items.splice(posicion, 0, { tipo: 'ahora' })
-              }
-
-              return (
-                <div className="agenda-hora-bloque" key={hora}>
-                  <div className="agenda-hora-etiqueta">
+          <div className="agenda-calendario-desplazable">
+            <div className="agenda-calendario">
+              <div className="agenda-horas" style={{ height: altoLineaTiempo }}>
+                {horas.map((hora) => (
+                  <span
+                    key={hora}
+                    className="agenda-hora"
+                    style={{
+                      top:
+                        (hora * 60 - minutosInicio) * PIXELES_POR_MINUTO +
+                        MARGEN_VERTICAL_LINEA_TIEMPO,
+                    }}
+                  >
                     {String(hora).padStart(2, '0')}:00
+                  </span>
+                ))}
+              </div>
+
+              <div className="agenda-linea-tiempo" style={{ height: altoLineaTiempo }}>
+                {horas.map((hora) => (
+                  <span
+                    key={hora}
+                    className="agenda-linea-hora"
+                    style={{
+                      top:
+                        (hora * 60 - minutosInicio) * PIXELES_POR_MINUTO +
+                        MARGEN_VERTICAL_LINEA_TIEMPO,
+                    }}
+                  />
+                ))}
+
+                {turnos.map((turno) => {
+                  const inicioTurno = convertirHoraAMinutos(turno.hora_inicio)
+                  const claseEstado = obtenerClaseEstado(turno.estado_visual)
+
+                  return (
+                    <article
+                      key={turno.id}
+                      className={`agenda-turno agenda-turno-${claseEstado}`}
+                      style={{
+                        top:
+                          (inicioTurno - minutosInicio) * PIXELES_POR_MINUTO +
+                          MARGEN_VERTICAL_LINEA_TIEMPO +
+                          2,
+                        height: turno.duracion_minutos * PIXELES_POR_MINUTO - 4,
+                      }}
+                    >
+                      <div className="agenda-turno-paciente">
+                        <strong>
+                          {turno.hora_inicio} · {turno.duracion_minutos}'
+                        </strong>
+                        <span>
+                          <b>{turno.mascota.nombre}</b> · {turno.mascota.especie} ·{' '}
+                          {turno.propietario}
+                        </span>
+                      </div>
+
+                      <span className="agenda-turno-tipo">{turno.tipo}</span>
+
+                      <span className={`agenda-estado agenda-estado-${claseEstado}`}>
+                        {ETIQUETAS_ESTADO[turno.estado_visual] ?? turno.estado_visual}
+                      </span>
+
+                      {turno.agendado_por_administracion && (
+                        <span className="agenda-turno-administracion">
+                          Agendado por administración
+                        </span>
+                      )}
+                    </article>
+                  )
+                })}
+
+                {turnos.length === 0 && (
+                  <div className="agenda-vacia">
+                    No hay turnos para este día.
                   </div>
-
-                  <div className="agenda-hora-contenido">
-                    {items.length === 0 && <div className="agenda-hora-vacia" />}
-
-                    {items.map((item) =>
-                      item.tipo === 'ahora' ? (
-                        <MarcadorAhora key="ahora" hora={horaActual} />
-                      ) : (
-                        <FilaTurno
-                          key={item.turno.id}
-                          turno={item.turno}
-                          onRegistrarConsulta={setTurnoSeleccionado}
-                        />
-                      ),
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-
-            {turnos.length === 0 && (
-              <div className="agenda-vacia">No hay turnos para este día.</div>
-            )}
+                )}
+              </div>
+            </div>
           </div>
 
           <p className="agenda-nota">
             Los turnos cancelados no aparecen en la agenda.
           </p>
         </div>
-      )}
-
-      {turnoSeleccionado && (
-        <RegistrarConsultaModal
-          turno={turnoSeleccionado}
-          onGuardar={manejarGuardarConsulta}
-          onCancelar={() => setTurnoSeleccionado(null)}
-        />
       )}
     </section>
   )

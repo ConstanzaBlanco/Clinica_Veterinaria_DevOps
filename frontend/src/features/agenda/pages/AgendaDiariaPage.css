@@ -74,13 +74,6 @@
   background: var(--navy);
 }
 
-.agenda-leyenda-ahora {
-  border-radius: 0;
-  height: 2px;
-  background: var(--error);
-  align-self: center;
-}
-
 .agenda-panel,
 .agenda-mensaje {
   margin-top: 14px;
@@ -103,104 +96,97 @@
   color: var(--error);
 }
 
-.agenda-mensaje-exito {
-  margin-top: 18px;
-  padding: 11px 14px;
-  border: 1px solid var(--success);
-  border-radius: 9px;
-  background: #eef8f3;
-  color: var(--success);
-  font-size: 13px;
+.agenda-calendario-desplazable {
+  overflow-x: auto;
 }
 
-.agenda-lista {
-  display: flex;
-  flex-direction: column;
-}
-
-.agenda-hora-bloque {
+.agenda-calendario {
+  min-width: 760px;
   display: grid;
-  grid-template-columns: 56px 1fr;
-  column-gap: 14px;
+  grid-template-columns: 68px minmax(620px, 1fr);
 }
 
-.agenda-hora-etiqueta {
-  padding-top: 6px;
+.agenda-horas,
+.agenda-linea-tiempo {
+  position: relative;
+}
+
+.agenda-hora {
+  position: absolute;
+  right: 14px;
+  transform: translateY(-50%);
   color: var(--text-secondary);
   font-size: 11.5px;
   font-weight: 600;
-  text-align: right;
 }
 
-.agenda-hora-contenido {
-  min-width: 0;
-  border-top: 1px solid #edf1f3;
-  padding: 8px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.agenda-linea-tiempo {
+  border-left: 1px solid var(--border);
 }
 
-.agenda-hora-vacia {
-  height: 14px;
+.agenda-linea-hora {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #edf1f3;
 }
 
-.agenda-fila {
-  padding: 7px 12px;
+.agenda-turno {
+  position: absolute;
+  left: 10px;
+  right: 6px;
+  z-index: 1;
+  min-height: 15px;
+  padding: 3px 10px;
   display: grid;
-  grid-template-columns: minmax(220px, 1.4fr) minmax(120px, 1fr) auto auto;
+  grid-template-columns: minmax(260px, 1.5fr) minmax(150px, 1fr) auto;
   align-items: center;
   column-gap: 12px;
+  overflow: hidden;
   border: 1px solid #d7e2e7;
   border-left: 3px solid var(--navy);
   border-radius: 7px;
   background: var(--white);
-  font-size: 12.5px;
+  font-size: 11.5px;
 }
 
-.agenda-fila-atendido {
+.agenda-turno-atendido {
   border-left-color: var(--success);
+  background: #f3faf6;
 }
 
-.agenda-fila-no-asistio {
-  border-left-color: var(--warning);
-  opacity: 0.75;
-}
-
-.agenda-fila-en-curso {
+.agenda-turno-en-curso {
   border-color: var(--navy);
   background: var(--navy);
   color: var(--white);
 }
 
-.agenda-fila-info {
+.agenda-turno-paciente {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   white-space: nowrap;
-  overflow: hidden;
 }
 
-.agenda-fila-info span {
+.agenda-turno-paciente span,
+.agenda-turno-tipo {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.agenda-fila-info b {
+.agenda-turno-paciente b {
   font-weight: 700;
 }
 
-.agenda-fila-tipo {
+.agenda-turno-tipo {
   color: var(--text-secondary);
   text-align: right;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.agenda-fila-en-curso .agenda-fila-tipo {
+.agenda-turno-en-curso .agenda-turno-tipo {
   color: rgba(255, 255, 255, 0.76);
 }
 
@@ -229,77 +215,23 @@
   color: var(--warning);
 }
 
-.agenda-fila-acciones {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  white-space: nowrap;
-}
-
-.agenda-link-historial {
-  color: var(--info);
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.agenda-fila-en-curso .agenda-link-historial {
-  color: var(--white);
-  text-decoration: underline;
-}
-
-.agenda-boton-registrar {
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--white);
-  background: transparent;
-  color: var(--white);
-  cursor: pointer;
-}
-
-.agenda-boton-registrar:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.agenda-fila-administracion {
+.agenda-turno-administracion {
   grid-column: 1 / -1;
   margin-top: 2px;
   color: var(--text-secondary);
   font-size: 10.5px;
 }
 
-.agenda-fila-en-curso .agenda-fila-administracion {
+.agenda-turno-en-curso .agenda-turno-administracion {
   color: rgba(255, 255, 255, 0.76);
 }
 
-.agenda-ahora {
+.agenda-vacia {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 4px;
-}
-
-.agenda-ahora-etiqueta {
-  background: var(--error);
-  color: var(--white);
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
-}
-
-.agenda-ahora-linea {
-  flex: 1;
-  height: 2px;
-  background: var(--error);
-}
-
-.agenda-vacia {
-  padding: 20px 0;
-  text-align: center;
+  justify-content: center;
   color: var(--text-secondary);
   font-size: 13.5px;
 }

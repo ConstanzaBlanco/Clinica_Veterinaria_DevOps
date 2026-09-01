@@ -8,7 +8,7 @@ from app.disponibilidad.dto import DisponibilidadResponse
 from app.disponibilidad.repository import DisponibilidadRepository
 from app.disponibilidad.service import DisponibilidadService
 from app.Middleware.middleware import requerir_rol
-from app.turnos.dto import ConsultaCreate, ConsultaCreateResponse, TurnoCreate, TurnoResponse
+from app.turnos.dto import TurnoCreate, TurnoResponse
 from app.turnos.excepciones import HorarioNoDisponibleError, TurnoEnPasadoError
 from app.turnos.repository import TurnoRepository
 from app.turnos.service import TurnoService
@@ -90,24 +90,3 @@ def cancelar_turno(
         crear_service(session).cancelar(id_turno, id_cliente)
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
-
-
-@router.post(
-    "/{id_turno}/consulta",
-    response_model=ConsultaCreateResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def registrar_consulta(
-    id_turno: int,
-    datos: ConsultaCreate,
-    usuario: dict[str, Any] = Depends(requerir_rol("VETERINARIO")),
-    session: Session = Depends(get_session),
-) -> dict:
-    id_veterinario: int = usuario["id_usuario"]
-
-    try:
-        return crear_service(session).registrar_consulta(id_turno, id_veterinario, datos)
-    except ValueError as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
-    except LookupError as error:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
