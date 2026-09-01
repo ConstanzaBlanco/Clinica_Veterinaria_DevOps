@@ -24,7 +24,7 @@ class PacienteResponse(BaseModel):
     nombre: str
     especie: str
     raza: str | None
-    edad: str
+    edad: str | None
     estado: str
     propietario: PropietarioResumen
     consultas_registradas: int
