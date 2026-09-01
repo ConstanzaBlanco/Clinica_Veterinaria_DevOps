@@ -145,3 +145,77 @@ def actualizar_mascota(
         return service.actualizar(id_mascota, id_cliente, datos)
     except LookupError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+
+
+@router.patch(
+    "/{id_mascota}/inactivar",
+    response_model=MascotaResponse,
+)
+def inactivar_mascota(id_mascota: int,
+    usuario: dict[str, Any] = Depends(
+        requerir_rol("CLIENTE")
+    ),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """
+    Inactiva una mascota del cliente autenticado.
+        id_mascota: Identificador de la mascota.
+        usuario: Informacion obtenida del token JWT.
+        session: Sesion de SQLAlchemy proporcionada por FastAPI.
+
+    Return:
+        Datos actualizados de la mascota.
+
+    Raises:
+        HTTPException: Si la mascota no existe.
+    """
+    id_cliente: int = usuario["id_usuario"]
+    service: MascotaService = crear_service(session)
+
+    try:
+        return service.inactivar(
+            id_mascota=id_mascota,
+            id_cliente=id_cliente,
+        )
+    except LookupError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error
+
+
+@router.patch(
+    "/{id_mascota}/activar",
+    response_model=MascotaResponse,
+)
+def activar_mascota(id_mascota: int,
+    usuario: dict[str, Any] = Depends(
+        requerir_rol("CLIENTE")
+    ),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """
+    Activa una mascota del cliente autenticado.
+        id_mascota: Identificador de la mascota.
+        usuario: Informacion obtenida del token JWT.
+        session: Sesion de SQLAlchemy proporcionada por FastAPI.
+
+    Return:
+        Datos actualizados de la mascota.
+
+    Raises:
+        HTTPException: Si la mascota no existe.
+    """
+    id_cliente: int = usuario["id_usuario"]
+    service: MascotaService = crear_service(session)
+
+    try:
+        return service.activar(
+            id_mascota=id_mascota,
+            id_cliente=id_cliente,
+        )
+    except LookupError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error

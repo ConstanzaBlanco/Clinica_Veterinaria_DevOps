@@ -13,6 +13,7 @@ import DetalleTurnoPage from '../features/turnos/pages/DetalleTurnoPage'
 import ReservarTurnoPage from '../features/turnos/pages/ReservarTurnoPage'
 import HistorialMascotaPage from '../features/historial/pages/HistorialMascotaPage'
 import AgendaDiariaPage from '../features/agenda/pages/AgendaDiariaPage'
+import PacientesPage from '../features/pacientes/pages/PacientesPage'
 
 // Ruta de entrada por rol, una vez autenticado.
 const RUTA_INICIO_POR_ROL = {
@@ -44,7 +45,7 @@ function AppRoutes() {
             <Route path="turnos" element={<MisTurnosPage />} />
             <Route path="turnos/nuevo" element={<ReservarTurnoPage />} />
             <Route path="turnos/:id" element={<DetalleTurnoPage />} />
-            <Route path="turnos/:id/historial" element={<HistorialMascotaPage />} />
+            <Route path="mascotas/:idMascota/historial" element={<HistorialMascotaPage />} />
           </Route>
 
           <Route
@@ -55,6 +56,8 @@ function AppRoutes() {
             }
           >
             <Route path="agenda" element={<AgendaDiariaPage />} />
+            <Route path="pacientes" element={<PacientesPage />} />
+            <Route path="pacientes/:idMascota/historial" element={<HistorialMascotaPage />} />
           </Route>
         </Route>
       </Route>
