@@ -62,17 +62,12 @@ Proyecto_Clínica_Veterinaria/
 |   |-- postgres-service.yaml
 |   |-- postgres-statefulset.yaml
 |   |-- api-blue-deployment.yaml
-|   |-- api-green-deployment.yaml
 |   |-- api-service.yaml
 |   |-- frontend-blue-deployment.yaml
-|   |-- frontend-green-deployment.yaml
 |   `-- frontend-service.yaml
 |
 |-- scripts/
-|   |-- k8s-up.ps1                    Construye y despliega Blue v1
-|   |-- k8s-up-green.ps1              Construye y despliega Green v2
-|   |-- k8s-switch-green.ps1          Cambia el tráfico a Green
-|   `-- k8s-switch-blue.ps1           Devuelve el tráfico a Blue
+|   `-- k8s-up.ps1                    Automatiza el inicio en Minikube
 |
 |-- Dockerfile                        Imagen de la API
 |-- compose.yaml                      Entorno local con Docker Compose
@@ -414,27 +409,18 @@ Sus partes principales son:
 
 La comprobación actual de la API demuestra que FastAPI responde por HTTP. No comprueba directamente una consulta a PostgreSQL.
 
-### `k8s/api-green-deployment.yaml`
-
-Crea y administra el Pod de FastAPI de la versión Green. Su estructura es equivalente a la de Blue, pero cambia dos datos que identifican la versión:
-
-- utiliza la imagen `clinica-veterinaria:v2`;
-- asigna la etiqueta `version: green`.
-
-Green conserva las mismas variables, Secrets, conexión `db:5432` y `readinessProbe` que Blue. De esta manera ambas versiones pueden ejecutarse al mismo tiempo y utilizar el mismo PostgreSQL, mientras el Service decide cuál recibe las solicitudes.
-
 ### `k8s/api-service.yaml`
 
 Crea una dirección estable para acceder a la API.
 
-Es de tipo `NodePort`, por lo que puede exponerse fuera del clúster local. El manifiesto guardado utiliza Blue como selección inicial:
+Es de tipo `NodePort`, por lo que puede exponerse fuera del clúster local. Su selector actual es:
 
 ```yaml
 app: clinica-api
 version: blue
 ```
 
-Al aplicar ese manifiesto, el Service envía tráfico solamente a Pods Blue que estén preparados. Los scripts de cambio pueden modificar el selector del recurso en ejecución a `version: green` y devolverlo luego a `version: blue`, sin cambiar su nombre ni su puerto.
+Esto significa que solamente envía tráfico a Pods Blue que estén marcados como preparados.
 
 El Service recibe tráfico en su puerto 8000 y lo dirige al puerto llamado `http` del contenedor de FastAPI, que también corresponde al 8000.
 
@@ -454,30 +440,20 @@ Sus partes principales son:
 
 El Deployment puede reemplazar el Pod si deja de existir. Como el frontend no guarda datos importantes dentro del Pod, no necesita un StatefulSet ni un volumen persistente.
 
-### `k8s/frontend-green-deployment.yaml`
-
-Crea y administra el Pod de Nginx que sirve la versión Green del frontend. Utiliza:
-
-- la imagen `clinica-frontend:v2`;
-- las etiquetas `app: clinica-frontend` y `version: green`;
-- el mismo puerto 8080 y la misma comprobación de disponibilidad que Blue.
-
-La imagen `v2` contiene el frontend Green ya construido. Este Deployment puede permanecer activo junto a `frontend-blue` porque tienen nombres y etiquetas de versión diferentes.
-
 ### `k8s/frontend-service.yaml`
 
 Crea el punto de entrada estable para el frontend. Es de tipo `NodePort`, por lo que Minikube puede proporcionar una URL accesible desde Windows.
 
-El manifiesto guardado utiliza este selector inicial:
+Su selector actual es:
 
 ```yaml
 app: clinica-frontend
 version: blue
 ```
 
-Al aplicarlo, dirige el tráfico al Pod `frontend-blue` que esté preparado. Recibe tráfico en el puerto 8080 y lo envía al puerto llamado `http` del contenedor.
+Por eso dirige el tráfico solamente al Pod `frontend-blue` que esté preparado. Recibe tráfico en el puerto 8080 y lo envía al puerto llamado `http` del contenedor.
 
-Este Service funciona como interruptor Blue/Green. `k8s-switch-green.ps1` cambia su selector a `version: green`, mientras que `k8s-switch-blue.ps1` lo devuelve a `version: blue`.
+Este Service también queda preparado como interruptor Blue/Green. Cuando exista y se haya comprobado `frontend-green`, cambiar `version: blue` por `version: green` permitirá dirigir el tráfico a la nueva versión.
 
 ## Recursos de Kubernetes creados automáticamente
 
@@ -491,16 +467,14 @@ Algunos son creados por `scripts/k8s-up.ps1` a partir de archivos locales:
 
 Otros son creados automáticamente por Kubernetes:
 
-- Cada Deployment Blue o Green crea su propio ReplicaSet.
-- Los ReplicaSets crean los Pods Blue y Green de FastAPI y del frontend.
+- Cada Deployment crea su propio ReplicaSet.
+- Los ReplicaSets crean los Pods de FastAPI y del frontend.
 - El StatefulSet crea el Pod `postgres-0` y solicita un PVC.
 - Minikube proporciona el PersistentVolume solicitado por el PVC.
 
-## 7. Scripts de Kubernetes: flujos automatizados
+## 7. `scripts/k8s-up.ps1`: flujo automatizado
 
-### `scripts/k8s-up.ps1`: construir Blue
-
-Este script evita que cada integrante tenga que recordar y ejecutar todos los comandos manualmente para crear el ambiente Blue. Debe ejecutarse desde la rama `blue`; la comprobación inicial evita construir por error código Green con la etiqueta `v1`.
+Este script evita que cada integrante tenga que recordar y ejecutar todos los comandos manualmente.
 
 Su recorrido completo es:
 
@@ -525,43 +499,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-up.ps1
 ```
 
 El script actualiza los recursos, pero no borra el volumen existente. Por lo tanto, repetirlo no elimina la base ni vuelve a ejecutar automáticamente los SQL de inicialización.
-
-### `scripts/k8s-up-green.ps1`: construir Green
-
-Este script se ejecuta después de que Blue ya quedó desplegado. Su recorrido es:
-
-1. Comprueba que Docker y Minikube estén disponibles.
-2. Inicia o reanuda Minikube.
-3. Comprueba que PostgreSQL y los Deployments Blue estén preparados.
-4. Deja los Services apuntando a Blue mientras prepara la nueva versión.
-5. Construye `clinica-veterinaria:v2` y `clinica-frontend:v2` dentro de Minikube.
-6. Aplica `api-green-deployment.yaml` y `frontend-green-deployment.yaml`.
-7. Reinicia y espera los rollouts Green para asegurar que utilicen las imágenes recién construidas.
-8. Muestra Blue y Green funcionando al mismo tiempo.
-
-Se ejecuta desde la rama `green` con:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-up-green.ps1
-```
-
-Al finalizar, Green está disponible para ser probado, pero el tráfico principal continúa en Blue hasta ejecutar el script de cambio.
-
-### `scripts/k8s-switch-green.ps1`: enviar el tráfico a Green
-
-Utiliza `kubectl set selector` para cambiar los Services `api` y `frontend` a `version: green`. No reconstruye imágenes, no reinicia PostgreSQL y no elimina Blue. Al final consulta los dos Services para mostrar la versión activa.
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-switch-green.ps1
-```
-
-### `scripts/k8s-switch-blue.ps1`: rollback a Blue
-
-Realiza la operación contraria: cambia los selectores de los dos Services a `version: blue`. Como los Pods Blue permanecen activos, el rollback es rápido y no necesita reconstruir imágenes.
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-switch-blue.ps1
-```
 
 ## 8. Flujo completo con Docker Compose
 
@@ -600,44 +537,46 @@ Compose crea automáticamente una red para que los servicios se encuentren por n
 
 ```mermaid
 flowchart LR
-    C1[Rama blue] --> IAB[Imagen API v1]
-    C1 --> IFB[Imagen frontend v1]
-    C2[Rama green] --> IAG[Imagen API v2]
-    C2 --> IFG[Imagen frontend v2]
+    DAPI[Dockerfile] --> IAPI[Imagen clinica-veterinaria:v1]
+    IAPI --> AB[Deployment api-blue]
+    AB --> PAPI[Pod FastAPI Blue]
 
-    IAB --> AB[Pod API Blue]
-    IAG --> AG[Pod API Green]
-    IFB --> FB[Pod frontend Blue]
-    IFG --> FG[Pod frontend Green]
+    DF[frontend/Dockerfile.k8s] --> IF[Imagen clinica-frontend:v1]
+    IF --> FB[Deployment frontend-blue]
+    FB --> PF[Pod Nginx Blue]
 
-    U[Usuario] --> SF[Service frontend]
-    SF -->|selector blue o green| FB
-    SF -->|selector blue o green| FG
-    FB -->|/api| SA[Service api]
-    FG -->|/api| SA
-    SA -->|selector blue o green| AB
-    SA -->|selector blue o green| AG
+    U[Usuario] --> MSF[minikube service frontend]
+    MSF --> SF[Service frontend NodePort]
+    SF -->|selector version: blue| PF
+    PF -->|solicitudes /api| SAPI[Service api]
+    SAPI -->|selector version: blue| PAPI
 
-    AB -->|db:5432| DB[Service db]
-    AG -->|db:5432| DB
-    DB --> PG[Pod postgres-0]
-    PG --> PVC[PVC y volumen persistente]
+    SP[Secret PostgreSQL] --> PAPI
+    SJ[Secret JWT] --> PAPI
+
+    PAPI -->|db:5432| SDB[Service db]
+    SDB --> PDB[Pod postgres-0]
+
+    CM[ConfigMap con SQL] --> PDB
+    SP --> PDB
+    PDB --> PVC[PVC y volumen persistente]
 ```
 
 Explicado paso a paso:
 
-1. Desde la rama `blue`, `k8s-up.ps1` construye las imágenes `v1` y despliega Blue junto con PostgreSQL.
-2. Desde la rama `green`, `k8s-up-green.ps1` construye las imágenes `v2` y agrega los Deployments Green sin eliminar Blue.
-3. Los cuatro Pods de aplicación pueden quedar ejecutándose al mismo tiempo: API Blue, API Green, frontend Blue y frontend Green.
-4. El StatefulSet mantiene un único Pod `postgres-0` y un único volumen persistente compartido por las dos API.
-5. El Service `frontend` selecciona la versión del frontend que recibe las solicitudes del usuario.
-6. Nginx sirve React y reenvía las solicitudes `/api` al Service interno `api`.
-7. El Service `api` selecciona la versión de FastAPI que recibe esas solicitudes.
-8. Tanto la API Blue como la Green encuentran PostgreSQL con el nombre estable `db:5432`.
-9. `k8s-switch-green.ps1` cambia ambos Services a Green.
-10. `k8s-switch-blue.ps1` devuelve ambos Services a Blue si es necesario hacer rollback.
-
-Los Services deben cambiar juntos para que el frontend y la API correspondan a la misma versión. El cambio no copia datos ni reinicia la base: solamente modifica qué etiquetas buscan los Services.
+1. El script construye las imágenes Blue de FastAPI y del frontend dentro de Minikube.
+2. `api-blue` crea el Pod de FastAPI y `frontend-blue` crea el Pod de Nginx.
+3. El StatefulSet crea `postgres-0` y su almacenamiento persistente.
+4. El ConfigMap coloca los SQL dentro de PostgreSQL.
+5. El Secret coloca la contraseña dentro de PostgreSQL.
+6. Si el volumen está vacío, la imagen de PostgreSQL ejecuta los SQL.
+7. El Service `db` permite que FastAPI encuentre PostgreSQL como `db:5432`.
+8. FastAPI lee sus variables y Secrets, y crea la conexión.
+9. El Service `api` selecciona el Pod de FastAPI cuya versión es `blue`.
+10. El Service `frontend` selecciona el Pod de Nginx cuya versión es `blue`.
+11. `minikube service frontend ... --url` mantiene un túnel y proporciona una URL local para el navegador.
+12. Nginx sirve React. Cuando una solicitud comienza con `/api`, la reenvía al Service interno `api`.
+13. FastAPI procesa la solicitud y, si necesita datos, continúa mediante el Service `db` hasta PostgreSQL.
 
 Para obtener la URL:
 
@@ -661,35 +600,38 @@ En Windows con el driver Docker, la terminal que mantiene ese túnel debe perman
 | ConfigMap | Archivos de `db/init/` | SQL montados dentro del Pod de PostgreSQL. |
 | StatefulSet | Imagen PostgreSQL, Secret, ConfigMap y almacenamiento | Pod estable de PostgreSQL. |
 | Service `db` | Pods con `app: postgres` | Nombre estable `db:5432`. |
-| Deployment `api-blue` | Imagen `clinica-veterinaria:v1`, variables y Secrets | Pod de FastAPI con etiqueta `version: blue`. |
-| Deployment `api-green` | Imagen `clinica-veterinaria:v2`, variables y Secrets | Pod de FastAPI con etiqueta `version: green`. |
-| Service `api` | Pods preparados con la versión seleccionada | Punto estable hacia la API Blue o Green. |
+| Deployment Blue | Imagen `v1`, variables y Secrets | Pod de FastAPI con etiqueta `version: blue`. |
+| Service `api` | Pods preparados con etiquetas coincidentes | Punto de entrada estable hacia Blue. |
 | Deployment `frontend-blue` | Imagen `clinica-frontend:v1` | Pod de Nginx con etiqueta `version: blue`. |
-| Deployment `frontend-green` | Imagen `clinica-frontend:v2` | Pod de Nginx con etiqueta `version: green`. |
-| Service `frontend` | Pods preparados con la versión seleccionada | Entrada externa al frontend Blue o Green. |
+| Service `frontend` | Pods preparados de `clinica-frontend` | Entrada externa al frontend Blue. |
 | `nginx.conf` | Archivos de React y Service interno `api` | Interfaz web y proxy de `/api` hacia FastAPI. |
-| `k8s-up.ps1` | Rama Blue y manifiestos base | Construcción y despliegue de Blue `v1`. |
-| `k8s-up-green.ps1` | Blue funcionando y rama Green | Construcción y despliegue de Green `v2`. |
-| Scripts `k8s-switch-*` | Services y Deployments Blue/Green preparados | Cambio de tráfico y rollback. |
+| `k8s-up.ps1` | Todos los archivos anteriores | Automatización que construye y aplica el entorno. |
 
 ## 11. Estado actual de Blue/Green
 
-Actualmente el despliegue Blue/Green está implementado para FastAPI y el frontend:
+Actualmente está implementada la infraestructura **Blue** de FastAPI y del frontend:
 
-| Versión | Imágenes | Deployments | Etiqueta |
-| --- | --- | --- | --- |
-| Blue | `clinica-veterinaria:v1` y `clinica-frontend:v1` | `api-blue` y `frontend-blue` | `version: blue` |
-| Green | `clinica-veterinaria:v2` y `clinica-frontend:v2` | `api-green` y `frontend-green` | `version: green` |
+- imagen `clinica-veterinaria:v1`;
+- Deployment `api-blue`;
+- etiqueta `version: blue`;
+- Service `api` apuntando a `version: blue`;
+- imagen `clinica-frontend:v1`;
+- Deployment `frontend-blue`;
+- Service `frontend` apuntando a `version: blue`.
 
-Los manifiestos de los Services conservan Blue como valor inicial. En el clúster, los scripts `k8s-switch-green.ps1` y `k8s-switch-blue.ps1` cambian ese selector sin editar el manifiesto cada vez.
+Esto deja preparado el mecanismo para agregar Green, pero todavía no constituye un cambio Blue/Green completo.
 
-La demostración completa es:
+Cuando la versión 2 esté desarrollada, la idea será:
 
-1. Desplegar Blue desde la rama `blue` con `k8s-up.ps1`.
-2. Desplegar Green desde la rama `green` con `k8s-up-green.ps1`.
-3. Comprobar que ambas versiones están preparadas.
-4. Ejecutar `k8s-switch-green.ps1` y probar la versión nueva.
-5. Ejecutar `k8s-switch-blue.ps1` para demostrar el rollback.
+1. Construir otra imagen de la API, por ejemplo `clinica-veterinaria:v2`.
+2. Si el frontend también cambia, construir `clinica-frontend:v2`.
+3. Crear `api-green` y, si corresponde, `frontend-green`, ambos con la etiqueta `version: green`.
+4. Mantener Blue y Green ejecutándose al mismo tiempo.
+5. Probar Green sin enviarle todavía el tráfico principal.
+6. Cambiar el selector del Service `api` de `version: blue` a `version: green`.
+7. Si existe un frontend Green, hacer el mismo cambio en el Service `frontend`.
+8. Aplicar los Services para dirigir las nuevas solicitudes a Green.
+9. Si aparece un problema, devolver los selectores a Blue.
 
 No es necesario duplicar el código en dos carpetas. Las dos versiones quedan representadas por imágenes Docker distintas.
 
@@ -697,24 +639,23 @@ Para demostrarlo al docente se podrán mostrar:
 
 ```powershell
 minikube kubectl -- get pods -L version --namespace=clinica-veterinaria
-minikube kubectl -- get service api --namespace=clinica-veterinaria -o jsonpath="{.spec.selector.version}"
-minikube kubectl -- get service frontend --namespace=clinica-veterinaria -o jsonpath="{.spec.selector.version}"
+minikube kubectl -- get service api --namespace=clinica-veterinaria -o yaml
+minikube kubectl -- get service frontend --namespace=clinica-veterinaria -o yaml
 ```
 
-El primer comando muestra los Pods y sus versiones. Los otros dos muestran de forma directa qué versión seleccionan los Services de la API y del frontend.
+El primer comando mostrará los Pods y sus versiones. Los otros dos permitirán ver qué versión seleccionan los Services de la API y del frontend.
 
 ## 12. Diferencia entre Compose y Kubernetes en este proyecto
 
 | Docker Compose | Kubernetes con Minikube |
 | --- | --- |
 | Pensado para desarrollo local sencillo. | Pensado para practicar orquestación y despliegues. |
-| Levanta una versión del frontend, la API y PostgreSQL. | Mantiene frontend y API Blue/Green junto a PostgreSQL. |
+| Levanta frontend, API y PostgreSQL. | Levanta frontend Blue, API Blue y PostgreSQL. |
 | `compose.yaml` concentra toda la definición. | La configuración se divide en varios manifiestos. |
 | Usa contenedores directamente. | Administra los contenedores dentro de Pods. |
 | Usa `postgres_data` como volumen nombrado. | Usa PVC y PV para PostgreSQL. |
 | Los nombres de servicios permiten la comunicación interna. | Los Services y el DNS interno permiten la comunicación. |
 | Usa Secrets definidos en Compose. | Usa objetos Secret del Namespace. |
-| No realiza un cambio Blue/Green. | Cambia el tráfico mediante los selectores de los Services. |
 
 ## 13. Aclaraciones importantes
 
@@ -729,9 +670,7 @@ El primer comando muestra los Pods y sus versiones. Los otros dos muestran de fo
 - Una readiness probe decide si un Pod está preparado para recibir tráfico; no es lo mismo que una liveness probe.
 - Los SQL de inicialización solamente se ejecutan sobre una base vacía.
 - `minikube stop` detiene el clúster, pero no está pensado para borrar los datos persistentes.
-- Blue y Green comparten PostgreSQL y el mismo PVC; no existe un volumen separado por versión.
-- Para conservar la posibilidad de rollback, los cambios de esquema de Green deben ser compatibles con Blue.
-- Los Services guardados en YAML comienzan apuntando a Blue; los scripts de cambio modifican los selectores del clúster en ejecución.
+- La infraestructura de Kubernetes incluye el frontend Blue y la API Blue; los Deployments Green todavía no están implementados.
 
 ## 14. Documentación oficial utilizada
 
@@ -808,9 +747,9 @@ La documentación de la imagen oficial también establece que los archivos de `/
 - [`kubectl exec`](https://kubernetes.io/docs/reference/kubectl/generated/kubectl_exec/): se utilizó para ejecutar `psql`, `pg_isready` y otros comandos dentro del Pod de PostgreSQL.
 - [`kubectl rollout status`](https://kubernetes.io/docs/reference/kubectl/generated/kubectl_rollout/kubectl_rollout_status/): se utilizó para esperar y comprobar que PostgreSQL y FastAPI quedaran disponibles.
 
-### 14.8. Deployments Blue/Green y Service de la API
+### 14.8. Deployment Blue y Service de la API
 
-- [Deployments de Kubernetes](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/): se utilizó para crear `api-blue` y `api-green`, administrar los Pods de FastAPI y mantener la cantidad de réplicas solicitada.
+- [Deployments de Kubernetes](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/): se utilizó para crear `api-blue`, administrar el Pod de FastAPI y mantener la cantidad de réplicas solicitada.
 - [Política de descarga de imágenes](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy): se utilizó para `imagePullPolicy: Never`, ya que la imagen se construye dentro de Minikube y no se descarga desde un registro.
 - [Variables de entorno en contenedores](https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/): se utilizó para entregar la configuración `POSTGRES_*`, `JWT_*` y `LOGIN_*` a FastAPI.
 - [Entregar credenciales de forma segura](https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/): se utilizó para montar `postgres-secret` y `jwt-secret` dentro del Pod de la API.
@@ -823,19 +762,18 @@ La documentación de la imagen oficial también establece que los archivos de `/
 - [Variables de construcción de Docker](https://docs.docker.com/build/building/variables/#env-usage-example): se utilizó para entregar `VITE_API_URL` mediante `ARG` y `ENV` durante la construcción de la imagen.
 - [Variables de entorno y modos de Vite](https://vite.dev/guide/env-and-mode.html): se utilizó para explicar por qué las variables con prefijo `VITE_` quedan incorporadas en el frontend durante `npm run build` y no deben contener secretos.
 - [Reverse proxy de Nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): se utilizó para configurar `location /api/`, `proxy_pass` y los encabezados que Nginx entrega a FastAPI.
-- [Deployments de Kubernetes](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/): se utilizó para crear `frontend-blue` y `frontend-green` y mantener sus Pods.
-- [Política de descarga de imágenes](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy): se utilizó para hacer que los Deployments consuman `clinica-frontend:v1` y `clinica-frontend:v2` desde Minikube.
+- [Deployments de Kubernetes](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/): se utilizó para crear `frontend-blue` y mantener su Pod.
+- [Política de descarga de imágenes](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy): se utilizó para hacer que el Deployment consuma `clinica-frontend:v1` desde Minikube.
 - [Readiness, liveness y startup probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/): se utilizó para comprobar que Nginx puede servir `/` antes de enviarle tráfico.
 - [Service de tipo NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport): se utilizó para crear el punto de entrada externo `frontend`.
 
-### 14.10. Automatización y cambio Blue/Green
+### 14.10. Automatización y preparación de Blue/Green
 
-Los scripts no fueron copiados de una sola página. Reúnen en orden los comandos oficiales ya mencionados para construir imágenes, crear recursos, aplicar manifiestos, esperar rollouts y cambiar selectores.
+`scripts/k8s-up.ps1` no fue copiado de una sola página. Reúne en orden los comandos oficiales ya mencionados para construir la imagen, crear los recursos, aplicar los manifiestos y esperar los rollouts.
 
 La preparación de Blue/Green combina dos mecanismos documentados por Kubernetes:
 
 - [Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/): permiten mantener Pods Blue y Green como cargas separadas.
 - [Selectores de Services](https://kubernetes.io/docs/concepts/services-networking/service/): permiten decidir si el tráfico se dirige a Pods con `version: blue` o `version: green`.
-- [`kubectl set selector`](https://kubernetes.io/docs/reference/kubectl/generated/kubectl_set/kubectl_set_selector/): se utiliza en los scripts de cambio para actualizar el selector de los Services sin recrearlos.
 
-El diseño Blue/Green de este proyecto es la aplicación conjunta de esos mecanismos: los Deployments mantienen ambas versiones disponibles y los Services actúan como punto de cambio de tráfico y rollback.
+El diseño Blue/Green explicado en este documento es la aplicación conjunta de esos mecanismos al proyecto. La versión Green todavía no está implementada.

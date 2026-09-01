@@ -25,7 +25,7 @@ def crear_service(session):
 @router.get("", response_model=list[TipoAtencionResponse])
 def listar_tipos_atencion(
     session=Depends(get_session),
-    _usuario: dict = Depends(requerir_rol("CLIENTE", "VETERINARIO")),
+    _usuario: dict = Depends(requerir_rol("CLIENTE")),
 ):
     service = crear_service(session)
 

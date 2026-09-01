@@ -1,13 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from zoneinfo import ZoneInfo
 
-from app.turnos.dto import ConsultaCreate, TurnoCreate
+from app.turnos.dto import TurnoCreate
 from app.turnos.excepciones import TurnoEnPasadoError
 from app.turnos.repository import TurnoRepository
-
-# La hora que elige el cliente es hora local de la clínica (igual que en
-# AgendaService y DisponibilidadService).
-ZONA_CLINICA = ZoneInfo("America/Montevideo")
 
 
 class TurnoService:
@@ -83,12 +78,12 @@ class TurnoService:
             raise LookupError("Veterinario no encontrado.")
 
         duracion = tipo_atencion["duracion_minutos"]
-        fecha_hora_inicio = datetime.combine(
-            datos.fecha, datos.hora_inicio, tzinfo=ZONA_CLINICA
-        )
+        fecha_hora_inicio = datetime.combine(datos.fecha, datos.hora_inicio)
         fecha_hora_fin = fecha_hora_inicio + timedelta(minutes=duracion)
 
-        ahora = datetime.now(timezone.utc)
+        # Comparación en UTC "naive" porque fecha_hora_inicio también lo es
+        # (mismo criterio que usa DisponibilidadService para "calculado_el").
+        ahora = datetime.now(timezone.utc).replace(tzinfo=None)
         if fecha_hora_inicio <= ahora:
             raise TurnoEnPasadoError("No se puede reservar un turno en un horario que ya pasó.")
 
@@ -103,43 +98,3 @@ class TurnoService:
         )
 
         return self._a_dict(self.repository.obtener_por_id(id_turno, id_cliente))
-
-    def registrar_consulta(self, id_turno: int, id_veterinario: int, datos: ConsultaCreate) -> dict:
-        """
-        Registra la atención de un turno CONFIRMADO del veterinario autenticado.
-
-        Guarda la consulta clínica y pasa el turno a ATENDIDO en la misma
-        transacción (ver TurnoRepository.registrar_consulta).
-        """
-        motivo = datos.motivo.strip()
-        diagnostico = datos.diagnostico.strip()
-
-        if motivo == "":
-            raise ValueError("El motivo de la consulta no puede estar vacío.")
-
-        if diagnostico == "":
-            raise ValueError("El diagnóstico de la consulta no puede estar vacío.")
-
-        consulta = self.repository.registrar_consulta(
-            id_turno=id_turno,
-            id_veterinario=id_veterinario,
-            datos={
-                "motivo": motivo,
-                "diagnostico": diagnostico,
-                "observaciones": datos.observaciones,
-                "tratamiento": datos.tratamiento,
-                "recomendaciones": datos.recomendaciones,
-            },
-        )
-
-        if consulta is None:
-            raise LookupError(
-                "El turno no existe, no es tuyo, o no está confirmado para registrar la consulta."
-            )
-
-        return {
-            "id_consulta": consulta["id_consulta"],
-            "fecha_registro": consulta["fecha_registro"],
-            "edicion_vence_el": consulta["fecha_registro"] + timedelta(hours=24),
-            "turno_estado": "ATENDIDO",
-        }

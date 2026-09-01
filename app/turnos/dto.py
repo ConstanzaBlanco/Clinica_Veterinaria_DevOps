@@ -30,18 +30,3 @@ class TurnoCreate(BaseModel):
     id_veterinario: int
     fecha: date
     hora_inicio: time
-
-
-class ConsultaCreate(BaseModel):
-    motivo: str
-    diagnostico: str
-    observaciones: str | None = None
-    tratamiento: str | None = None
-    recomendaciones: str | None = None
-
-
-class ConsultaCreateResponse(BaseModel):
-    id_consulta: int
-    fecha_registro: datetime
-    edicion_vence_el: datetime
-    turno_estado: str

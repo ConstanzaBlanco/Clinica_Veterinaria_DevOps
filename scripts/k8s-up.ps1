@@ -1,17 +1,6 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Este script construye exclusivamente la version Blue v1.
-$currentBranch = git branch --show-current
-
-if ($LASTEXITCODE -ne 0) {
-    throw "No se pudo comprobar la rama actual de Git."
-}
-
-if ($currentBranch -ne "blue") {
-    throw "Este script debe ejecutarse desde la rama blue. Rama actual: $currentBranch. Para Green utiliza scripts\k8s-up-green.ps1."
-}
-
 # Detiene el script cuando un programa externo devuelve un error
 function Confirm-NativeCommand {
     param(

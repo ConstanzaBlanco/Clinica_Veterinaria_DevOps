@@ -12,14 +12,6 @@ export function cancelarTurno(token, idTurno) {
   return apiFetch(`/turnos/${idTurno}/cancelar`, { token, method: 'POST' })
 }
 
-export function registrarConsulta(token, idTurno, datos) {
-  return apiFetch(`/turnos/${idTurno}/consulta`, {
-    token,
-    method: 'POST',
-    body: JSON.stringify(datos),
-  })
-}
-
 export function obtenerDisponibilidad(token, { veterinario, fecha, tipoAtencion }) {
   const parametros = new URLSearchParams({
     veterinario,
