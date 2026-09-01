@@ -1,8 +1,14 @@
 from datetime import date, datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from app.disponibilidad.repository import DisponibilidadRepository
 
 INTERVALO_MINUTOS = 15
+
+# Los bloques de disponibilidad y los horarios de turno se definen en hora
+# local de la clínica (ver AgendaService, que usa la misma zona para mostrar
+# la agenda del veterinario).
+ZONA_CLINICA = ZoneInfo("America/Montevideo")
 
 # Ventana de la agenda de la clínica (ver Agenda diaria del veterinario).
 HORA_INICIO_CLINICA = time(8, 0)
@@ -46,15 +52,25 @@ class DisponibilidadService:
             if fila["hora_inicio"] is not None
         ]
 
+        # fecha_hora_inicio/fin vienen de PostgreSQL en UTC real (timestamptz).
+        # Sin el astimezone(), .time() devolvía la hora UTC cruda y comparaba
+        # un turno de las 09:30 locales contra el slot de las 12:30.
         ocupados = [
-            (fila["fecha_hora_inicio"].time(), fila["fecha_hora_fin"].time())
+            (
+                fila["fecha_hora_inicio"].astimezone(ZONA_CLINICA).time(),
+                fila["fecha_hora_fin"].astimezone(ZONA_CLINICA).time(),
+            )
             for fila in self.repository.obtener_turnos_ocupados(id_veterinario, fecha)
         ]
 
-        ahora = datetime.now(timezone.utc)
+        # Los bloques (09:00-13:00, etc.) están en hora local de la clínica.
+        # Compararlos contra datetime.now(timezone.utc) corría el reloj 3
+        # horas para adelante (Montevideo es UTC-3) y dejaba todo el día
+        # marcado como FUERA_DE_AGENDA aunque todavía quedara agenda libre.
+        ahora_local = datetime.now(ZONA_CLINICA)
         # Si la fecha consultada es hoy, los slots que ya pasaron no se pueden
         # reservar aunque el resto de la agenda los deje libres.
-        hora_limite = ahora.time() if fecha == ahora.date() else None
+        hora_limite = ahora_local.time() if fecha == ahora_local.date() else None
 
         slots = self._generar_slots(bloques, excepciones, ocupados, duracion, hora_limite)
 

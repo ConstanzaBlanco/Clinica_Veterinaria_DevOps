@@ -1,7 +1,11 @@
+import asyncio
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.Middleware.middleware import JWTMiddleware
+from app.turnos.tareas_programadas import ejecutar_tarea_periodica
 from app.Auth.login.controller import router as login_router
 from app.Auth.me.controller import router as me_router
 from app.Auth.Register.clients.controller import router as register_client_router
@@ -15,9 +19,21 @@ from app.especies.controller import router as especies_router
 from app.disponibilidad.controller import router as disponibilidad_router
 from app.agenda.controller import router as agenda_router
 from app.historial.controller import router as historial_router
+from app.pacientes.controller import router as pacientes_router
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # Marca turnos vencidos como NO_ASISTIO en segundo plano mientras la API esté activa.
+    tarea = asyncio.create_task(ejecutar_tarea_periodica())
+
+    yield
+
+    tarea.cancel()
+
 
 app = FastAPI(
     title="Pet-Core API",
+    lifespan=lifespan,
 )
 
 # Permite que el frontend (Vite, en desarrollo) llame a la API desde el navegador.
@@ -42,6 +58,7 @@ app.include_router(especies_router)
 app.include_router(disponibilidad_router)
 app.include_router(agenda_router)
 app.include_router(historial_router)
+app.include_router(pacientes_router)
 
 @app.get("/")
 def hello():

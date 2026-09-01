@@ -10,6 +10,7 @@ class ConsultaClienteItem(BaseModel):
 
     id_consulta: int
     fecha: date
+    hora: str
     tipo: str
     veterinario: str
     motivo: str
@@ -33,13 +34,18 @@ class HistorialClienteResponse(BaseModel):
 class MascotaHistorialInfo(BaseModel):
     id: int
     nombre: str
+    especie: str
+    raza: str | None
+    fecha_nacimiento: date | None
     peso_actual: float | None
     propietario: str
+    telefono: str
 
 
 class CorreccionItem(BaseModel):
     id: int
     fecha: date
+    hora: str
     veterinario: str
     motivo_correccion: str
     # Campos clínicos que la corrección haya modificado (motivo, diagnostico,
@@ -56,6 +62,7 @@ class ConsultaRecuperada(BaseModel):
     id: int
     recuperada: bool = True
     fecha: date
+    hora: str
     tipo: str
     veterinario: str
     motivo: str
