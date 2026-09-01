@@ -10,7 +10,10 @@ const LINKS_POR_ROL = {
     { to: '/turnos', label: 'Mis turnos' },
     { to: '/turnos/nuevo', label: 'Reservar turno' },
   ],
-  veterinario: [{ to: '/agenda', label: 'Mi agenda' }],
+  veterinario: [
+    { to: '/agenda', label: 'Mi agenda' },
+    { to: '/pacientes', label: 'Pacientes' },
+  ],
 }
 
 function obtenerIniciales(nombre) {

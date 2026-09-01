@@ -7,9 +7,12 @@
 }
 
 .stepper-item {
-  flex: 1;
   display: flex;
   align-items: center;
+}
+
+.stepper-item:not(:last-child) {
+  flex: 1;
 }
 
 .stepper-paso {
@@ -54,9 +57,9 @@
 }
 
 .stepper-linea {
-  width: 60px;
+  flex: 1;
   height: 2px;
   background: var(--border);
   margin: 0 12px;
-  flex: none;
+  min-width: 20px;
 }

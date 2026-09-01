@@ -129,3 +129,60 @@
   border-color: var(--success);
   background: #e3f1ea;
 }
+
+.mascota-acciones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.mascota-acciones .mascota-accion-boton {
+  width: 100%;
+  min-width: 0;
+  height: 43px;
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mascota-acciones .mascota-boton-inactivar {
+  color: #ffffff;
+  background-color: #c9372c;
+  border-color: #c9372c;
+}
+
+.mascota-acciones .mascota-boton-inactivar:hover {
+  background-color: #ad2f26;
+  border-color: #ad2f26;
+}
+
+.mascota-acciones .mascota-boton-activar {
+  color: #ffffff;
+  background-color: #218c5a;
+  border-color: #218c5a;
+}
+
+.mascota-acciones .mascota-boton-activar:hover {
+  background-color: #197347;
+  border-color: #197347;
+}
+
+.mascota-acciones .mascota-accion-boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.mascota-card-inactiva {
+  opacity: 0.55;
+  filter: grayscale(40%);
+}
