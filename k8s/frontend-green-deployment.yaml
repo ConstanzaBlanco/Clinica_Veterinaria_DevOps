@@ -35,7 +35,7 @@ spec:
       # Contenedores que se ejecutan dentro del Pod
       containers:
         - name: frontend
-          image: clinica-frontend:v2-rc
+          image: clinica-frontend:v2
 
           # Vamos a utilizar solo la imagen construida dentro de Minikube
           imagePullPolicy: Never

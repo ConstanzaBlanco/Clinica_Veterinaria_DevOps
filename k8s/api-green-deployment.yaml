@@ -34,7 +34,7 @@ spec:
       # Contenedores que se ejecutan dentro del Pod
       containers:
         - name: api
-          image: clinica-veterinaria:v2-rc
+          image: clinica-veterinaria:v2
 
           # Usamos unicamente la imagen constuida dentro de Minikube
           imagePullPolicy: Never
