@@ -1,0 +1,13 @@
+La presentación fuente tiene 7 diapositivas en formato 16:9 (1920 x 1080), un master y 12 layouts.
+Identidad visual: azul petróleo oscuro, blanco, acentos azul grisáceo y verde; ilustraciones lineales de perro, gato y huellas.
+Tipografía observada: Aptos/Calibri equivalente, títulos grandes y en negrita, cuerpo blanco o azul oscuro según el fondo.
+Patrones reutilizables:
+- Diapositiva 1: portada oscura con ilustración de mascotas.
+- Diapositiva 2: título grande a la izquierda y dos bloques de contenido a la derecha.
+- Diapositiva 3: título central y tres bloques horizontales.
+- Diapositiva 4: título superior y tres perfiles/columnas.
+- Diapositiva 5: flujo de cuatro pasos con conectores.
+- Diapositiva 6: composición de ASR con varios bloques.
+- Diapositiva 7: cierre oscuro con ilustraciones.
+Contrato de inserción: duplicar únicamente diapositivas fuente y modificar sus cuadros de texto heredados. Se conservan fondos, ilustraciones, barras, formas decorativas, master y layouts.
+No se dejan placeholders estructurales vacíos en las diapositivas finales.

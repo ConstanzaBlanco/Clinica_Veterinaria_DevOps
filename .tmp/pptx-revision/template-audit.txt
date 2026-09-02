@@ -1,0 +1,14 @@
+Fuente visual: Presentacion_TFU2_Pet-Core_Canva.pptx.
+
+El archivo fuente usa una composición 16:9 propia, sin master/layout reutilizable
+significativo. Se conservarán paleta, tipografía, márgenes, numeración, huellas
+decorativas y composición de las diapositivas preservadas.
+
+Cambios solicitados:
+- Se insertan dos diapositivas después de la portada: contexto ampliado y roles.
+- La anterior diapositiva 3 se reemplaza por cinco ASR, con código, resumen y
+  texto completo.
+- Las anteriores diapositivas 4 a 7 se conservan visualmente.
+- Las anteriores diapositivas 8 a 11 se reemplazan por beneficios y costos de
+  autenticar, autorizar, replicar y reintentar.
+- La anterior diapositiva 12 se conserva.

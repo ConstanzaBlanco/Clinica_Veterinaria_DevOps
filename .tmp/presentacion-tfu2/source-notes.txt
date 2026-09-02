@@ -1,0 +1,6 @@
+Fuentes internas utilizadas:
+- Consigna TFU2 provista por la usuaria.
+- Documento de contenido TFU2 Pet-Core provisto por la usuaria.
+- Presentación fuente C:/Users/conbl/Downloads/ANDIS2 TFU2.pptx.
+- Repositorio local C:/Proyecto_Clínica_Veterinaria: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API.
+No se utilizaron imágenes ni afirmaciones externas.

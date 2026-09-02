@@ -1,0 +1,71 @@
+{"kind":"deck","id":"pr/t1f4qy","name":"Deck"}
+{"kind":"layout","layoutId":"500188e9-db3c-4123-bdb7-0826a4b18c21","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"04ce38ed-4cae-42ae-92ae-d3cd3b0fc0f4","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/7jz6qu","slide":1,"title":"Docker Compose","textShapes":34}
+{"kind":"shape","id":"sh/7qxc36dg","slide":1,"name":"docker-compose","bbox":[360,38,610,644]}
+{"kind":"textbox","id":"sh/sr6twbu1","slide":1,"text":"Docker Compose","textPreview":"Docker Compose","textChars":14,"textLines":1,"bbox":[560,52,210,34]}
+{"kind":"shape","id":"sh/tsfu5gvm","slide":1,"name":"postman-client","bbox":[34,88,230,88]}
+{"kind":"shape","id":"sh/ut8bylc7","slide":1,"bbox":[48,107,45,45]}
+{"kind":"textbox","id":"sh/fuhc7qds","slide":1,"text":"↗","textPreview":"↗","textChars":1,"textLines":1,"bbox":[48,108,45,43]}
+{"kind":"textbox","id":"sh/gvqd0vux","slide":1,"text":"Postman / curl","textPreview":"Postman / curl","textChars":14,"textLines":1,"bbox":[104,118,145,30]}
+{"kind":"shape","id":"sh/hwzu90vi","slide":1,"name":"nginx-balanceador","bbox":[475,90,330,88]}
+{"kind":"shape","id":"sh/2x8v2lc3","slide":1,"bbox":[495,106,48,48]}
+{"kind":"textbox","id":"sh/3yhcbqdo","slide":1,"text":"N","textPreview":"N","textChars":1,"textLines":1,"bbox":[495,107,48,46]}
+{"kind":"textbox","id":"sh/nit8j25s","slide":1,"text":"Nginx · balanceador","textPreview":"Nginx · balanceador","textChars":19,"textLines":1,"bbox":[558,118,224,30]}
+{"kind":"shape","id":"sh/mhkrqxo7","slide":1,"name":"api-replica-1","bbox":[385,255,245,206]}
+{"kind":"shape","id":"sh/9kbqlcny","slide":1,"bbox":[401,272,43,43]}
+{"kind":"textbox","id":"sh/oj29s76d","slide":1,"text":"ϟ","textPreview":"ϟ","textChars":1,"textLines":1,"bbox":[401,273,43,41]}
+{"kind":"textbox","id":"sh/ze98fi5w","slide":1,"text":"FastAPI · réplica 1","textPreview":"FastAPI · réplica 1","textChars":19,"textLines":1,"bbox":[453,284,158,27]}
+{"kind":"shape","id":"sh/et07mxob","slide":1,"bbox":[401,330,220,34]}
+{"kind":"textbox","id":"sh/1gbqhsnm","slide":1,"text":"♢","textPreview":"♢","textChars":1,"textLines":1,"bbox":[413,333,27,26]}
+{"kind":"textbox","id":"sh/0f2pon6h","slide":1,"text":"Autenticación JWT","textPreview":"Autenticación JWT","textChars":17,"textLines":1,"bbox":[447,335,164,24]}
+{"kind":"shape","id":"sh/jad8rm50","slide":1,"bbox":[401,375,220,34]}
+{"kind":"textbox","id":"sh/y94ryhof","slide":1,"text":"♙","textPreview":"♙","textChars":1,"textLines":1,"bbox":[413,378,27,26]}
+{"kind":"textbox","id":"sh/u5obql8n","slide":1,"text":"Autorización por roles","textPreview":"Autorización por roles","textChars":22,"textLines":1,"bbox":[447,380,164,24]}
+{"kind":"shape","id":"sh/v6hcjqp8","slide":1,"bbox":[401,420,220,34]}
+{"kind":"textbox","id":"sh/g7qtsvqt","slide":1,"text":"↻","textPreview":"↻","textChars":1,"textLines":1,"bbox":[413,423,27,26]}
+{"kind":"textbox","id":"sh/h8zul07e","slide":1,"text":"Reintentos de conexión","textPreview":"Reintentos de conexión","textChars":22,"textLines":1,"bbox":[447,425,164,24]}
+{"kind":"shape","id":"sh/i98bu58z","slide":1,"name":"api-replica-2","bbox":[690,255,245,206]}
+{"kind":"shape","id":"sh/3ahcnqpk","slide":1,"bbox":[706,272,43,43]}
+{"kind":"textbox","id":"sh/4bqtwvqp","slide":1,"text":"ϟ","textPreview":"ϟ","textChars":1,"textLines":1,"bbox":[706,273,43,41]}
+{"kind":"textbox","id":"sh/5czup07a","slide":1,"text":"FastAPI · réplica 2","textPreview":"FastAPI · réplica 2","textChars":19,"textLines":1,"bbox":[758,284,158,27]}
+{"kind":"shape","id":"sh/yd4bi18f","slide":1,"bbox":[706,330,220,34]}
+{"kind":"textbox","id":"sh/jexsb6p0","slide":1,"text":"♢","textPreview":"♢","textChars":1,"textLines":1,"bbox":[718,333,27,26]}
+{"kind":"textbox","id":"sh/183eh4ri","slide":1,"text":"Autenticación JWT","textPreview":"Autenticación JWT","textChars":17,"textLines":1,"bbox":[752,335,164,24]}
+{"kind":"shape","id":"sh/07uxozax","slide":1,"bbox":[706,375,220,34]}
+{"kind":"textbox","id":"sh/z6lwfu9s","slide":1,"text":"♙","textPreview":"♙","textChars":1,"textLines":1,"bbox":[718,378,27,26]}
+{"kind":"textbox","id":"sh/e5cvmps7","slide":1,"text":"Autorización por roles","textPreview":"Autorización por roles","textChars":22,"textLines":1,"bbox":[752,380,164,24]}
+{"kind":"shape","id":"sh/9wneloru","slide":1,"bbox":[706,420,220,34]}
+{"kind":"textbox","id":"sh/ovuxsja9","slide":1,"text":"↻","textPreview":"↻","textChars":1,"textLines":1,"bbox":[718,423,27,26]}
+{"kind":"textbox","id":"sh/nulwje9o","slide":1,"text":"Reintentos de conexión","textPreview":"Reintentos de conexión","textChars":22,"textLines":1,"bbox":[752,425,164,24]}
+{"kind":"shape","id":"sh/mtcfq9s3","slide":1,"name":"postgresql","bbox":[540,525,210,74]}
+{"kind":"textbox","id":"sh/50je9kra","slide":1,"text":"♞","textPreview":"♞","textChars":1,"textLines":1,"bbox":[558,543,42,36]}
+{"kind":"textbox","id":"sh/4zadgfa5","slide":1,"text":"PostgreSQL","textPreview":"PostgreSQL","textChars":10,"textLines":1,"bbox":[622,548,115,28]}
+{"kind":"shape","id":"sh/8vihonud","slide":1,"name":"persistent-volume","bbox":[540,626,210,55]}
+{"kind":"textbox","id":"sh/twrihsby","slide":1,"text":"▱","textPreview":"▱","textChars":1,"textLines":1,"bbox":[560,638,34,26]}
+{"kind":"textbox","id":"sh/6tgzmdcn","slide":1,"text":"Volumen persistente","textPreview":"Volumen persistente","textChars":19,"textLines":1,"bbox":[604,640,130,23]}
+{"kind":"shape","id":"sh/7up0fits","slide":1,"name":"secrets","bbox":[1015,263,215,190]}
+{"kind":"shape","id":"sh/kryhknuh","slide":1,"bbox":[1030,280,39,39]}
+{"kind":"textbox","id":"sh/ls7yt8b2","slide":1,"text":"▣","textPreview":"▣","textChars":1,"textLines":1,"bbox":[1030,281,39,37]}
+{"kind":"textbox","id":"sh/ypgzidcb","slide":1,"text":"Secrets","textPreview":"Secrets","textChars":7,"textLines":1,"bbox":[1082,292,110,28]}
+{"kind":"shape","id":"sh/jqpgritw","slide":1,"name":"db-password","bbox":[1034,330,176,46]}
+{"kind":"textbox","id":"sh/wnehg3u5","slide":1,"text":"⚿","textPreview":"⚿","textChars":1,"textLines":1,"bbox":[1045,340,30,24]}
+{"kind":"textbox","id":"sh/xo7yp8bq","slide":1,"text":"Contraseña de BD","textPreview":"Contraseña de BD","textChars":16,"textLines":1,"bbox":[1080,342,112,22]}
+{"kind":"shape","id":"sh/zy50zyds","slide":1,"name":"jwt-key","bbox":[1034,384,176,46]}
+{"kind":"textbox","id":"sh/exwzqtw7","slide":1,"text":"⚿","textPreview":"⚿","textChars":1,"textLines":1,"bbox":[1045,394,30,24]}
+{"kind":"textbox","id":"sh/10ni18vy","slide":1,"text":"Clave JWT","textPreview":"Clave JWT","textChars":9,"textLines":1,"bbox":[1080,396,112,22]}
+{"kind":"shape","id":"sh/0zehs3ed","slide":1,"bbox":[264,132,211,2]}
+{"kind":"textbox","id":"sh/nm503ido","slide":1,"text":"HTTP · localhost:8000","textPreview":"HTTP · localhost:8000","textChars":21,"textLines":1,"bbox":[282,104,190,28]}
+{"kind":"shape","id":"sh/mlwjudw3","slide":1,"bbox":[507.5,178,132.5,77]}
+{"kind":"shape","id":"sh/9o7i58vu","slide":1,"bbox":[640,178,172.5,77]}
+{"kind":"shape","id":"sh/one1w3e9","slide":1,"bbox":[507.5,461,137.5,64]}
+{"kind":"shape","id":"sh/bqp07id0","slide":1,"bbox":[645,461,167.5,64]}
+{"kind":"shape","id":"sh/apgjydwf","slide":1,"bbox":[645,599,0,27]}
+{"kind":"shape","id":"sh/6xkbmlkz","slide":1,"bbox":[935,358,80,0]}
+{"kind":"shape","id":"sh/7ytcfq14","slide":1,"bbox":[750,453,372.5,109]}
+{"kind":"shape","id":"sh/sz2dob2p","slide":1,"bbox":[610,324,130,62]}
+{"kind":"textbox","id":"sh/t0buhgja","slide":1,"text":"Misma API y\nmisma versión","textPreview":"Misma API y | misma versión","textChars":25,"textLines":2,"bbox":[610,334,130,42]}
+{"kind":"shape","id":"sh/itkbi1kn","slide":1,"bbox":[620,321,112,2]}
+{"kind":"shape","id":"sh/jutcb618","slide":1,"bbox":[620,385,112,2]}
+{"kind":"textbox","id":"sh/kv2tkb2t","slide":1,"text":"distribuye cada petición entre las réplicas","textPreview":"distribuye cada petición entre las réplicas","textChars":43,"textLines":1,"bbox":[676,184,282,20]}
+{"kind":"notes","id":"nt/7jz6qu","slide":1,"text":"Diagrama editable construido con formas y conectores nativos de PowerPoint. No utiliza una imagen de fondo.\n\n[Sources]\n- Arquitectura de la demo ANDIS del repositorio local.\n- Diagrama de referencia provisto por la estudiante."}

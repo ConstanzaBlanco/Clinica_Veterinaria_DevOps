@@ -1,0 +1,3 @@
+Diapositivas 1-12: se conserva la identidad visual y la estructura heredada de la PPT fuente.
+Se reemplaza el contenido textual para adecuarlo a TFU2, se ajustan algunos cuadros de texto heredados cuando la nueva información requiere más altura y se eliminan cuadros heredados no utilizados.
+La arquitectura se describe con Docker Compose y Nginx porque es la implementación real del repositorio ANDIS; se corrige así el borrador que mencionaba Kubernetes.

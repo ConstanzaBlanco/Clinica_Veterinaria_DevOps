@@ -1,0 +1,1015 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/i1ti7e",
+    "id": "i1ti7e",
+    "slide": 6,
+    "layoutId": "dd173969-cfc6-4e2d-8f1e-569239012e84",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "b5086b2e-1336-4033-aae1-56a230f87164",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#F5FAF9",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "dd173969-cfc6-4e2d-8f1e-569239012e84",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "b5086b2e-1336-4033-aae1-56a230f87164",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "b5086b2e-1336-4033-aae1-56a230f87164",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/h4bmd0zy",
+      "id": "1",
+      "bbox": [
+        0,
+        0,
+        14,
+        720
+      ],
+      "geometry": "rect",
+      "fillColor": "#0C7C78",
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/u103il0n",
+      "id": "2",
+      "bbox": [
+        66,
+        30,
+        530,
+        24
+      ],
+      "geometry": "rect",
+      "text": "TÁCTICAS ELEGIDAS",
+      "textPreview": "TÁCTICAS ELEGIDAS",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#0C7C78",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "TÁCTICAS ELEGIDAS"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "TÁCTICAS ELEGIDAS",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#0C7C78",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "TÁCTICAS ELEGIDAS",
+              "fontSize": 13,
+              "color": "#0C7C78",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/v2t4bqhs",
+      "id": "3",
+      "bbox": [
+        1182,
+        662,
+        42,
+        24
+      ],
+      "geometry": "rect",
+      "text": "06",
+      "textPreview": "06",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "bold": true,
+        "alignment": "right",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "06"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "06",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#58727C",
+            "bold": true,
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "06",
+              "fontSize": 13,
+              "color": "#58727C",
+              "bold": true,
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8zilgvih",
+      "id": "4",
+      "bbox": [
+        66,
+        680,
+        1090,
+        2
+      ],
+      "geometry": "rect",
+      "fillColor": "#CFDFDF",
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/t0rm90z2",
+      "id": "5",
+      "name": "slide-title",
+      "bbox": [
+        66,
+        62,
+        1145,
+        76
+      ],
+      "geometry": "rect",
+      "text": "Cuatro tácticas cubren dos atributos de calidad",
+      "textPreview": "Cuatro tácticas cubren dos atributos de calidad",
+      "resolvedFontSize": 38,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 38,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Cuatro tácticas cubren dos atributos de calidad"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Cuatro tácticas cubren dos atributos de calidad",
+          "resolvedTextStyle": {
+            "fontSize": 38,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Cuatro tácticas cubren dos atributos de calidad",
+              "fontSize": 38,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6x03el0b",
+      "id": "6",
+      "bbox": [
+        80,
+        180,
+        510,
+        32
+      ],
+      "geometry": "rect",
+      "text": "DISPONIBILIDAD",
+      "textPreview": "DISPONIBILIDAD",
+      "resolvedFontSize": 17,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 17,
+        "typeface": "+mn-lt",
+        "color": "#0C7C78",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "DISPONIBILIDAD"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "DISPONIBILIDAD",
+          "resolvedTextStyle": {
+            "fontSize": 17,
+            "color": "#0C7C78",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "DISPONIBILIDAD",
+              "fontSize": 17,
+              "color": "#0C7C78",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7y947qhw",
+      "id": "7",
+      "bbox": [
+        690,
+        180,
+        500,
+        32
+      ],
+      "geometry": "rect",
+      "text": "SEGURIDAD · RESISTIR ATAQUES",
+      "textPreview": "SEGURIDAD · RESISTIR ATAQUES",
+      "resolvedFontSize": 17,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 17,
+        "typeface": "+mn-lt",
+        "color": "#F26B5B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "SEGURIDAD · RESISTIR ATAQUES"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "SEGURIDAD · RESISTIR ATAQUES",
+          "resolvedTextStyle": {
+            "fontSize": 17,
+            "color": "#F26B5B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "SEGURIDAD · RESISTIR ATAQUES",
+              "fontSize": 17,
+              "color": "#F26B5B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/svm5sfyl",
+      "id": "8",
+      "bbox": [
+        74,
+        230,
+        510,
+        142
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#E3F3F0",
+      "lineColor": "#BFE4DF",
+      "lineWidth": 1
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/dwvmlkz6",
+      "id": "9",
+      "bbox": [
+        112,
+        252,
+        250,
+        40
+      ],
+      "geometry": "rect",
+      "text": "Replicación",
+      "textPreview": "Replicación",
+      "resolvedFontSize": 29,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 29,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Replicación"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Replicación",
+          "resolvedTextStyle": {
+            "fontSize": 29,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Replicación",
+              "fontSize": 29,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/10natozi",
+      "id": "10",
+      "bbox": [
+        112,
+        302,
+        420,
+        56
+      ],
+      "geometry": "rect",
+      "text": "Dos instancias ejecutan la misma API; si una cae, la otra mantiene el servicio.",
+      "textPreview": "Dos instancias ejecutan la misma API; si una cae, la otra mantiene el servicio.",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Dos instancias ejecutan la misma API; si una cae, la"
+          },
+          {
+            "index": 2,
+            "text": "otra mantiene el servicio."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Dos instancias ejecutan la misma API; si una cae, la otra mantiene el servicio.",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Dos instancias ejecutan la misma API; si una cae, la otra mantiene el servicio.",
+              "fontSize": 18,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gze9kjix",
+      "id": "11",
+      "bbox": [
+        74,
+        398,
+        510,
+        142
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#CFDFDF",
+      "lineWidth": 1
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fy5srehc",
+      "id": "12",
+      "bbox": [
+        112,
+        420,
+        250,
+        40
+      ],
+      "geometry": "rect",
+      "text": "Reintentos",
+      "textPreview": "Reintentos",
+      "resolvedFontSize": 29,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 29,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Reintentos"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Reintentos",
+          "resolvedTextStyle": {
+            "fontSize": 29,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Reintentos",
+              "fontSize": 29,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/excrit0r",
+      "id": "13",
+      "bbox": [
+        112,
+        470,
+        420,
+        56
+      ],
+      "geometry": "rect",
+      "text": "Una operación fallida se repite con espera y un límite explícito.",
+      "textPreview": "Una operación fallida se repite con espera y un límite explícito.",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Una operación fallida se repite con espera y un límite"
+          },
+          {
+            "index": 2,
+            "text": "explícito."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Una operación fallida se repite con espera y un límite explícito.",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Una operación fallida se repite con espera y un límite explícito.",
+              "fontSize": 18,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/tw3apoz6",
+      "id": "14",
+      "bbox": [
+        682,
+        230,
+        510,
+        142
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFE5DF",
+      "lineColor": "#F5B7AA",
+      "lineWidth": 1
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/svu9gjil",
+      "id": "15",
+      "bbox": [
+        720,
+        252,
+        340,
+        40
+      ],
+      "geometry": "rect",
+      "text": "Autenticar actores",
+      "textPreview": "Autenticar actores",
+      "resolvedFontSize": 29,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 29,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Autenticar actores"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Autenticar actores",
+          "resolvedTextStyle": {
+            "fontSize": 29,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Autenticar actores",
+              "fontSize": 29,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rulsneh0",
+      "id": "16",
+      "bbox": [
+        720,
+        302,
+        420,
+        56
+      ],
+      "geometry": "rect",
+      "text": "Correo y contraseña válidos permiten emitir un token JWT.",
+      "textPreview": "Correo y contraseña válidos permiten emitir un token JWT.",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Correo y contraseña válidos permiten emitir un token"
+          },
+          {
+            "index": 2,
+            "text": "JWT."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Correo y contraseña válidos permiten emitir un token JWT.",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Correo y contraseña válidos permiten emitir un token JWT.",
+              "fontSize": 18,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/69cre90v",
+      "id": "17",
+      "bbox": [
+        682,
+        398,
+        510,
+        142
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFF7EF",
+      "lineColor": "#EDD5B4",
+      "lineWidth": 1
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ds7a18za",
+      "id": "18",
+      "bbox": [
+        720,
+        420,
+        340,
+        40
+      ],
+      "geometry": "rect",
+      "text": "Autorizar actores",
+      "textPreview": "Autorizar actores",
+      "resolvedFontSize": 29,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 29,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Autorizar actores"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Autorizar actores",
+          "resolvedTextStyle": {
+            "fontSize": 29,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Autorizar actores",
+              "fontSize": 29,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cryts3i5",
+      "id": "19",
+      "bbox": [
+        720,
+        470,
+        420,
+        56
+      ],
+      "geometry": "rect",
+      "text": "El rol del token determina si una operación está permitida.",
+      "textPreview": "El rol del token determina si una operación está permitida.",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El rol del token determina si una operación está"
+          },
+          {
+            "index": 2,
+            "text": "permitida."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El rol del token determina si una operación está permitida.",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El rol del token determina si una operación está permitida.",
+              "fontSize": 18,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

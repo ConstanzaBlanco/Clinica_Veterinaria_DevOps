@@ -1,0 +1,787 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/rqu0na",
+    "id": "rqu0na",
+    "slide": 14,
+    "layoutId": "dd173969-cfc6-4e2d-8f1e-569239012e84",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "b5086b2e-1336-4033-aae1-56a230f87164",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#F5FAF9",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "dd173969-cfc6-4e2d-8f1e-569239012e84",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "b5086b2e-1336-4033-aae1-56a230f87164",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "b5086b2e-1336-4033-aae1-56a230f87164",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/h4bat0zi",
+      "id": "1",
+      "bbox": [
+        0,
+        0,
+        14,
+        720
+      ],
+      "geometry": "rect",
+      "fillColor": "#0C7C78",
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/u1kry50r",
+      "id": "2",
+      "bbox": [
+        66,
+        30,
+        530,
+        24
+      ],
+      "geometry": "rect",
+      "text": "CONCLUSIÓN",
+      "textPreview": "CONCLUSIÓN",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#0C7C78",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "CONCLUSIÓN"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "CONCLUSIÓN",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#0C7C78",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "CONCLUSIÓN",
+              "fontSize": 13,
+              "color": "#0C7C78",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/f2tsrq1c",
+      "id": "3",
+      "bbox": [
+        1182,
+        662,
+        42,
+        24
+      ],
+      "geometry": "rect",
+      "text": "14",
+      "textPreview": "14",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "bold": true,
+        "alignment": "right",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "14"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "14",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#58727C",
+            "bold": true,
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "14",
+              "fontSize": 13,
+              "color": "#58727C",
+              "bold": true,
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/sz29wvi1",
+      "id": "4",
+      "bbox": [
+        66,
+        680,
+        1090,
+        2
+      ],
+      "geometry": "rect",
+      "fillColor": "#CFDFDF",
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/t0bap0j6",
+      "id": "5",
+      "name": "slide-title",
+      "bbox": [
+        66,
+        62,
+        1145,
+        76
+      ],
+      "geometry": "rect",
+      "text": "El resultado es observable, pero el alcance tiene límites",
+      "textPreview": "El resultado es observable, pero el alcance tiene límites",
+      "resolvedFontSize": 38,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 38,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El resultado es observable, pero el alcance tiene límites"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El resultado es observable, pero el alcance tiene límites",
+          "resolvedTextStyle": {
+            "fontSize": 38,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El resultado es observable, pero el alcance tiene límites",
+              "fontSize": 38,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6d0rul0v",
+      "id": "6",
+      "bbox": [
+        76,
+        190,
+        520,
+        356
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#0B2D3B",
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7e9snq1g",
+      "id": "7",
+      "bbox": [
+        114,
+        224,
+        400,
+        38
+      ],
+      "geometry": "rect",
+      "text": "Lo que demostramos",
+      "textPreview": "Lo que demostramos",
+      "resolvedFontSize": 27,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 27,
+        "typeface": "+mn-lt",
+        "color": "#FFFFFF",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Lo que demostramos"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Lo que demostramos",
+          "resolvedTextStyle": {
+            "fontSize": 27,
+            "color": "#FFFFFF",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Lo que demostramos",
+              "fontSize": 27,
+              "color": "#FFFFFF",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cvmt8fi5",
+      "id": "8",
+      "bbox": [
+        114,
+        292,
+        410,
+        190
+      ],
+      "geometry": "rect",
+      "text": "• Continuidad ante la caída de una API\n• Recuperación ante fallas transitorias\n• Identidad mediante JWT\n• Permisos según rol",
+      "textPreview": "• Continuidad ante la caída de una API | • Recuperación ante fallas transitorias | • Identidad mediante JWT | • Permisos según rol",
+      "resolvedFontSize": 21,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 21,
+        "typeface": "+mn-lt",
+        "color": "#BFE4DF",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "• Continuidad ante la caída de una API"
+          },
+          {
+            "index": 2,
+            "text": "• Recuperación ante fallas transitorias"
+          },
+          {
+            "index": 3,
+            "text": "• Identidad mediante JWT"
+          },
+          {
+            "index": 4,
+            "text": "• Permisos según rol"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "• Continuidad ante la caída de una API",
+          "resolvedTextStyle": {
+            "fontSize": 21,
+            "color": "#BFE4DF",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "• Continuidad ante la caída de una API",
+              "fontSize": 21,
+              "color": "#BFE4DF",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "• Recuperación ante fallas transitorias",
+          "resolvedTextStyle": {
+            "fontSize": 21,
+            "color": "#BFE4DF",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "• Recuperación ante fallas transitorias",
+              "fontSize": 21,
+              "color": "#BFE4DF",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "• Identidad mediante JWT",
+          "resolvedTextStyle": {
+            "fontSize": 21,
+            "color": "#BFE4DF",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "• Identidad mediante JWT",
+              "fontSize": 21,
+              "color": "#BFE4DF",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "• Permisos según rol",
+          "resolvedTextStyle": {
+            "fontSize": 21,
+            "color": "#BFE4DF",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "• Permisos según rol",
+              "fontSize": 21,
+              "color": "#BFE4DF",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/dwva1kzq",
+      "id": "9",
+      "bbox": [
+        654,
+        190,
+        540,
+        356
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#CFDFDF",
+      "lineWidth": 1
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1oritora",
+      "id": "10",
+      "bbox": [
+        694,
+        224,
+        400,
+        38
+      ],
+      "geometry": "rect",
+      "text": "Límite reconocido",
+      "textPreview": "Límite reconocido",
+      "resolvedFontSize": 27,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 27,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Límite reconocido"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Límite reconocido",
+          "resolvedTextStyle": {
+            "fontSize": 27,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Límite reconocido",
+              "fontSize": 27,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gni103ap",
+      "id": "11",
+      "bbox": [
+        694,
+        294,
+        422,
+        98
+      ],
+      "geometry": "rect",
+      "text": "La API está replicada; PostgreSQL sigue siendo una única instancia.",
+      "textPreview": "La API está replicada; PostgreSQL sigue siendo una única instancia.",
+      "resolvedFontSize": 27,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 27,
+        "typeface": "+mn-lt",
+        "color": "#F26B5B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "La API está replicada; PostgreSQL"
+          },
+          {
+            "index": 2,
+            "text": "sigue siendo una única instancia."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "La API está replicada; PostgreSQL sigue siendo una única instancia.",
+          "resolvedTextStyle": {
+            "fontSize": 27,
+            "color": "#F26B5B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "La API está replicada; PostgreSQL sigue siendo una única instancia.",
+              "fontSize": 27,
+              "color": "#F26B5B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fm90ry94",
+      "id": "12",
+      "bbox": [
+        694,
+        422,
+        420,
+        70
+      ],
+      "geometry": "rect",
+      "text": "La demo prueba continuidad de la capa de aplicación, no alta disponibilidad total.",
+      "textPreview": "La demo prueba continuidad de la capa de aplicación, no alta disponibilidad total.",
+      "resolvedFontSize": 19,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 19,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "La demo prueba continuidad de la capa de"
+          },
+          {
+            "index": 2,
+            "text": "aplicación, no alta disponibilidad total."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "La demo prueba continuidad de la capa de aplicación, no alta disponibilidad total.",
+          "resolvedTextStyle": {
+            "fontSize": 19,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "La demo prueba continuidad de la capa de aplicación, no alta disponibilidad total.",
+              "fontSize": 19,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/el0jytsz",
+      "id": "13",
+      "bbox": [
+        128,
+        594,
+        1020,
+        48
+      ],
+      "geometry": "rect",
+      "text": "Las tácticas se notan menos cuando funcionan bien.",
+      "textPreview": "Las tácticas se notan menos cuando funcionan bien.",
+      "resolvedFontSize": 29,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 29,
+        "typeface": "+mn-lt",
+        "color": "#0C7C78",
+        "bold": true,
+        "alignment": "center",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Las tácticas se notan menos cuando funcionan bien."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Las tácticas se notan menos cuando funcionan bien.",
+          "resolvedTextStyle": {
+            "fontSize": 29,
+            "color": "#0C7C78",
+            "bold": true,
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Las tácticas se notan menos cuando funcionan bien.",
+              "fontSize": 29,
+              "color": "#0C7C78",
+              "bold": true,
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

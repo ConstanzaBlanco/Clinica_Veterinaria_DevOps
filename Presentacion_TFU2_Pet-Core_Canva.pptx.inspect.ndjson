@@ -1,0 +1,223 @@
+{"kind":"deck","id":"pr/cw04q4","name":"Deck"}
+{"kind":"layout","layoutId":"78abbd84-7e18-47bf-9411-ed93e4f180e6","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"82a50bd4-5fbe-4a4e-b80d-3d632e0668aa","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/7urr9o","slide":1,"title":"TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II","textShapes":5}
+{"kind":"shape","id":"sh/6x8jyp0n","slide":1,"bbox":[0,0,1280,18]}
+{"kind":"textbox","id":"sh/sza10fit","slide":1,"text":"TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II","textPreview":"TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II","textChars":43,"textLines":1,"bbox":[76,72,690,30]}
+{"kind":"textbox","id":"sh/f21kbuh4","slide":1,"text":"Tácticas de\narquitectura","textPreview":"Tácticas de | arquitectura","textChars":24,"textLines":2,"bbox":[76,170,760,180]}
+{"kind":"textbox","id":"sh/e1sj2p0j","slide":1,"text":"Disponibilidad y seguridad sobre una API REST real","textPreview":"Disponibilidad y seguridad sobre una API REST real","textChars":50,"textLines":1,"bbox":[80,376,760,55]}
+{"kind":"shape","id":"sh/14j2d4za","slide":1,"bbox":[80,458,132,6]}
+{"kind":"textbox","id":"sh/g3a14zip","slide":1,"text":"PET-CORE","textPreview":"PET-CORE","textChars":8,"textLines":1,"bbox":[80,484,300,34]}
+{"kind":"textbox","id":"sh/361kfuhg","slide":1,"text":"Constanza Blanco · Manuel Cabrera\nDiego de Oliveira · Martin Mujica","textPreview":"Constanza Blanco · Manuel Cabrera | Diego de Oliveira · Martin Mujica","textChars":67,"textLines":2,"bbox":[80,548,700,72]}
+{"kind":"image","id":"im/4nqlw3y9","slide":1,"name":"","geometry":"rect","bbox":[880,60,360,360]}
+{"kind":"notes","id":"nt/7urr9o","slide":1,"text":"Tiempo sugerido: 30 segundos. Presentar al equipo y anticipar que se demostrarán cuatro tácticas con comportamiento observable.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/3zby9b","slide":2,"title":"CONTEXTO","textShapes":11}
+{"kind":"shape","id":"sh/z2l4zatc","slide":2,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/03u58fuh","slide":2,"text":"CONTEXTO","textPreview":"CONTEXTO","textChars":8,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/143m1kb2","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/qxs325cf","slide":2,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/ry14vqt0","slide":2,"name":"slide-title","text":"Pet-Core expone procesos que no pueden fallar en silencio","textPreview":"Pet-Core expone procesos que no pueden fallar en silencio","textChars":57,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/czul4vul","slide":2,"bbox":[66,190,520,390]}
+{"kind":"textbox","id":"sh/d03mx0b6","slide":2,"text":"Una API REST para la gestión de una clínica veterinaria","textPreview":"Una API REST para la gestión de una clínica veterinaria","textChars":55,"textLines":1,"bbox":[104,228,430,108]}
+{"kind":"textbox","id":"sh/29s3ylcj","slide":2,"text":"La funcionalidad da un contexto real para observar decisiones de arquitectura.","textPreview":"La funcionalidad da un contexto real para observar decisiones de arquitectura.","textChars":78,"textLines":1,"bbox":[104,378,414,88]}
+{"kind":"textbox","id":"sh/3a14rqt4","slide":2,"text":"Pet-Core","textPreview":"Pet-Core","textChars":8,"textLines":1,"bbox":[104,500,240,38]}
+{"kind":"shape","id":"sh/7e9ofulc","slide":2,"bbox":[642,192,548,168]}
+{"kind":"textbox","id":"sh/6d0769kr","slide":2,"text":"Procesos críticos","textPreview":"Procesos críticos","textChars":17,"textLines":1,"bbox":[680,216,240,30]}
+{"kind":"textbox","id":"sh/tgr6h432","slide":2,"text":"Reserva de turnos\nAgenda e historial clínico","textPreview":"Reserva de turnos | Agenda e historial clínico","textChars":44,"textLines":2,"bbox":[680,258,450,76]}
+{"kind":"shape","id":"sh/8fip8z2x","slide":2,"bbox":[642,388,548,190]}
+{"kind":"textbox","id":"sh/vitojel8","slide":2,"text":"Tres identidades, permisos diferentes","textPreview":"Tres identidades, permisos diferentes","textChars":37,"textLines":1,"bbox":[680,414,448,34]}
+{"kind":"textbox","id":"sh/uhk7a9kn","slide":2,"text":"Cliente  ·  Veterinario  ·  Administrador","textPreview":"Cliente  ·  Veterinario  ·  Administrador","textChars":41,"textLines":1,"bbox":[680,468,450,40]}
+{"kind":"textbox","id":"sh/h4b6lo3e","slide":2,"text":"La identidad y el rol determinan qué información puede consultarse.","textPreview":"La identidad y el rol determinan qué información puede consultarse.","textChars":67,"textLines":1,"bbox":[680,520,450,40]}
+{"kind":"notes","id":"nt/3zby9b","slide":2,"text":"Tiempo sugerido: 55 segundos. Explicar el dominio solo lo necesario: procesos críticos y separación de roles.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/gdf51w","slide":3,"title":"REQUERIMIENTOS","textShapes":16}
+{"kind":"shape","id":"sh/cjmhg3ep","slide":3,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/rid07yx4","slide":3,"text":"REQUERIMIENTOS","textPreview":"REQUERIMIENTOS","textChars":14,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/qx4zetwz","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/1ofid8fm","slide":3,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/0nm1k3e1","slide":3,"name":"slide-title","text":"Los requerimientos exigen continuidad y control de acceso","textPreview":"Los requerimientos exigen continuidad y control de acceso","textChars":57,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"textbox","id":"sh/zmd0byxg","slide":3,"text":"Cada táctica responde a un riesgo concreto.","textPreview":"Cada táctica responde a un riesgo concreto.","textChars":43,"textLines":1,"bbox":[68,132,1110,44]}
+{"kind":"textbox","id":"sh/el4jitwv","slide":3,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[78,208,58,46]}
+{"kind":"shape","id":"sh/hsbi1of2","slide":3,"bbox":[150,206,4,68]}
+{"kind":"textbox","id":"sh/gr2h8jyh","slide":3,"text":"Servicio disponible","textPreview":"Servicio disponible","textChars":19,"textLines":1,"bbox":[180,204,310,34]}
+{"kind":"textbox","id":"sh/qtgbmdcf","slide":3,"text":"Los turnos deben poder reservarse aun cuando una instancia de la API falle.","textPreview":"Los turnos deben poder reservarse aun cuando una instancia de la API falle.","textChars":75,"textLines":1,"bbox":[510,202,650,60]}
+{"kind":"textbox","id":"sh/rupcvid0","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[78,312,58,46]}
+{"kind":"shape","id":"sh/svytonul","slide":3,"bbox":[150,310,4,68]}
+{"kind":"textbox","id":"sh/dw7uxsv6","slide":3,"text":"Recuperación breve","textPreview":"Recuperación breve","textChars":18,"textLines":1,"bbox":[180,308,310,34]}
+{"kind":"textbox","id":"sh/exgbqxcr","slide":3,"text":"Las fallas transitorias de conexión no deberían interrumpir una operación válida.","textPreview":"Las fallas transitorias de conexión no deberían interrumpir una operación válida.","textChars":81,"textLines":1,"bbox":[510,306,650,60]}
+{"kind":"textbox","id":"sh/fi9cz2dw","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[78,416,58,46]}
+{"kind":"shape","id":"sh/0jitsnuh","slide":3,"bbox":[150,414,4,68]}
+{"kind":"textbox","id":"sh/1kru1sv2","slide":3,"text":"Identidad comprobada","textPreview":"Identidad comprobada","textChars":20,"textLines":1,"bbox":[180,412,310,34]}
+{"kind":"textbox","id":"sh/2l0buxcn","slide":3,"text":"Los recursos protegidos deben rechazar actores que no hayan iniciado sesión.","textPreview":"Los recursos protegidos deben rechazar actores que no hayan iniciado sesión.","textChars":76,"textLines":1,"bbox":[510,410,650,60]}
+{"kind":"textbox","id":"sh/nm9c32d8","slide":3,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[78,520,58,46]}
+{"kind":"shape","id":"sh/zqtsb29g","slide":3,"bbox":[150,518,4,68]}
+{"kind":"textbox","id":"sh/ypkbixsv","slide":3,"text":"Permisos por rol","textPreview":"Permisos por rol","textChars":16,"textLines":1,"bbox":[180,516,310,34]}
+{"kind":"textbox","id":"sh/lsbadcr6","slide":3,"text":"Un actor autenticado solo puede ejecutar acciones autorizadas para su rol.","textPreview":"Un actor autenticado solo puede ejecutar acciones autorizadas para su rol.","textChars":74,"textLines":1,"bbox":[510,514,650,60]}
+{"kind":"notes","id":"nt/gdf51w","slide":3,"text":"Tiempo sugerido: 1 minuto. Formular cada requisito como riesgo y resultado esperado, sin entrar todavía en implementación.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/4lz7gz","slide":4,"title":"TÁCTICAS ELEGIDAS","textShapes":13}
+{"kind":"shape","id":"sh/4v61o36l","slide":4,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/judkfyp0","slide":4,"text":"TÁCTICAS ELEGIDAS","textPreview":"TÁCTICAS ELEGIDAS","textChars":17,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/it4jmtof","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/hsvido7u","slide":4,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/wrm1kj69","slide":4,"name":"slide-title","text":"Cuatro tácticas cubren dos atributos de calidad","textPreview":"Cuatro tácticas cubren dos atributos de calidad","textChars":47,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"textbox","id":"sh/vqd0bep4","slide":4,"text":"DISPONIBILIDAD","textPreview":"DISPONIBILIDAD","textChars":14,"textLines":1,"bbox":[80,180,510,32]}
+{"kind":"textbox","id":"sh/u54jitoj","slide":4,"text":"SEGURIDAD · RESISTIR ATAQUES","textPreview":"SEGURIDAD · RESISTIR ATAQUES","textChars":28,"textLines":1,"bbox":[690,180,500,32]}
+{"kind":"shape","id":"sh/1oz2ps7e","slide":4,"bbox":[74,230,510,142]}
+{"kind":"textbox","id":"sh/0nq1wn6t","slide":4,"text":"Replicación","textPreview":"Replicación","textChars":11,"textLines":1,"bbox":[112,252,250,40]}
+{"kind":"textbox","id":"sh/y9gja1c3","slide":4,"text":"Dos instancias ejecutan la misma API; si una cae, la otra mantiene el servicio.","textPreview":"Dos instancias ejecutan la misma API; si una cae, la otra mantiene el servicio.","textChars":79,"textLines":1,"bbox":[112,302,420,56]}
+{"kind":"shape","id":"sh/za9k3md8","slide":4,"bbox":[74,398,510,142]}
+{"kind":"textbox","id":"sh/0bi1crut","slide":4,"text":"Reintentos","textPreview":"Reintentos","textChars":10,"textLines":1,"bbox":[112,420,250,40]}
+{"kind":"textbox","id":"sh/lcr25wve","slide":4,"text":"Una operación fallida se repite con espera y un límite explícito.","textPreview":"Una operación fallida se repite con espera y un límite explícito.","textChars":65,"textLines":1,"bbox":[112,470,420,56]}
+{"kind":"shape","id":"sh/q5gj6hcr","slide":4,"bbox":[682,230,510,142]}
+{"kind":"textbox","id":"sh/r6pkfmdc","slide":4,"text":"Autenticar actores","textPreview":"Autenticar actores","textChars":18,"textLines":1,"bbox":[720,252,340,40]}
+{"kind":"textbox","id":"sh/c7y18rux","slide":4,"text":"Correo y contraseña válidos permiten emitir un token JWT.","textPreview":"Correo y contraseña válidos permiten emitir un token JWT.","textChars":57,"textLines":1,"bbox":[720,302,420,56]}
+{"kind":"shape","id":"sh/d8721wvi","slide":4,"bbox":[682,398,510,142]}
+{"kind":"textbox","id":"sh/a1kjilcv","slide":4,"text":"Autorizar actores","textPreview":"Autorizar actores","textChars":17,"textLines":1,"bbox":[720,420,340,40]}
+{"kind":"textbox","id":"sh/v2tkb6tg","slide":4,"text":"El rol del token determina si una operación está permitida.","textPreview":"El rol del token determina si una operación está permitida.","textChars":59,"textLines":1,"bbox":[720,470,420,56]}
+{"kind":"notes","id":"nt/4lz7gz","slide":4,"text":"Tiempo sugerido: 1 minuto. Diferenciar claramente disponibilidad de seguridad y nombrar las cuatro tácticas seleccionadas.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/wm77pa","slide":5,"title":"ARQUITECTURA","textShapes":3}
+{"kind":"shape","id":"sh/90r6hcjy","slide":5,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/mxgn6xk7","slide":5,"text":"ARQUITECTURA","textPreview":"ARQUITECTURA","textChars":12,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/ny9of21s","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/0vy54n2h","slide":5,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/1w76dsj2","slide":5,"name":"slide-title","text":"La arquitectura vuelve observables las cuatro tácticas","textPreview":"La arquitectura vuelve observables las cuatro tácticas","textChars":54,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/etgn2xkb","slide":5,"bbox":[56,150,1168,490]}
+{"kind":"image","id":"im/ypo7itk3","slide":5,"name":"","geometry":"rect","bbox":[80,166,1120,454]}
+{"kind":"notes","id":"nt/wm77pa","slide":5,"text":"Tiempo sugerido: 1 minuto 30 segundos. Recorrer Postman, Nginx, dos réplicas, seguridad/reintentos dentro de la API, PostgreSQL, volumen y secretos. Aclarar que no hay frontend en la demo.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/bqbvd7","slide":6,"title":"CÓMO ACTÚAN","textShapes":20}
+{"kind":"shape","id":"sh/u5wrmdgj","slide":6,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/h87qx8za","slide":6,"text":"CÓMO ACTÚAN","textPreview":"CÓMO ACTÚAN","textChars":11,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/g7e9o3yp","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/3ap8zih0","slide":6,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/29grqdgv","slide":6,"name":"slide-title","text":"Las tácticas se aplican en distintos momentos del pedido","textPreview":"Las tácticas se aplican en distintos momentos del pedido","textChars":56,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/pc7q1sz6","slide":6,"bbox":[76,192,1120,106]}
+{"kind":"textbox","id":"sh/4by9snyl","slide":6,"text":"Postman","textPreview":"Postman","textChars":7,"textLines":1,"bbox":[106,222,130,40]}
+{"kind":"textbox","id":"sh/ryp832hc","slide":6,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[244,220,50,40]}
+{"kind":"textbox","id":"sh/qxgruxgr","slide":6,"text":"Nginx","textPreview":"Nginx","textChars":5,"textLines":1,"bbox":[306,222,130,40]}
+{"kind":"textbox","id":"sh/8vypgnqh","slide":6,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[445,220,50,40]}
+{"kind":"textbox","id":"sh/9wrq9s72","slide":6,"text":"FastAPI","textPreview":"FastAPI","textChars":7,"textLines":1,"bbox":[510,222,150,40]}
+{"kind":"textbox","id":"sh/mtg7ed8r","slide":6,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[664,220,50,40]}
+{"kind":"textbox","id":"sh/7up87ipc","slide":6,"text":"JWT + rol","textPreview":"JWT + rol","textChars":9,"textLines":1,"bbox":[720,222,170,40]}
+{"kind":"textbox","id":"sh/wjipknqt","slide":6,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[895,220,50,40]}
+{"kind":"textbox","id":"sh/hkrqds7e","slide":6,"text":"PostgreSQL","textPreview":"PostgreSQL","textChars":10,"textLines":1,"bbox":[952,222,205,40]}
+{"kind":"shape","id":"sh/uh07ix8n","slide":6,"bbox":[76,350,250,190]}
+{"kind":"shape","id":"sh/vi98b2p8","slide":6,"bbox":[76,350,250,8]}
+{"kind":"textbox","id":"sh/4n29o7qp","slide":6,"text":"Replicación","textPreview":"Replicación","textChars":11,"textLines":1,"bbox":[102,374,200,36]}
+{"kind":"textbox","id":"sh/5obqhc7a","slide":6,"text":"Nginx elige una réplica disponible.","textPreview":"Nginx elige una réplica disponible.","textChars":35,"textLines":1,"bbox":[102,426,196,84]}
+{"kind":"shape","id":"sh/d47q1cze","slide":6,"bbox":[356,350,250,190]}
+{"kind":"shape","id":"sh/s3yps7yt","slide":6,"bbox":[356,350,250,8]}
+{"kind":"textbox","id":"sh/r2p8z2ho","slide":6,"text":"Autenticación","textPreview":"Autenticación","textChars":13,"textLines":1,"bbox":[382,374,200,36]}
+{"kind":"textbox","id":"sh/q1w7qx03","slide":6,"text":"FastAPI comprueba la identidad y valida el JWT.","textPreview":"FastAPI comprueba la identidad y valida el JWT.","textChars":47,"textLines":1,"bbox":[382,426,196,84]}
+{"kind":"shape","id":"sh/187q5czq","slide":6,"bbox":[636,350,250,190]}
+{"kind":"shape","id":"sh/07ypw7y5","slide":6,"bbox":[636,350,250,8]}
+{"kind":"textbox","id":"sh/f6p832hk","slide":6,"text":"Autorización","textPreview":"Autorización","textChars":12,"textLines":1,"bbox":[662,374,200,36]}
+{"kind":"textbox","id":"sh/e5g7uhgz","slide":6,"text":"El rol habilita o rechaza la operación.","textPreview":"El rol habilita o rechaza la operación.","textChars":39,"textLines":1,"bbox":[662,426,196,84]}
+{"kind":"shape","id":"sh/hcnqtsz6","slide":6,"bbox":[916,350,250,190]}
+{"kind":"shape","id":"sh/gbepkni1","slide":6,"bbox":[916,350,250,8]}
+{"kind":"textbox","id":"sh/m58veps7","slide":6,"text":"Reintentos","textPreview":"Reintentos","textChars":10,"textLines":1,"bbox":[942,374,200,36]}
+{"kind":"textbox","id":"sh/761w7uts","slide":6,"text":"La conexión a datos se repite ante una falla transitoria.","textPreview":"La conexión a datos se repite ante una falla transitoria.","textChars":57,"textLines":1,"bbox":[942,426,196,84]}
+{"kind":"notes","id":"nt/bqbvd7","slide":6,"text":"Tiempo sugerido: 1 minuto 15 segundos. Mostrar que no son cuatro demos aisladas: las tácticas forman parte de un mismo recorrido.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/ub61tq","slide":7,"title":"DEMOSTRACIÓN EN VIVO","textShapes":7}
+{"kind":"textbox","id":"sh/ylsfytc7","slide":7,"text":"DEMOSTRACIÓN EN VIVO","textPreview":"DEMOSTRACIÓN EN VIVO","textChars":20,"textLines":1,"bbox":[76,78,600,30]}
+{"kind":"textbox","id":"sh/z61g7yds","slide":7,"text":"De la decisión\na la evidencia","textPreview":"De la decisión | a la evidencia","textChars":29,"textLines":2,"bbox":[76,170,690,176]}
+{"kind":"textbox","id":"sh/8bax43u9","slide":7,"text":"1  Autenticación","textPreview":"1  Autenticación","textChars":16,"textLines":1,"bbox":[800,172,330,40]}
+{"kind":"textbox","id":"sh/9c3yd8vu","slide":7,"text":"2  Autorización","textPreview":"2  Autorización","textChars":15,"textLines":1,"bbox":[800,238,330,40]}
+{"kind":"textbox","id":"sh/m9sf2tc3","slide":7,"text":"3  Replicación","textPreview":"3  Replicación","textChars":14,"textLines":1,"bbox":[800,304,330,40]}
+{"kind":"textbox","id":"sh/7a1gbydo","slide":7,"text":"4  Reintentos","textPreview":"4  Reintentos","textChars":13,"textLines":1,"bbox":[800,370,330,40]}
+{"kind":"textbox","id":"sh/ofqxsju5","slide":7,"text":"Postman + terminal · 7 minutos","textPreview":"Postman + terminal · 7 minutos","textChars":30,"textLines":1,"bbox":[800,488,350,34]}
+{"kind":"image","id":"im/8ri10jmt","slide":7,"name":"","geometry":"rect","bbox":[64,392,250,250]}
+{"kind":"notes","id":"nt/ub61tq","slide":7,"text":"Tiempo sugerido: 15 segundos. Abrir Postman y terminal. Las cuatro demostraciones ocupan aproximadamente siete minutos.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/1v7hzf","slide":8,"title":"DEMO 1 · AUTENTICACIÓN","textShapes":12}
+{"kind":"shape","id":"sh/ul8jqxkz","slide":8,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/h8zilsjq","slide":8,"text":"DEMO 1 · AUTENTICACIÓN","textPreview":"DEMO 1 · AUTENTICACIÓN","textChars":22,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/wnq1sn25","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/ja10n21g","slide":8,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/i98jux0b","slide":8,"name":"slide-title","text":"Sin identidad no hay acceso; con JWT, el recurso responde","textPreview":"Sin identidad no hay acceso; con JWT, el recurso responde","textChars":57,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/5cjipcjm","slide":8,"bbox":[74,196,500,320]}
+{"kind":"textbox","id":"sh/4ba1w7i1","slide":8,"text":"SIN TOKEN","textPreview":"SIN TOKEN","textChars":9,"textLines":1,"bbox":[112,226,250,28]}
+{"kind":"textbox","id":"sh/zex0bi1c","slide":8,"text":"GET /demo/instancia","textPreview":"GET /demo/instancia","textChars":19,"textLines":1,"bbox":[112,286,390,44]}
+{"kind":"textbox","id":"sh/ydozidkr","slide":8,"text":"401","textPreview":"401","textChars":3,"textLines":1,"bbox":[112,364,150,86]}
+{"kind":"textbox","id":"sh/kbqtgjmt","slide":8,"text":"Unauthorized","textPreview":"Unauthorized","textChars":12,"textLines":1,"bbox":[260,388,230,42]}
+{"kind":"shape","id":"sh/lczu9o3e","slide":8,"bbox":[704,196,500,320]}
+{"kind":"textbox","id":"sh/y98be943","slide":8,"text":"LOGIN + JWT","textPreview":"LOGIN + JWT","textChars":11,"textLines":1,"bbox":[742,226,250,28]}
+{"kind":"textbox","id":"sh/jahc7elo","slide":8,"text":"POST /auth/login\nGET /demo/instancia","textPreview":"POST /auth/login | GET /demo/instancia","textChars":36,"textLines":2,"bbox":[742,280,390,82]}
+{"kind":"textbox","id":"sh/8fqdkjm5","slide":8,"text":"200","textPreview":"200","textChars":3,"textLines":1,"bbox":[742,390,150,80]}
+{"kind":"textbox","id":"sh/tgjudo3q","slide":8,"text":"OK","textPreview":"OK","textChars":2,"textLines":1,"bbox":[890,412,120,40]}
+{"kind":"textbox","id":"sh/6d8vit4z","slide":8,"text":"Evidencia: el mismo endpoint cambia su respuesta cuando se presenta una identidad válida.","textPreview":"Evidencia: el mismo endpoint cambia su respuesta cuando se presenta una identidad válida.","textChars":89,"textLines":1,"bbox":[106,552,1060,54]}
+{"kind":"notes","id":"nt/1v7hzf","slide":8,"text":"Demo: 1 minuto 15 segundos. Ejecutar en Seguridad_Collection las peticiones sin token, login y acceso con token. Mostrar 401 y luego 200.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/z4vzx0","slide":9,"title":"DEMO 2 · AUTORIZACIÓN","textShapes":11}
+{"kind":"shape","id":"sh/sfu18f6h","slide":9,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/rel0fapw","slide":9,"text":"DEMO 2 · AUTORIZACIÓN","textPreview":"DEMO 2 · AUTORIZACIÓN","textChars":21,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/6dcz6pob","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/14nil47y","slide":9,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/03e1cz6d","slide":9,"name":"slide-title","text":"Un JWT válido no concede todos los permisos","textPreview":"Un JWT válido no concede todos los permisos","textChars":43,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/f250jup8","slide":9,"bbox":[76,198,1120,322]}
+{"kind":"textbox","id":"sh/e1wjapon","slide":9,"text":"GET /agenda","textPreview":"GET /agenda","textChars":11,"textLines":1,"bbox":[456,220,360,46]}
+{"kind":"shape","id":"sh/p87ip47a","slide":9,"bbox":[635,280,3,190]}
+{"kind":"textbox","id":"sh/o7y1gz6p","slide":9,"text":"TOKEN DE CLIENTE","textPreview":"TOKEN DE CLIENTE","textChars":16,"textLines":1,"bbox":[128,300,360,30]}
+{"kind":"textbox","id":"sh/e5kjux8n","slide":9,"text":"403","textPreview":"403","textChars":3,"textLines":1,"bbox":[176,350,260,90]}
+{"kind":"textbox","id":"sh/f6tkn298","slide":9,"text":"Forbidden","textPreview":"Forbidden","textChars":9,"textLines":1,"bbox":[176,432,260,34]}
+{"kind":"textbox","id":"sh/g721w7qt","slide":9,"text":"TOKEN DE VETERINARIO","textPreview":"TOKEN DE VETERINARIO","textChars":20,"textLines":1,"bbox":[786,300,360,30]}
+{"kind":"textbox","id":"sh/18b2pcre","slide":9,"text":"200","textPreview":"200","textChars":3,"textLines":1,"bbox":[834,350,260,90]}
+{"kind":"textbox","id":"sh/2tkjyh8j","slide":9,"text":"OK","textPreview":"OK","textChars":2,"textLines":1,"bbox":[834,432,260,34]}
+{"kind":"textbox","id":"sh/3udkrm94","slide":9,"text":"Evidencia: ambos actores están autenticados; el rol determina el resultado.","textPreview":"Evidencia: ambos actores están autenticados; el rol determina el resultado.","textChars":75,"textLines":1,"bbox":[106,554,1060,54]}
+{"kind":"notes","id":"nt/z4vzx0","slide":9,"text":"Demo: 1 minuto 15 segundos. Iniciar sesión como cliente y luego como veterinario. Explicar que 403 significa identidad válida sin permiso suficiente.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/caml64","slide":10,"title":"DEMO 3 · REPLICACIÓN","textShapes":11}
+{"kind":"shape","id":"sh/nmtobe54","slide":10,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/on2p4j6p","slide":10,"text":"DEMO 3 · REPLICACIÓN","textPreview":"DEMO 3 · REPLICACIÓN","textChars":20,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/pob6donu","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/ex07y9o7","slide":10,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/fy9o7e5s","slide":10,"name":"slide-title","text":"Una réplica cae y la API continúa respondiendo","textPreview":"Una réplica cae y la API continúa respondiendo","textChars":46,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/10b69ony","slide":10,"bbox":[844,174,350,408]}
+{"kind":"textbox","id":"sh/yt47ador","slide":10,"text":"EVIDENCIA EN VIVO","textPreview":"EVIDENCIA EN VIVO","textChars":17,"textLines":1,"bbox":[882,208,270,28]}
+{"kind":"textbox","id":"sh/jud8jy5c","slide":10,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[880,270,42,42]}
+{"kind":"textbox","id":"sh/f65s765k","slide":10,"text":"Dos identificadores alternan","textPreview":"Dos identificadores alternan","textChars":28,"textLines":1,"bbox":[934,266,214,54]}
+{"kind":"textbox","id":"sh/u5wbe14z","slide":10,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[880,356,42,42]}
+{"kind":"textbox","id":"sh/18na9gnq","slide":10,"text":"Se detiene server-1","textPreview":"Se detiene server-1","textChars":19,"textLines":1,"bbox":[934,352,214,54]}
+{"kind":"textbox","id":"sh/g7etgbm5","slide":10,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[880,442,42,42]}
+{"kind":"textbox","id":"sh/3a5sb65g","slide":10,"text":"La respuesta sigue en 200","textPreview":"La respuesta sigue en 200","textChars":25,"textLines":1,"bbox":[934,438,214,58]}
+{"kind":"textbox","id":"sh/29wbil4v","slide":10,"text":"Nginx conserva una única URL para el cliente.","textPreview":"Nginx conserva una única URL para el cliente.","textChars":45,"textLines":1,"bbox":[884,526,260,40]}
+{"kind":"image","id":"im/xob218vq","slide":10,"name":"","geometry":"rect","bbox":[62,150,750,455]}
+{"kind":"notes","id":"nt/caml64","slide":10,"text":"Demo: 2 minutos 15 segundos. Ejecutar varias veces Identificar instancia, detener una réplica y repetir. Mostrar continuidad desde la instancia restante.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/ocfzi3","slide":11,"title":"DEMO 4 · REINTENTOS","textShapes":19}
+{"kind":"shape","id":"sh/ojmhobax","slide":11,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/3idgf69c","slide":11,"text":"DEMO 4 · REINTENTOS","textPreview":"DEMO 4 · REINTENTOS","textChars":19,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/2h4zm1sr","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/d8fylgre","slide":11,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/c76hsbat","slide":11,"name":"slide-title","text":"Dos fallas transitorias se recuperan dentro de la misma operación","textPreview":"Dos fallas transitorias se recuperan dentro de la misma operación","textChars":65,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/b6xgj69o","slide":11,"bbox":[72,226,250,230]}
+{"kind":"textbox","id":"sh/qlozqls3","slide":11,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[100,248,65,34]}
+{"kind":"textbox","id":"sh/lcfip0rq","slide":11,"text":"Simular","textPreview":"Simular","textChars":7,"textLines":1,"bbox":[100,310,190,40]}
+{"kind":"textbox","id":"sh/0b6hwva5","slide":11,"text":"2 fallas","textPreview":"2 fallas","textChars":8,"textLines":1,"bbox":[100,372,190,42]}
+{"kind":"textbox","id":"sh/qlkvupkf","slide":11,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[322,316,42,40]}
+{"kind":"shape","id":"sh/rmtc3al0","slide":11,"bbox":[364,226,250,230]}
+{"kind":"textbox","id":"sh/cn2dwf2l","slide":11,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[392,248,65,34]}
+{"kind":"textbox","id":"sh/dobe5k36","slide":11,"text":"Intento 1","textPreview":"Intento 1","textChars":9,"textLines":1,"bbox":[392,310,190,40]}
+{"kind":"textbox","id":"sh/epkvypkr","slide":11,"text":"+ 0,5 s","textPreview":"+ 0,5 s","textChars":7,"textLines":1,"bbox":[392,372,190,42]}
+{"kind":"textbox","id":"sh/zqtw7ulw","slide":11,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[614,316,42,40]}
+{"kind":"shape","id":"sh/0r2d0z2h","slide":11,"bbox":[656,226,250,230]}
+{"kind":"textbox","id":"sh/1sve9432","slide":11,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[684,248,65,34]}
+{"kind":"textbox","id":"sh/ut0vm5k7","slide":11,"text":"Intento 2","textPreview":"Intento 2","textChars":9,"textLines":1,"bbox":[684,310,190,40]}
+{"kind":"textbox","id":"sh/fu9cvqls","slide":11,"text":"+ 1 s","textPreview":"+ 1 s","textChars":5,"textLines":1,"bbox":[684,372,190,42]}
+{"kind":"textbox","id":"sh/jy5sn61k","slide":11,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[906,316,42,40]}
+{"kind":"shape","id":"sh/yxwru10z","slide":11,"bbox":[948,226,250,230]}
+{"kind":"textbox","id":"sh/l0napwjq","slide":11,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[976,248,65,34]}
+{"kind":"textbox","id":"sh/kze9wri5","slide":11,"text":"Intento 3","textPreview":"Intento 3","textChars":9,"textLines":1,"bbox":[976,310,190,40]}
+{"kind":"textbox","id":"sh/ba5sjm1o","slide":11,"text":"200 OK","textPreview":"200 OK","textChars":6,"textLines":1,"bbox":[976,372,190,42]}
+{"kind":"shape","id":"sh/a9wrqhk3","slide":11,"bbox":[210,512,860,74]}
+{"kind":"textbox","id":"sh/xwnalwje","slide":11,"text":"Resultado observable: intentos_usados = 3 · duración aproximada = 1,5 s · exitoso = true","textPreview":"Resultado observable: intentos_usados = 3 · duración aproximada = 1,5 s · exitoso = true","textChars":88,"textLines":1,"bbox":[244,529,792,40]}
+{"kind":"notes","id":"nt/ocfzi3","slide":11,"text":"Demo: 2 minutos 15 segundos. Dejar una réplica, simular dos fallas, ejecutar GET /mascotas y consultar el último intento. Mostrar tres intentos y resultado exitoso.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/0ljlko","slide":12,"title":"CONCLUSIÓN","textShapes":9}
+{"kind":"shape","id":"sh/elsbm9wn","slide":12,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/1o3uh4vy","slide":12,"text":"CONCLUSIÓN","textPreview":"CONCLUSIÓN","textChars":10,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/0natozed","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/ri1cbudw","slide":12,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/qhsbipwb","slide":12,"name":"slide-title","text":"El resultado es observable, pero el alcance tiene límites","textPreview":"El resultado es observable, pero el alcance tiene límites","textChars":57,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/dkjud4v2","slide":12,"bbox":[76,190,520,356]}
+{"kind":"textbox","id":"sh/sjatkzeh","slide":12,"text":"Lo que demostramos","textPreview":"Lo que demostramos","textChars":18,"textLines":1,"bbox":[114,224,400,38]}
+{"kind":"textbox","id":"sh/belcned0","slide":12,"text":"• Continuidad ante la caída de una API\n• Recuperación ante fallas transitorias\n• Identidad mediante JWT\n• Permisos según rol","textPreview":"• Continuidad ante la caída de una API | • Recuperación ante fallas transitorias | • Identidad mediante JWT | • Permisos según rol","textChars":124,"textLines":4,"bbox":[114,292,410,190]}
+{"kind":"shape","id":"sh/adcvutcv","slide":12,"bbox":[654,190,540,356]}
+{"kind":"textbox","id":"sh/gbytg3ix","slide":12,"text":"Límite reconocido","textPreview":"Límite reconocido","textChars":17,"textLines":1,"bbox":[694,224,400,38]}
+{"kind":"textbox","id":"sh/hc7a98z2","slide":12,"text":"La API está replicada; PostgreSQL sigue siendo una única instancia.","textPreview":"La API está replicada; PostgreSQL sigue siendo una única instancia.","textChars":67,"textLines":1,"bbox":[694,294,422,98]}
+{"kind":"textbox","id":"sh/upgbet0r","slide":12,"text":"La demo prueba continuidad de la capa de aplicación, no alta disponibilidad total.","textPreview":"La demo prueba continuidad de la capa de aplicación, no alta disponibilidad total.","textChars":82,"textLines":1,"bbox":[694,422,420,70]}
+{"kind":"textbox","id":"sh/fqps7yhc","slide":12,"text":"Las tácticas se notan menos cuando funcionan bien.","textPreview":"Las tácticas se notan menos cuando funcionan bien.","textChars":50,"textLines":1,"bbox":[128,594,1020,48]}
+{"kind":"notes","id":"nt/0ljlko","slide":12,"text":"Tiempo sugerido: 1 minuto. Cerrar con los cuatro resultados y reconocer explícitamente que PostgreSQL no está replicado. Abrir preguntas.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}

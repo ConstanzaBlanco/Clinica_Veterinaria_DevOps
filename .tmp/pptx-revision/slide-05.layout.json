@@ -1,0 +1,1431 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/cclosj",
+    "id": "cclosj",
+    "slide": 5,
+    "layoutId": "dd173969-cfc6-4e2d-8f1e-569239012e84",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "b5086b2e-1336-4033-aae1-56a230f87164",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#F5FAF9",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "dd173969-cfc6-4e2d-8f1e-569239012e84",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "b5086b2e-1336-4033-aae1-56a230f87164",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "b5086b2e-1336-4033-aae1-56a230f87164",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/srax0fat",
+      "id": "1",
+      "bbox": [
+        0,
+        0,
+        14,
+        720
+      ],
+      "geometry": "rect",
+      "fillColor": "#0C7C78",
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7q1wra98",
+      "id": "2",
+      "bbox": [
+        66,
+        30,
+        530,
+        24
+      ],
+      "geometry": "rect",
+      "text": "REQUERIMIENTOS",
+      "textPreview": "REQUERIMIENTOS",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#0C7C78",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "REQUERIMIENTOS"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "REQUERIMIENTOS",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#0C7C78",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "REQUERIMIENTOS",
+              "fontSize": 13,
+              "color": "#0C7C78",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6p8fy5s3",
+      "id": "3",
+      "bbox": [
+        1182,
+        662,
+        42,
+        24
+      ],
+      "geometry": "rect",
+      "text": "05",
+      "textPreview": "05",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "bold": true,
+        "alignment": "right",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "05"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "05",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#58727C",
+            "bold": true,
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "05",
+              "fontSize": 13,
+              "color": "#58727C",
+              "bold": true,
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hwjyxkrq",
+      "id": "4",
+      "bbox": [
+        66,
+        680,
+        1090,
+        2
+      ],
+      "geometry": "rect",
+      "fillColor": "#CFDFDF",
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gvax4fa5",
+      "id": "5",
+      "name": "slide-title",
+      "bbox": [
+        66,
+        62,
+        1145,
+        76
+      ],
+      "geometry": "rect",
+      "text": "Los ASR definen qué debe proteger la arquitectura",
+      "textPreview": "Los ASR definen qué debe proteger la arquitectura",
+      "resolvedFontSize": 38,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 38,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Los ASR definen qué debe proteger la arquitectura"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Los ASR definen qué debe proteger la arquitectura",
+          "resolvedTextStyle": {
+            "fontSize": 38,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Los ASR definen qué debe proteger la arquitectura",
+              "fontSize": 38,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fu1gva9k",
+      "id": "6",
+      "bbox": [
+        68,
+        132,
+        1110,
+        44
+      ],
+      "geometry": "rect",
+      "text": "Disponibilidad y seguridad se expresan como resultados verificables.",
+      "textPreview": "Disponibilidad y seguridad se expresan como resultados verificables.",
+      "resolvedFontSize": 19,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 19,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Disponibilidad y seguridad se expresan como resultados verificables."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Disponibilidad y seguridad se expresan como resultados verificables.",
+          "resolvedTextStyle": {
+            "fontSize": 19,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Disponibilidad y seguridad se expresan como resultados verificables.",
+              "fontSize": 19,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/utsf25sz",
+      "id": "7",
+      "bbox": [
+        76,
+        196,
+        160,
+        36
+      ],
+      "geometry": "rect",
+      "text": "ASR-DISP-01a",
+      "textPreview": "ASR-DISP-01a",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#0C7C78",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "ASR-DISP-01a"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "ASR-DISP-01a",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#0C7C78",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "ASR-DISP-01a",
+              "fontSize": 15,
+              "color": "#0C7C78",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/x0zel0r6",
+      "id": "8",
+      "bbox": [
+        252,
+        194,
+        5,
+        58
+      ],
+      "geometry": "rect",
+      "fillColor": "#0C7C78",
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wzqxsval",
+      "id": "9",
+      "bbox": [
+        278,
+        192,
+        292,
+        52
+      ],
+      "geometry": "rect",
+      "text": "Turnos disponibles 24/7",
+      "textPreview": "Turnos disponibles 24/7",
+      "resolvedFontSize": 19,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 19,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Turnos disponibles 24/7"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Turnos disponibles 24/7",
+          "resolvedTextStyle": {
+            "fontSize": 19,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Turnos disponibles 24/7",
+              "fontSize": 19,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/65szm98r",
+      "id": "10",
+      "bbox": [
+        595,
+        190,
+        574,
+        66
+      ],
+      "geometry": "rect",
+      "text": "El sistema deberá mantener disponible el módulo de reserva y gestión de turnos al menos el 99,5 % del tiempo, medido las 24 horas de todos los días del mes.",
+      "textPreview": "El sistema deberá mantener disponible el módulo de reserva y gestión de turnos al menos el 99,5 % del tiempo, medido las 24 horas de todo...",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El sistema deberá mantener disponible el módulo de reserva y gestión de turnos al menos"
+          },
+          {
+            "index": 2,
+            "text": "el 99,5 % del tiempo, medido las 24 horas de todos los días del mes."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El sistema deberá mantener disponible el módulo de reserva y gestión de turnos al menos el 99,5 % del tiempo, medido las 24 horas de todos los días del mes.",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El sistema deberá mantener disponible el módulo de reserva y gestión de turnos al menos el 99,5 % del tiempo, medido las 24 horas de todos los días del mes.",
+              "fontSize": 15,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/761gfe9c",
+      "id": "11",
+      "bbox": [
+        76,
+        283,
+        160,
+        36
+      ],
+      "geometry": "rect",
+      "text": "ASR-DISP-01b",
+      "textPreview": "ASR-DISP-01b",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#F26B5B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "ASR-DISP-01b"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "ASR-DISP-01b",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#F26B5B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "ASR-DISP-01b",
+              "fontSize": 15,
+              "color": "#F26B5B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/s7ahozqx",
+      "id": "12",
+      "bbox": [
+        252,
+        281,
+        5,
+        58
+      ],
+      "geometry": "rect",
+      "fillColor": "#F26B5B",
+      "lineWidth": 0
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/t8jyh4ri",
+      "id": "13",
+      "bbox": [
+        278,
+        279,
+        292,
+        52
+      ],
+      "geometry": "rect",
+      "text": "Atención clínica en horario",
+      "textPreview": "Atención clínica en horario",
+      "resolvedFontSize": 19,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 19,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Atención clínica en horario"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Atención clínica en horario",
+          "resolvedTextStyle": {
+            "fontSize": 19,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Atención clínica en horario",
+              "fontSize": 19,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/u9szq98n",
+      "id": "14",
+      "bbox": [
+        595,
+        277,
+        574,
+        66
+      ],
+      "geometry": "rect",
+      "text": "El sistema deberá mantener disponibles las funciones de consulta de agenda, consulta del historial clínico y registro de consultas al menos el 99,9 % del tiempo, de lunes a viernes entre las 8:00 y las 18:00.",
+      "textPreview": "El sistema deberá mantener disponibles las funciones de consulta de agenda, consulta del historial clínico y registro de consultas al men...",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El sistema deberá mantener disponibles las funciones de consulta de agenda, consulta del"
+          },
+          {
+            "index": 2,
+            "text": "historial clínico y registro de consultas al menos el 99,9 % del tiempo, de lunes a viernes"
+          },
+          {
+            "index": 3,
+            "text": "entre las 8:00 y las 18:00."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El sistema deberá mantener disponibles las funciones de consulta de agenda, consulta del historial clínico y registro de consultas al menos el 99,9 % del tiempo, de lunes a viernes entre las 8:00 y las 18:00.",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El sistema deberá mantener disponibles las funciones de consulta de agenda, consulta del historial clínico y registro de consultas al menos el 99,9 % del tiempo, de lunes a viernes entre las 8:00 y las 18:00.",
+              "fontSize": 15,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fa10jep8",
+      "id": "15",
+      "bbox": [
+        76,
+        370,
+        160,
+        36
+      ],
+      "geometry": "rect",
+      "text": "ASR-DISP-02",
+      "textPreview": "ASR-DISP-02",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#E5A84B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "ASR-DISP-02"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "ASR-DISP-02",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#E5A84B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "ASR-DISP-02",
+              "fontSize": 15,
+              "color": "#E5A84B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gbahsjqt",
+      "id": "16",
+      "bbox": [
+        252,
+        368,
+        5,
+        58
+      ],
+      "geometry": "rect",
+      "fillColor": "#E5A84B",
+      "lineWidth": 0
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hc3ilo7e",
+      "id": "17",
+      "bbox": [
+        278,
+        366,
+        292,
+        52
+      ],
+      "geometry": "rect",
+      "text": "Recuperación sin perder información",
+      "textPreview": "Recuperación sin perder información",
+      "resolvedFontSize": 19,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 19,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Recuperación sin perder"
+          },
+          {
+            "index": 2,
+            "text": "información"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Recuperación sin perder información",
+          "resolvedTextStyle": {
+            "fontSize": 19,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Recuperación sin perder información",
+              "fontSize": 19,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/2dczut8z",
+      "id": "18",
+      "bbox": [
+        595,
+        364,
+        574,
+        66
+      ],
+      "geometry": "rect",
+      "text": "El sistema deberá recuperarse en un máximo de 2 minutos ante la falla de una instancia de la aplicación, sin perder turnos confirmados ni información del historial clínico.",
+      "textPreview": "El sistema deberá recuperarse en un máximo de 2 minutos ante la falla de una instancia de la aplicación, sin perder turnos confirmados ni...",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El sistema deberá recuperarse en un máximo de 2 minutos ante la falla de una instancia de"
+          },
+          {
+            "index": 2,
+            "text": "la aplicación, sin perder turnos confirmados ni información del historial clínico."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El sistema deberá recuperarse en un máximo de 2 minutos ante la falla de una instancia de la aplicación, sin perder turnos confirmados ni información del historial clínico.",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El sistema deberá recuperarse en un máximo de 2 minutos ante la falla de una instancia de la aplicación, sin perder turnos confirmados ni información del historial clínico.",
+              "fontSize": 15,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/3el0nypk",
+      "id": "19",
+      "bbox": [
+        76,
+        457,
+        160,
+        36
+      ],
+      "geometry": "rect",
+      "text": "ASR-SEG-01",
+      "textPreview": "ASR-SEG-01",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#123E4D",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "ASR-SEG-01"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "ASR-SEG-01",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#123E4D",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "ASR-SEG-01",
+              "fontSize": 15,
+              "color": "#123E4D",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 20,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zilgby5c",
+      "id": "20",
+      "bbox": [
+        252,
+        455,
+        5,
+        58
+      ],
+      "geometry": "rect",
+      "fillColor": "#123E4D",
+      "lineWidth": 0
+    },
+    {
+      "order": 21,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ehcf2to7",
+      "id": "21",
+      "bbox": [
+        278,
+        453,
+        292,
+        52
+      ],
+      "geometry": "rect",
+      "text": "Acceso según rol",
+      "textPreview": "Acceso según rol",
+      "resolvedFontSize": 19,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 19,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Acceso según rol"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Acceso según rol",
+          "resolvedTextStyle": {
+            "fontSize": 19,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Acceso según rol",
+              "fontSize": 19,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 22,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/14nyd8ni",
+      "id": "22",
+      "bbox": [
+        595,
+        451,
+        574,
+        66
+      ],
+      "geometry": "rect",
+      "text": "El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que acceda o modifique información para la cual no está autorizado.",
+      "textPreview": "El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que acceda o modifique información para la cual no está ...",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que acceda"
+          },
+          {
+            "index": 2,
+            "text": "o modifique información para la cual no está autorizado."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que acceda o modifique información para la cual no está autorizado.",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que acceda o modifique información para la cual no está autorizado.",
+              "fontSize": 15,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 23,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/03eh436x",
+      "id": "23",
+      "bbox": [
+        76,
+        544,
+        160,
+        36
+      ],
+      "geometry": "rect",
+      "text": "ASR-SEG-02",
+      "textPreview": "ASR-SEG-02",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#0C7C78",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "ASR-SEG-02"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "ASR-SEG-02",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#0C7C78",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "ASR-SEG-02",
+              "fontSize": 15,
+              "color": "#0C7C78",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 24,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/relg7e5g",
+      "id": "24",
+      "bbox": [
+        252,
+        542,
+        5,
+        58
+      ],
+      "geometry": "rect",
+      "fillColor": "#0C7C78",
+      "lineWidth": 0
+    },
+    {
+      "order": 25,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qdcfy9ov",
+      "id": "25",
+      "bbox": [
+        278,
+        540,
+        292,
+        52
+      ],
+      "geometry": "rect",
+      "text": "Administrador sin contenido clínico",
+      "textPreview": "Administrador sin contenido clínico",
+      "resolvedFontSize": 19,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 19,
+        "typeface": "+mn-lt",
+        "color": "#0B2D3B",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Administrador sin contenido"
+          },
+          {
+            "index": 2,
+            "text": "clínico"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Administrador sin contenido clínico",
+          "resolvedTextStyle": {
+            "fontSize": 19,
+            "color": "#0B2D3B",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Administrador sin contenido clínico",
+              "fontSize": 19,
+              "color": "#0B2D3B",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 26,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/dg3y9onm",
+      "id": "26",
+      "bbox": [
+        595,
+        538,
+        574,
+        66
+      ],
+      "geometry": "rect",
+      "text": "El sistema deberá permitir al rol Administrador gestionar turnos de cualquier cliente sin acceder en ningún caso al contenido clínico de las consultas, quedando su acceso limitado a los metadatos del turno.",
+      "textPreview": "El sistema deberá permitir al rol Administrador gestionar turnos de cualquier cliente sin acceder en ningún caso al contenido clínico de ...",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#58727C",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El sistema deberá permitir al rol Administrador gestionar turnos de cualquier cliente sin"
+          },
+          {
+            "index": 2,
+            "text": "acceder en ningún caso al contenido clínico de las consultas, quedando su acceso limitado"
+          },
+          {
+            "index": 3,
+            "text": "a los metadatos del turno."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El sistema deberá permitir al rol Administrador gestionar turnos de cualquier cliente sin acceder en ningún caso al contenido clínico de las consultas, quedando su acceso limitado a los metadatos del turno.",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#58727C",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El sistema deberá permitir al rol Administrador gestionar turnos de cualquier cliente sin acceder en ningún caso al contenido clínico de las consultas, quedando su acceso limitado a los metadatos del turno.",
+              "fontSize": 15,
+              "color": "#58727C",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

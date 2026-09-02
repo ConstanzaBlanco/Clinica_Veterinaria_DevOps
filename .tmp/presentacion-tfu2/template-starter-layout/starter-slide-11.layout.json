@@ -1,0 +1,1402 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/dwit1q",
+    "id": "dwit1q",
+    "slide": 11,
+    "layoutId": "/ppt/slideLayouts/slideLayout7.xml",
+    "layoutName": "Blank",
+    "layoutType": "blank",
+    "masterLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+    "backgroundColor": "#022135",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "theme": {
+    "colorSchemeName": "Office",
+    "colors": {
+      "accent1": "#4F81BD",
+      "accent2": "#C0504D",
+      "accent3": "#9BBB59",
+      "accent4": "#8064A2",
+      "accent5": "#4BACC6",
+      "accent6": "#F79646",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#1F497D",
+      "lt2": "#EEECE1",
+      "hlink": "#0000FF",
+      "folHlink": "#800080"
+    },
+    "fontScheme": {
+      "name": "Office",
+      "majorFont": {
+        "latinTypeface": "Calibri"
+      },
+      "minorFont": {
+        "latinTypeface": "Calibri"
+      }
+    },
+    "typefaces": [
+      "Bricolage Grotesque Bold",
+      "Calibri",
+      "Inter"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "/ppt/slideLayouts/slideLayout7.xml",
+      "name": "Blank",
+      "type": "blank",
+      "parentLayoutId": "/ppt/slideMasters/slideMaster1.xml",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout7.xml/2",
+          "id": "2",
+          "name": "Date Placeholder 1",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "8/1/2011",
+          "textPreview": "8/1/2011",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "8/1/2011",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "8/1/2011"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout7.xml/3",
+          "id": "3",
+          "name": "Footer Placeholder 2",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "layout",
+          "aid": "template/layout//ppt/slideLayouts/slideLayout7.xml/4",
+          "id": "4",
+          "name": "Slide Number Placeholder 3",
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scope": "master",
+      "id": "/ppt/slideMasters/slideMaster1.xml",
+      "type": "master",
+      "elements": [
+        {
+          "order": 1,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/2",
+          "id": "2",
+          "name": "Title Placeholder 1",
+          "bbox": [
+            48,
+            28.83,
+            864,
+            120
+          ],
+          "geometry": "rect",
+          "text": "Click to edit Master title style",
+          "textPreview": "Click to edit Master title style",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "autoFit": "shrinkText",
+            "insets": {
+              "top": 4.8,
+              "right": 9.6,
+              "bottom": 4.8,
+              "left": 9.6
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Click to edit Master title style",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Click to edit Master title style"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/3",
+          "id": "3",
+          "name": "Text Placeholder 2",
+          "bbox": [
+            48,
+            168,
+            864,
+            475.17
+          ],
+          "geometry": "rect",
+          "text": "Click to edit Master text styles\nSecond level\nThird level\nFourth level\nFifth level",
+          "textPreview": "Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level",
+          "resolvedTextStyle": {
+            "vertical": 1,
+            "autoFit": "shrinkText",
+            "insets": {
+              "top": 4.8,
+              "right": 9.6,
+              "bottom": 4.8,
+              "left": 9.6
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Click to edit Master text styles",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Click to edit Master text styles"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "text": "Second level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Second level"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "text": "Third level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Third level"
+                }
+              ]
+            },
+            {
+              "index": 4,
+              "text": "Fourth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fourth level"
+                }
+              ]
+            },
+            {
+              "index": 5,
+              "text": "Fifth level",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Fifth level"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/4",
+          "id": "4",
+          "name": "Date Placeholder 3",
+          "bbox": [
+            48,
+            667.33,
+            224,
+            38.33
+          ],
+          "geometry": "rect",
+          "text": "8/1/2011",
+          "textPreview": "8/1/2011",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 4.8,
+              "right": 9.6,
+              "bottom": 4.8,
+              "left": 9.6
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "8/1/2011",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "8/1/2011"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/5",
+          "id": "5",
+          "name": "Footer Placeholder 4",
+          "bbox": [
+            328,
+            667.33,
+            304,
+            38.33
+          ],
+          "geometry": "rect",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 4.8,
+              "right": 9.6,
+              "bottom": 4.8,
+              "left": 9.6
+            }
+          }
+        },
+        {
+          "order": 5,
+          "kind": "shape",
+          "scope": "master",
+          "aid": "template/master//ppt/slideMasters/slideMaster1.xml/6",
+          "id": "6",
+          "name": "Slide Number Placeholder 5",
+          "bbox": [
+            688,
+            667.33,
+            224,
+            38.33
+          ],
+          "geometry": "rect",
+          "text": "‹#›",
+          "textPreview": "‹#›",
+          "resolvedTextStyle": {
+            "anchor": 2,
+            "vertical": 1,
+            "verticalAlignment": "middle",
+            "insets": {
+              "top": 4.8,
+              "right": 9.6,
+              "bottom": 4.8,
+              "left": 9.6
+            }
+          },
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "‹#›",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "‹#›"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/j2xsj25c",
+      "id": "2",
+      "name": "Freeform 2",
+      "bbox": [
+        841.91,
+        108,
+        236.19,
+        228.67
+      ],
+      "rotation": 0,
+      "horizontalFlip": true,
+      "geometry": "custom",
+      "fillImage": {
+        "assetId": "/ppt/media/image2.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 4675
+      }
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/y1orqx4r",
+      "id": "3",
+      "name": "Freeform 3",
+      "bbox": [
+        1686.81,
+        540,
+        312.04,
+        302.11
+      ],
+      "rotation": 0,
+      "geometry": "custom",
+      "fillImage": {
+        "assetId": "/ppt/media/image2.svg",
+        "contentType": "image/svg+xml",
+        "byteLength": 4675
+      }
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wz69o7ml",
+      "id": "5",
+      "name": "AutoShape 5",
+      "bbox": [
+        1766.68,
+        110,
+        45.32,
+        0
+      ],
+      "rotation": 0,
+      "geometry": "line",
+      "lineColor": "#FFFFFF",
+      "lineWidth": 5.33
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/byx8f250",
+      "id": "6",
+      "name": "AutoShape 6",
+      "bbox": [
+        1766.68,
+        126,
+        45.32,
+        0
+      ],
+      "rotation": 0,
+      "geometry": "line",
+      "lineColor": "#FFFFFF",
+      "lineWidth": 5.33
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/axormx4f",
+      "id": "7",
+      "name": "AutoShape 7",
+      "bbox": [
+        1766.68,
+        142,
+        45.32,
+        0
+      ],
+      "rotation": 0,
+      "geometry": "line",
+      "lineColor": "#FFFFFF",
+      "lineWidth": 5.33
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ovm9knmp",
+      "id": "9",
+      "name": "TextBox 9",
+      "bbox": [
+        1219.16,
+        232.06,
+        467.17,
+        130.19
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "El sistema deberá estar disponible al menos el 99,9 % del tiempo durante el horario de atención de la clínica.\nDisponibilidad",
+      "textPreview": "El sistema deberá estar disponible al menos el 99,9 % del tiempo durante el horario de atención de la clínica. | Disponibilidad",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El sistema deberá estar disponible al"
+          },
+          {
+            "index": 2,
+            "text": "menos el 99,9 % del tiempo durante el"
+          },
+          {
+            "index": 3,
+            "text": "horario de atención de la clínica."
+          },
+          {
+            "index": 4,
+            "text": "Disponibilidad"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El sistema deberá estar disponible al menos el 99,9 % del tiempo durante el horario de atención de la clínica.",
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El sistema deberá estar disponible al menos el",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            },
+            {
+              "index": 2,
+              "text": " 99,9 % del tiempo durante el horario de atención de la clínica.",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "Disponibilidad",
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Disponibilidad",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zitwn2h4",
+      "id": "11",
+      "name": "Freeform 11",
+      "bbox": [
+        1149.66,
+        222.34,
+        29.34,
+        152.65
+      ],
+      "rotation": 0,
+      "geometry": "custom",
+      "fillColor": "#FFFFFF"
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kj2xg7yp",
+      "id": "12",
+      "name": "TextBox 12",
+      "bbox": [
+        1149.66,
+        207.15,
+        29.34,
+        167.84
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 5.33,
+          "right": 5.33,
+          "bottom": 5.33,
+          "left": 5.33
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      }
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/adkfadgn",
+      "id": "14",
+      "name": "TextBox 14",
+      "bbox": [
+        1210.35,
+        423.05,
+        541.18,
+        130.19
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Las consultas de mascotas, turnos e historiales médicos deberán responder en un máximo de 8 segundos en al menos el 95% de las solicitudes. Rendimiento",
+      "textPreview": "Las consultas de mascotas, turnos e historiales médicos deberán responder en un máximo de 8 segundos en al menos el 95% de las solicitude...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Las consultas de mascotas, turnos e historiales"
+          },
+          {
+            "index": 2,
+            "text": "médicos deberán responder en un máximo de"
+          },
+          {
+            "index": 3,
+            "text": "8 segundos en al menos el 95% de las"
+          },
+          {
+            "index": 4,
+            "text": "solicitudes. Rendimiento"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Las consultas de mascotas, turnos e historiales médicos deberán responder en un máximo de 8 segundos en al menos el 95% de las solicitudes. Rendimiento",
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Las consultas de mascotas, turnos e historiales médicos deberán responder en un máximo de 8 s",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            },
+            {
+              "index": 2,
+              "text": "egundos en al menos el 95% de las solicitudes. Rendimiento",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cf2xcnyt",
+      "id": "16",
+      "name": "Freeform 16",
+      "bbox": [
+        1149.66,
+        413.32,
+        25.62,
+        152.65
+      ],
+      "rotation": 0,
+      "geometry": "custom",
+      "fillColor": "#FFFFFF"
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xgbelszy",
+      "id": "17",
+      "name": "TextBox 17",
+      "bbox": [
+        1149.66,
+        398.14,
+        25.62,
+        167.84
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 5.33,
+          "right": 5.33,
+          "bottom": 5.33,
+          "left": 5.33
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      }
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/na9wfihw",
+      "id": "19",
+      "name": "TextBox 19",
+      "bbox": [
+        114.46,
+        856.02,
+        541.18,
+        130.19
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que un usuario acceda o modifique información para la cual no está autorizado. Seguridad",
+      "textPreview": "El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que un usuario acceda o modifique información para la cu...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El sistema deberá aplicar control de acceso"
+          },
+          {
+            "index": 2,
+            "text": "según el rol del usuario, impidiendo que un"
+          },
+          {
+            "index": 3,
+            "text": "usuario acceda o modifique información para la"
+          },
+          {
+            "index": 4,
+            "text": "cual no está autorizado. Seguridad"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que un usuario acceda o modifique información para la cual no está autorizado. Seguridad",
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que un usuario acceda o modifique información para la cu",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            },
+            {
+              "index": 2,
+              "text": "al no está autorizado. Seguridad",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6hw3yps7",
+      "id": "21",
+      "name": "Freeform 21",
+      "bbox": [
+        53.76,
+        846.3,
+        25.62,
+        152.65
+      ],
+      "rotation": 0,
+      "geometry": "custom",
+      "fillColor": "#FFFFFF"
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/t4n2tkbi",
+      "id": "22",
+      "name": "TextBox 22",
+      "bbox": [
+        53.76,
+        831.11,
+        25.62,
+        167.84
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 5.33,
+          "right": 5.33,
+          "bottom": 5.33,
+          "left": 5.33
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      }
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/f65kvuto",
+      "id": "24",
+      "name": "TextBox 24",
+      "bbox": [
+        742.35,
+        856.02,
+        541.18,
+        163.19
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "El sistema deberá permitir incorporar un nuevo tipo de usuario o rol, con su conjunto de permisos, sin modificar el código de los módulos de turnos, mascotas ni historial médico. Facilidad de Modificación",
+      "textPreview": "El sistema deberá permitir incorporar un nuevo tipo de usuario o rol, con su conjunto de permisos, sin modificar el código de los módulos...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 5,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El sistema deberá permitir incorporar un nuevo"
+          },
+          {
+            "index": 2,
+            "text": "tipo de usuario o rol, con su conjunto de"
+          },
+          {
+            "index": 3,
+            "text": "permisos, sin modificar el código de los"
+          },
+          {
+            "index": 4,
+            "text": "módulos de turnos, mascotas ni historial"
+          },
+          {
+            "index": 5,
+            "text": "médico. Facilidad de Modificación"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El sistema deberá permitir incorporar un nuevo tipo de usuario o rol, con su conjunto de permisos, sin modificar el código de los módulos de turnos, mascotas ni historial médico. Facilidad de Modificación",
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El sistema deberá permitir incorporar un nuevo tipo de us",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            },
+            {
+              "index": 2,
+              "text": "uario o rol, con su conjunto de permisos, sin modificar el código de los módulos de turnos, mascotas ni historial médico. Facilidad de Modificación",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/h872x4bu",
+      "id": "26",
+      "name": "Freeform 26",
+      "bbox": [
+        681.65,
+        846.3,
+        25.62,
+        152.65
+      ],
+      "rotation": 0,
+      "geometry": "custom",
+      "fillColor": "#FFFFFF"
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/g7el4za9",
+      "id": "27",
+      "name": "TextBox 27",
+      "bbox": [
+        681.65,
+        831.11,
+        25.62,
+        167.84
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 5.33,
+          "right": 5.33,
+          "bottom": 5.33,
+          "left": 5.33
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      }
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/a9cjqlcz",
+      "id": "29",
+      "name": "Freeform 29",
+      "bbox": [
+        1309.55,
+        845.58,
+        25.62,
+        152.65
+      ],
+      "rotation": 0,
+      "geometry": "custom",
+      "fillColor": "#FFFFFF"
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0fqh0rqh",
+      "id": "30",
+      "name": "TextBox 30",
+      "bbox": [
+        1309.55,
+        830.39,
+        25.62,
+        167.84
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 5.33,
+          "right": 5.33,
+          "bottom": 5.33,
+          "left": 5.33
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      }
+    },
+    {
+      "order": 20,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/yt8zy18r",
+      "id": "32",
+      "name": "Freeform 32",
+      "bbox": [
+        18.06,
+        126,
+        1089.76,
+        630.96
+      ],
+      "rotation": 0,
+      "geometry": "custom",
+      "fillImage": {
+        "assetId": "/ppt/media/image17.jpeg",
+        "contentType": "image/jpeg",
+        "byteLength": 2605590
+      }
+    },
+    {
+      "order": 21,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/crqhwrql",
+      "id": "34",
+      "name": "TextBox 34",
+      "bbox": [
+        1210.35,
+        614.04,
+        541.18,
+        130.19
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "Si ocurre un error mientras se registra una consulta médica, el sistema no deberá guardar información parcial y deberá conservar intacto el historial anterior de la mascota. Protección",
+      "textPreview": "Si ocurre un error mientras se registra una consulta médica, el sistema no deberá guardar información parcial y deberá conservar intacto ...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 4,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Si ocurre un error mientras se registra una"
+          },
+          {
+            "index": 2,
+            "text": "consulta médica, el sistema no deberá guardar"
+          },
+          {
+            "index": 3,
+            "text": "información parcial y deberá conservar intacto"
+          },
+          {
+            "index": 4,
+            "text": "el historial anterior de la mascota. Protección"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Si ocurre un error mientras se registra una consulta médica, el sistema no deberá guardar información parcial y deberá conservar intacto el historial anterior de la mascota. Protección",
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Si ocurre un error mientras se registra una consulta médica, el sistema no deberá guardar información parcial y deberá cons",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            },
+            {
+              "index": 2,
+              "text": "ervar intacto el historial anterior de la mascota. Protección",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 22,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qpozuhsf",
+      "id": "36",
+      "name": "Freeform 36",
+      "bbox": [
+        1149.66,
+        604.31,
+        25.62,
+        152.65
+      ],
+      "rotation": 0,
+      "geometry": "custom",
+      "fillColor": "#FFFFFF"
+    },
+    {
+      "order": 23,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/bqh0nm90",
+      "id": "37",
+      "name": "TextBox 37",
+      "bbox": [
+        1149.66,
+        589.12,
+        25.62,
+        167.84
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 5.33,
+          "right": 5.33,
+          "bottom": 5.33,
+          "left": 5.33
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": ""
+          }
+        ]
+      }
+    },
+    {
+      "order": 24,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wnah8bqp",
+      "id": "38",
+      "name": "TextBox 38",
+      "bbox": [
+        1149.66,
+        71.6,
+        693.17,
+        129.8
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "ASRs",
+      "textPreview": "ASRs",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "ASRs"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "ASRs",
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "ASRs",
+              "fontSize": 96,
+              "typeface": "Bricolage Grotesque Bold",
+              "color": "#FFFFFF",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    },
+    {
+      "order": 25,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xoji1gra",
+      "id": "39",
+      "name": "TextBox 39",
+      "bbox": [
+        1370.24,
+        854.31,
+        541.18,
+        164.19
+      ],
+      "rotation": 0,
+      "geometry": "rect",
+      "text": "El sistema deberá mantener separadas las configuraciones de desarrollo, pruebas y producción, evitando modificaciones del código para cada ambiente. Facilidad de Despliegue",
+      "textPreview": "El sistema deberá mantener separadas las configuraciones de desarrollo, pruebas y producción, evitando modificaciones del código para cad...",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 24,
+        "typeface": "Calibri",
+        "color": "tx1",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "resizeShapeToFitText",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 5,
+        "lines": [
+          {
+            "index": 1,
+            "text": "El sistema deberá mantener separadas las"
+          },
+          {
+            "index": 2,
+            "text": "configuraciones de desarrollo, pruebas y"
+          },
+          {
+            "index": 3,
+            "text": "producción, evitando modificaciones del"
+          },
+          {
+            "index": 4,
+            "text": "código para cada ambiente. Facilidad de"
+          },
+          {
+            "index": 5,
+            "text": "Despliegue"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "El sistema deberá mantener separadas las configuraciones de desarrollo, pruebas y producción, evitando modificaciones del código para cada ambiente. Facilidad de Despliegue",
+          "resolvedTextStyle": {
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "El sistema deberá mantener separadas las configuraciones de desarrollo, pruebas y producción, evitando modificaciones del código pa",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            },
+            {
+              "index": 2,
+              "text": "ra cada ambiente. Facilidad de Despliegue",
+              "fontSize": 24,
+              "typeface": "Inter",
+              "color": "#FFFFFF"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ]
+    }
+  ],
+  "composeRuns": []
+}

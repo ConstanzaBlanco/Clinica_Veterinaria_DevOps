@@ -1,0 +1,19 @@
+{
+  "outputSlides": [
+    {"outputSlide":1,"sourceSlide":1,"narrativeRole":"portada","reuseMode":"duplicate-slide","editTargets":[]},
+    {"outputSlide":2,"sourceSlide":2,"narrativeRole":"contexto ampliado","reuseMode":"duplicate-slide","editTargets":["source layout adapted"]},
+    {"outputSlide":3,"sourceSlide":2,"narrativeRole":"roles y permisos","reuseMode":"duplicate-slide","editTargets":["source layout adapted"]},
+    {"outputSlide":4,"sourceSlide":2,"narrativeRole":"resumen de Pet-Core","reuseMode":"duplicate-slide","editTargets":[]},
+    {"outputSlide":5,"sourceSlide":3,"narrativeRole":"requerimientos ASR","reuseMode":"duplicate-slide","editTargets":["source layout adapted"]},
+    {"outputSlide":6,"sourceSlide":4,"narrativeRole":"tacticas elegidas","reuseMode":"duplicate-slide","editTargets":[]},
+    {"outputSlide":7,"sourceSlide":5,"narrativeRole":"arquitectura","reuseMode":"duplicate-slide","editTargets":[]},
+    {"outputSlide":8,"sourceSlide":6,"narrativeRole":"recorrido de tacticas","reuseMode":"duplicate-slide","editTargets":[]},
+    {"outputSlide":9,"sourceSlide":7,"narrativeRole":"separador demo","reuseMode":"duplicate-slide","editTargets":[]},
+    {"outputSlide":10,"sourceSlide":8,"narrativeRole":"autenticar actores","reuseMode":"duplicate-slide","editTargets":["source layout adapted"]},
+    {"outputSlide":11,"sourceSlide":9,"narrativeRole":"autorizar actores","reuseMode":"duplicate-slide","editTargets":["source layout adapted"]},
+    {"outputSlide":12,"sourceSlide":10,"narrativeRole":"replicacion","reuseMode":"duplicate-slide","editTargets":["source layout adapted"]},
+    {"outputSlide":13,"sourceSlide":11,"narrativeRole":"reintentos","reuseMode":"duplicate-slide","editTargets":["source layout adapted"]},
+    {"outputSlide":14,"sourceSlide":12,"narrativeRole":"conclusion","reuseMode":"duplicate-slide","editTargets":[]}
+  ],
+  "omittedSourceSlides": []
+}

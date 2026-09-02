@@ -1,0 +1,491 @@
+GUIÓN COMPLETO - TFU2 ANDIS
+Pet-Core: tácticas de disponibilidad y seguridad
+Duración total: 15 minutos
+
+================================================================================
+1. DISTRIBUCIÓN DEL TIEMPO
+================================================================================
+
+Explicación previa a la demo: 7 minutos 20 segundos
+Demo en vivo:                  7 minutos
+Cierre:                        40 segundos
+Total:                         15 minutos
+
+Diapositiva 1  - 0:25
+Diapositiva 2  - 0:40
+Diapositiva 3  - 0:45
+Diapositiva 4  - 0:45
+Diapositiva 5  - 1:10
+Diapositiva 6  - 0:55
+Diapositiva 7  - 1:25
+Diapositiva 8  - 1:15
+Diapositivas 9 a 13 - demo - 7:00
+Diapositiva 14 - 0:40
+
+La idea no es leer literalmente cada oración. El guion indica qué decir y qué
+mostrar para sostener el tiempo y el hilo de la presentación.
+
+================================================================================
+2. PREPARACIÓN ANTES DE LA PRESENTACIÓN
+================================================================================
+
+Hacer esta preparación antes de que empiece la exposición. No consumir tiempo
+de los quince minutos construyendo imágenes ni esperando que Docker descargue
+contenedores.
+
+1. Abrir una terminal en la raíz del proyecto y levantar el ambiente:
+
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\andis-up.ps1
+
+2. Comprobar que aparecen PostgreSQL, el balanceador Nginx y dos contenedores
+   server en la salida de:
+
+   docker compose ps
+
+3. Abrir Postman e importar, si todavía no están importadas, estas colecciones:
+
+   - postman/Seguridad_Collection.json
+   - postman/Replicacion_Collection.json
+   - postman/Re-intentos_Collection.json
+
+4. Dejar abiertas dos ventanas o dividir la pantalla:
+
+   - Postman a la izquierda: muestra códigos HTTP, cuerpos y encabezados.
+   - Terminal a la derecha: muestra contenedores y permite provocar fallas.
+
+5. Comprobar antes de empezar que http://localhost:8000/docs responde. No es
+   necesario mostrar Swagger durante la exposición: Postman es la evidencia
+   principal de la demo.
+
+6. Tener copiados en la terminal estos comandos, sin ejecutarlos todavía:
+
+   docker compose ps
+   docker stop <nombre_de_una_replica>
+   docker compose up -d --scale server=2 server
+   docker compose up -d --scale server=1 server
+   docker compose up -d --no-deps --force-recreate balanceador
+
+   IMPORTANTE: reemplazar <nombre_de_una_replica> por el nombre real que
+   muestre docker compose ps; por ejemplo:
+   proyecto_clnica_veterinaria-server-1
+
+7. Para ahorrar tiempo, abrir las colecciones y dejar seleccionada la primera
+   petición de Seguridad. Durante la demo usar las peticiones en el orden en
+   que están numeradas.
+
+================================================================================
+3. GUIÓN DE LAS DIAPOSITIVAS 1 A 8 - CONTEXTO Y DECISIONES (7:20)
+================================================================================
+
+DIAPOSITIVA 1 - PORTADA (0:25)
+
+Decir:
+
+"Buenos días. Somos Constanza Blanco, Manuel Cabrera, Diego de Oliveira y
+Martin Mujica. Para esta TFU usamos Pet-Core, una API REST de gestión para una
+clínica veterinaria, para demostrar tácticas de arquitectura de disponibilidad
+y seguridad. La funcionalidad clínica nos da un contexto real; el foco de la
+presentación es cómo responde la arquitectura ante fallas y accesos no
+permitidos."
+
+Transición:
+
+"Primero ubicamos brevemente qué problema resuelve la aplicación."
+
+
+DIAPOSITIVA 2 - NEGOCIO (0:40)
+
+Decir:
+
+"Pet-Core digitaliza tres procesos cotidianos de una clínica. El cliente
+reserva un turno para una mascota, el veterinario ve su agenda y registra la
+atención, y la consulta queda asociada al historial clínico de la mascota.
+
+Esto evita depender de llamadas, papel o información dispersa. También hace
+que una falla del sistema no sea solamente un problema técnico: puede impedir
+reservar, consultar una agenda o acceder a información necesaria para atender."
+
+Señalar brevemente las tres tarjetas: reserva de turnos, agenda diaria e
+historial clínico.
+
+Transición:
+
+"Como no todos necesitan la misma información, el sistema separa sus roles."
+
+
+DIAPOSITIVA 3 - ROLES (0:45)
+
+Decir:
+
+"Definimos tres roles. El cliente administra sus mascotas y sus turnos. El
+veterinario ve su agenda, consulta historiales y registra consultas. El
+administrador coordina turnos de cualquier cliente, pero no puede leer
+diagnósticos, tratamientos ni el contenido clínico.
+
+Esta última restricción es importante: estar autenticado no significa poder
+hacer cualquier cosa. La identidad nos dice quién es el actor, y el rol define
+qué operaciones puede realizar."
+
+Transición:
+
+"Esto muestra el problema de negocio que queremos proteger."
+
+
+DIAPOSITIVA 4 - EL PROBLEMA ANTES DE PET-CORE (0:45)
+
+Decir:
+
+"En una clínica, varias personas necesitan acceder a la información correcta
+en el momento correcto. Si la API queda caída, se afecta la reserva de turnos y
+la atención diaria. Si los permisos fallan, se puede exponer información
+clínica que no corresponde.
+
+Por eso no alcanza con que la API funcione en condiciones ideales. También debe
+mantener procesos críticos disponibles y limitar el acceso de acuerdo con la
+responsabilidad de cada actor."
+
+Transición:
+
+"Esos objetivos se transformaron en requerimientos de atributos de calidad."
+
+
+DIAPOSITIVA 5 - ASR (1:10)
+
+Decir:
+
+"Definimos cinco ASR. Los dos primeros piden disponibilidad: reserva y gestión
+de turnos disponible el 99,5 por ciento del tiempo, y las funciones clínicas
+disponibles el 99,9 por ciento dentro del horario de atención.
+
+El tercer ASR pide que, si falla una instancia de la aplicación, el sistema se
+recupere en un máximo de dos minutos sin perder turnos confirmados ni
+información clínica.
+
+Los dos últimos son de seguridad. Uno exige que el acceso dependa del rol; el
+otro aclara el caso más sensible: el administrador puede gestionar turnos, pero
+su acceso se limita a metadatos y nunca al contenido clínico."
+
+No leer completa la columna de texto. Usarla solo si el docente pregunta por la
+redacción exacta.
+
+Transición:
+
+"Para responder a esos ASR elegimos cuatro tácticas."
+
+
+DIAPOSITIVA 6 - TÁCTICAS ELEGIDAS (0:55)
+
+Decir:
+
+"Para disponibilidad aplicamos replicación y reintentos. Replicación mantiene
+dos instancias de la misma API; si una deja de responder, la otra puede seguir
+atendiendo. Reintentos absorben fallas transitorias de conexión antes de
+devolver un error.
+
+Para seguridad aplicamos autenticar actores y autorizar actores. Primero se
+verifica la identidad con JWT y luego se valida si el rol incluido en ese token
+puede realizar la operación solicitada."
+
+Transición:
+
+"La siguiente diapositiva muestra dónde vive cada decisión en la arquitectura."
+
+
+DIAPOSITIVA 7 - ARQUITECTURA (1:25)
+
+Decir mientras recorrés el diagrama de arriba hacia abajo:
+
+"La demo se ejecuta con Docker Compose. Postman, o curl, envía las solicitudes
+a localhost en el puerto 8000. Ese puerto lo publica Nginx, que funciona como
+balanceador.
+
+Nginx distribuye los pedidos entre dos réplicas equivalentes de FastAPI. Ambas
+ejecutan el mismo código, la misma versión y las mismas reglas de autenticación,
+autorización y reintentos. Por eso cualquiera de ellas puede atender una
+solicitud.
+
+Las dos réplicas usan PostgreSQL como estado compartido. Los turnos y los
+historiales no quedan guardados en la memoria de una réplica; quedan en la base
+de datos y en su volumen persistente. Esto permite que las réplicas sean
+intercambiables.
+
+Finalmente, las contraseñas no están escritas en el código: Docker Compose
+monta la contraseña de la base y la clave JWT como secretos."
+
+Aclaración breve si hay tiempo:
+
+"El alcance de la demo replica la capa de API. PostgreSQL queda como una única
+instancia, por lo que no afirmamos alta disponibilidad total de toda la
+arquitectura."
+
+Transición:
+
+"Ahora vemos cómo participan esas tácticas en un mismo pedido."
+
+
+DIAPOSITIVA 8 - CÓMO ACTÚAN (1:15)
+
+Decir:
+
+"El flujo es el siguiente. El cliente hace una solicitud; Nginx decide qué
+réplica va a atenderla. Ya dentro de FastAPI se valida el JWT y luego el rol.
+Si la operación necesita datos, la API se conecta a PostgreSQL. Si ocurre una
+falla transitoria de conexión, allí se aplica el reintento.
+
+Es importante que no son cuatro mecanismos aislados. En un pedido protegido,
+primero se autentica el actor, después se autoriza la operación, y luego la
+réplica atiende la lógica de negocio y se conecta a la base."
+
+Transición:
+
+"Con eso preparado, vamos a mostrar evidencia de cada táctica."
+
+================================================================================
+4. GUIÓN DE LA DEMO EN VIVO - DIAPOSITIVAS 9 A 13 (7:00)
+================================================================================
+
+Mantener el ritmo. La evidencia importante es el código HTTP, el cuerpo de
+respuesta o el estado de los contenedores; no explicar cada clic de Postman.
+
+
+DIAPOSITIVA 9 - TRANSICIÓN A LA DEMO (0:10)
+
+Decir:
+
+"Vamos a demostrar las cuatro tácticas en este orden: autenticación,
+autorización, replicación y reintentos. Usaremos Postman para las solicitudes y
+la terminal para observar o provocar fallas."
+
+
+DEMO 1 - DIAPOSITIVA 10: AUTENTICAR ACTORES (0:50)
+
+En Postman abrir Seguridad_Collection y ejecutar:
+
+1. "1 - Acceder sin iniciar sesion".
+
+Decir mientras aparece el resultado:
+
+"Primero intentamos acceder al endpoint real GET /mascotas sin token.
+La respuesta es 401 Unauthorized. Conocer la URL no alcanza: la API no conoce
+la identidad del actor."
+
+2. "2 - Iniciar sesion como cliente".
+
+Decir:
+
+"Ahora iniciamos sesión con un cliente válido. La API responde 200 con un
+access_token. Copiamos ese JWT y lo pegamos manualmente como Bearer Token en
+las dos peticiones siguientes."
+
+3. "3 - Acceder con el cliente autenticado".
+
+Decir:
+
+"Repetimos GET /mascotas, pero ahora Postman envía Authorization: Bearer con el
+JWT que acabamos de pegar. La respuesta pasa de 401 a 200 y devuelve mascotas
+reales. Esta es la táctica de autenticar actores: verificar la identidad antes
+de dar acceso."
+
+Evidencia mínima que mostrar:
+
+- primer resultado: 401 Unauthorized;
+- último resultado: 200 OK;
+- el Bearer Token pegado manualmente en Authorization.
+
+
+DEMO 2 - DIAPOSITIVA 11: AUTORIZAR ACTORES (1:00)
+
+Continuar en Seguridad_Collection:
+
+4. "4 - Cliente intenta acceder a la agenda veterinaria".
+
+Decir:
+
+"El cliente ya está autenticado: su token es válido. Sin embargo, intenta
+acceder a GET /agenda, que requiere el rol VETERINARIO. La respuesta es 403
+Forbidden. La diferencia es importante: 401 significa que no sabemos quién es
+el actor; 403 significa que sí sabemos quién es, pero no tiene ese permiso."
+
+5. "5 - Iniciar sesion como veterinario".
+6. "6 - Veterinario accede a su agenda".
+
+Decir:
+
+"Iniciamos sesión como veterinario y repetimos GET /agenda. Ahora es 200 OK,
+porque el token tiene el rol requerido. Así demostramos autorización: no solo
+validamos la identidad, sino que aplicamos permisos por operación y por rol."
+
+Evidencia mínima que mostrar:
+
+- cliente: 403 Forbidden;
+- veterinario: 200 OK;
+- en Test Results, las pruebas de la colección en PASS si resulta visible.
+
+
+DEMO 3 - DIAPOSITIVA 12: REPLICACIÓN (2:30)
+
+1. En la terminal ejecutar:
+
+   docker compose ps
+
+Decir:
+
+"En este momento hay dos contenedores del servicio server, ambos con la misma
+API. Nginx recibe las solicitudes y las distribuye entre ellos."
+
+2. En Replicacion_Collection, ejecutar primero "1 - Iniciar sesion como
+cliente". Copiar el access_token y pegarlo manualmente como Bearer Token en las
+peticiones 2 y 3. Luego ejecutar "2 - Identificar instancia" cuatro veces.
+
+Decir:
+
+"Este endpoint devuelve el identificador del contenedor que atendió el pedido.
+Como Nginx usa round-robin, las respuestas alternan entre dos identificadores:
+no son dos aplicaciones diferentes, son dos réplicas del mismo backend."
+
+3. En la terminal detener una de las réplicas. Usar el nombre real mostrado
+por docker compose ps, por ejemplo:
+
+   docker stop proyecto_clnica_veterinaria-server-1
+   docker compose ps -a
+
+Decir:
+
+"Ahora detenemos una de las dos réplicas. Docker muestra una instancia en
+Exited, pero la otra sigue Up."
+
+4. Sin recuperar todavía la réplica detenida, volver a ejecutar varias veces
+"2 - Identificar instancia" en Postman. También ejecutar "3 - Consultar
+mascotas".
+
+Decir:
+
+"A pesar de que una réplica se cayó, Postman sigue recibiendo 200 OK. El cuerpo
+de demo/instancia ahora identifica a la instancia que quedó activa y GET
+/mascotas también sigue devolviendo datos reales. Nginx redirige las solicitudes
+a esa réplica disponible; por eso el servicio de API no se interrumpe."
+
+Si es visible y ocurre, mencionar en Headers:
+
+"En algunos pedidos puede verse X-Upstream-Status: 502, 200: el primer intento
+de Nginx encontró la réplica caída y el siguiente llegó a la activa. Si solo
+aparece 200, Nginx ya había marcado temporalmente la réplica caída como no
+disponible. Ambos resultados prueban continuidad."
+
+5. Restaurar dos réplicas antes de pasar a reintentos:
+
+   docker compose up -d --scale server=2 server
+   docker compose up -d --no-deps --force-recreate balanceador
+
+Decir mientras se ejecuta:
+
+"Con esto restauramos el ambiente normal de dos réplicas."
+
+Evidencia mínima que mostrar:
+
+- antes: dos identificadores alternados;
+- terminal: una réplica Exited;
+- después: 200 OK, el identificador de la réplica activa y GET /mascotas.
+
+
+DEMO 4 - DIAPOSITIVA 13: REINTENTOS (2:30)
+
+1. En la terminal dejar una única réplica para que el estado de la falla
+simulada permanezca en el mismo proceso:
+
+   docker compose up -d --scale server=1 server
+   docker compose up -d --no-deps --force-recreate balanceador
+
+Decir:
+
+"Para esta demostración dejamos temporalmente una sola réplica. La falla
+simulada se guarda en memoria dentro del contenedor; así todas las solicitudes
+de esta prueba llegan al mismo proceso y podemos medir los reintentos."
+
+2. En Re-intentos_Collection ejecutar, en este orden:
+
+   1 - Iniciar sesion
+   2 - Simular fallas de conexion
+   3 - Ejecutar operacion con reintentos
+   4 - Consultar ultimo intento
+
+Decir en cada paso:
+
+"Primero iniciamos sesión, copiamos access_token y lo pegamos manualmente como
+Bearer Token en las tres peticiones posteriores."
+
+"Ahora configuramos dos fallas de conexión simuladas. No rompemos PostgreSQL:
+la aplicación simula dos intentos fallidos para poder observar el mecanismo de
+forma controlada."
+
+"Ejecutamos GET /mascotas. El primer intento falla y espera medio segundo. El
+segundo falla y espera un segundo. El tercero logra conectarse y la operación
+termina en 200 OK."
+
+"Por último consultamos el registro de la prueba. Vemos intentos_usados igual a
+3, exitoso igual a true y una duración aproximada de 1,5 segundos. La falla
+transitoria quedó absorbida sin que el usuario tuviera que repetir la
+operación."
+
+3. Restaurar el ambiente de dos réplicas. Puede hacerse mientras se pasa al
+cierre o inmediatamente al terminar:
+
+   docker compose up -d --scale server=2 server
+   docker compose up -d --no-deps --force-recreate balanceador
+
+Evidencia mínima que mostrar:
+
+- la simulación confirma dos fallas;
+- GET /mascotas termina en 200 OK;
+- ultimo-intento-conexion indica intentos_usados: 3 y exitoso: true.
+
+================================================================================
+5. DIAPOSITIVA 14 - CIERRE (0:40)
+================================================================================
+
+Decir:
+
+"Para cerrar, demostramos cuatro resultados observables. La autenticación
+impide usar endpoints protegidos sin identidad; la autorización limita las
+operaciones según el rol. La replicación mantiene disponible la capa de API
+cuando una instancia cae, y los reintentos absorben fallas transitorias de
+conexión a la base.
+
+También reconocemos el límite del alcance: tenemos dos réplicas de FastAPI,
+pero PostgreSQL es una instancia única. Por eso la demo prueba continuidad en
+la capa de aplicación, no alta disponibilidad completa de toda la solución.
+
+Muchas gracias. Quedamos atentos a preguntas."
+
+================================================================================
+6. PLAN DE CONTINGENCIA PARA LA DEMO
+================================================================================
+
+Si algo no responde durante la presentación, evitar invertir tiempo depurando.
+Mostrar la evidencia ya visible, explicar el resultado esperado y continuar con
+la siguiente táctica.
+
+Comandos automáticos disponibles como respaldo:
+
+- Replicación:
+
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\demo-replicacion.ps1
+
+  Este script inicia sesión, muestra solicitudes antes de la falla, detiene una
+  réplica, comprueba que la otra continúa atendiendo y restaura el ambiente.
+
+- Reintentos:
+
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\demo-reintentos.ps1
+
+  Este script deja una réplica, configura dos fallas simuladas, ejecuta la
+  operación, comprueba tres intentos exitosos y restaura las dos réplicas.
+
+Si se corta el tiempo, no eliminar las evidencias principales. Reducir primero
+la explicación de la diapositiva 7 u 8 y omitir la inspección opcional de
+headers X-Upstream. La demostración debe conservar los cuatro pares clave:
+
+- 401 y 200 para autenticación;
+- 403 y 200 para autorización;
+- una réplica caída y 200 continuo para replicación;
+- tres intentos y exitoso true para reintentos.

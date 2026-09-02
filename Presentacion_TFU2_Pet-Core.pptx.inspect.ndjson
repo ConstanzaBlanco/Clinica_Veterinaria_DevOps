@@ -1,0 +1,239 @@
+{"kind":"deck","id":"pr/7h6nmh","name":"Deck"}
+{"kind":"layout","layoutId":"/ppt/slideMasters/slideMaster1.xml","name":"","type":"master","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"body","type":"body","textPreview":"Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout1.xml","name":"Title Slide","type":"title","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"subtitle","type":"subtitle","textPreview":"Click to edit Master subtitle style"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout2.xml","name":"Title and Content","type":"obj","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"content placeholder 2","textPreview":"Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout3.xml","name":"Section Header","type":"secHead","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"body","type":"body","textPreview":"Click to edit Master text styles"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout4.xml","name":"Two Content","type":"twoObj","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"content placeholder 2","textPreview":"Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level"},{"name":"content placeholder 3","textPreview":"Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout5.xml","name":"Comparison","type":"twoTxTwoObj","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"body","type":"body","textPreview":"Click to edit Master text styles"},{"name":"content placeholder 3","textPreview":"Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level"},{"name":"body","type":"body","textPreview":"Click to edit Master text styles"},{"name":"content placeholder 5","textPreview":"Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout6.xml","name":"Title Only","type":"titleOnly","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout7.xml","name":"Blank","type":"blank","placeholders":[{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout8.xml","name":"Content with Caption","type":"objTx","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"content placeholder 2","textPreview":"Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level"},{"name":"body","type":"body","textPreview":"Click to edit Master text styles"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout9.xml","name":"Picture with Caption","type":"picTx","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"picture","type":"picture"},{"name":"body","type":"body","textPreview":"Click to edit Master text styles"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout10.xml","name":"Title and Vertical Text","type":"vertTx","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"body","type":"body","textPreview":"Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout11.xml","name":"Vertical Title and Text","type":"vertTitleAndTx","placeholders":[{"name":"title","type":"title","textPreview":"Click to edit Master title style"},{"name":"body","type":"body","textPreview":"Click to edit Master text styles | Second level | Third level | Fourth level | Fifth level"},{"name":"dateTime","type":"dateTime","textPreview":"8/1/2011"},{"name":"footer","type":"footer"},{"name":"slideNumber","type":"slideNumber","textPreview":"‹#›"}]}
+{"kind":"slide","id":"sl/y90nupkv","slide":1,"title":"Tácticas de arquitectura","textShapes":3}
+{"kind":"shape","id":"sh/k3yl0zql","slide":1,"name":"Freeform 3","bbox":[108,647.54,26.69,122.01]}
+{"kind":"shape","id":"sh/7qp4be9c","slide":1,"name":"TextBox 4","bbox":[108,632.36,26.69,137.2]}
+{"kind":"shape","id":"sh/65g3298r","slide":1,"name":"Freeform 5","bbox":[1569.99,755.65,393.38,380.87]}
+{"kind":"shape","id":"sh/ts7md4r2","slide":1,"name":"Freeform 6","bbox":[860.94,113.49,236.19,228.67]}
+{"kind":"shape","id":"sh/sryl4zqx","slide":1,"name":"Freeform 7","bbox":[1066.86,178.58,623.19,793.42]}
+{"kind":"shape","id":"sh/fu94fe98","slide":1,"name":"Freeform 8","bbox":[1136.9,358.78,148.07,143.36]}
+{"kind":"textbox","id":"sh/utg3698n","slide":1,"name":"TextBox 9","text":"Tácticas de arquitectura","textPreview":"Tácticas de arquitectura","textChars":24,"textLines":1,"bbox":[154,500,900,169.23]}
+{"kind":"textbox","id":"sh/wn6dc7eh","slide":1,"name":"TextBox 10","text":"Constanza Blanco · Manuel Cabrera\nDiego de Oliveira · Martin Mujica","textPreview":"Constanza Blanco · Manuel Cabrera | Diego de Oliveira · Martin Mujica","textChars":67,"textLines":2,"bbox":[154.47,690,824.56,100]}
+{"kind":"textbox","id":"sh/hofulsf2","slide":1,"name":"TextBox 11","text":"TFU2 · Análisis y Diseño de Aplicaciones II · Pet-Core","textPreview":"TFU2 · Análisis y Diseño de Aplicaciones II · Pet-Core","textChars":54,"textLines":1,"bbox":[108,104,462.27,78.4]}
+{"kind":"shape","id":"sh/vmdcj2xw","slide":1,"name":"AutoShape 13","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/4r6dg7et","slide":1,"name":"AutoShape 14","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/5sfepcfe","slide":1,"name":"AutoShape 15","bbox":[1766.68,142,45.32,0]}
+{"kind":"notes","id":"nt/y90nupkv","slide":1,"text":"Tiempo sugerido: 30 segundos.\nPresentar al equipo y anticipar la idea central: demostrar cuatro tácticas sobre una API REST real, no solamente describirlas.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/hwbqtkby","slide":2,"title":"Pet-Core","textShapes":6}
+{"kind":"shape","id":"sh/ozy1ofad","slide":2,"name":"AutoShape 3","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/b29kza94","slide":2,"name":"AutoShape 4","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/a10jqpsj","slide":2,"name":"AutoShape 5","bbox":[1766.68,142,45.32,0]}
+{"kind":"textbox","id":"sh/w3i1sfa9","slide":2,"name":"TextBox 7","text":"Pet-Core","textPreview":"Pet-Core","textChars":8,"textLines":1,"bbox":[100.3,348.7,736.7,269.25]}
+{"kind":"textbox","id":"sh/r65knqtk","slide":2,"name":"TextBox 8","text":"Gestión para una clínica veterinaria","textPreview":"Gestión para una clínica veterinaria","textChars":36,"textLines":1,"bbox":[100.3,651.38,736.7,42.92]}
+{"kind":"shape","id":"sh/q5wjelsz","slide":2,"name":"Freeform 9","bbox":[666.97,62.89,355.46,344.15]}
+{"kind":"textbox","id":"sh/9wnqhczy","slide":2,"name":"TextBox 11","text":"Dos procesos críticos","textPreview":"Dos procesos críticos","textChars":21,"textLines":1,"bbox":[1085.89,187.4,573.61,59.72]}
+{"kind":"textbox","id":"sh/mtwrmxg7","slide":2,"name":"TextBox 12","text":"Reserva de turnos\nHistorial clínico de mascotas","textPreview":"Reserva de turnos | Historial clínico de mascotas","textChars":47,"textLines":2,"bbox":[1060.47,259.58,724.15,196.55]}
+{"kind":"shape","id":"sh/wjy9sry9","slide":2,"name":"Freeform 14","bbox":[1033.11,243.12,27.36,263.01]}
+{"kind":"shape","id":"sh/xk7qlczu","slide":2,"name":"TextBox 15","bbox":[1033.11,227.93,27.36,278.2]}
+{"kind":"shape","id":"sh/ahwrqhgj","slide":2,"name":"Freeform 16","bbox":[507.87,799.93,355.46,344.15]}
+{"kind":"shape","id":"sh/bip8jmho","slide":2,"name":"Freeform 17","bbox":[110.87,877.8,97.3,94.2]}
+{"kind":"shape","id":"sh/t8byxkn2","slide":2,"name":"Freeform 20","bbox":[1035.06,756.09,27.36,209.5]}
+{"kind":"shape","id":"sh/s72xofmh","slide":2,"name":"TextBox 21","bbox":[1035.06,740.9,27.36,224.69]}
+{"kind":"textbox","id":"sh/76twva5c","slide":2,"name":"TextBox 22","text":"Tres roles","textPreview":"Tres roles","textChars":10,"textLines":1,"bbox":[1087.85,700.37,573.61,59.72]}
+{"kind":"textbox","id":"sh/65kfmpor","slide":2,"name":"TextBox 23","text":"Cliente · Veterinario · Administrador\nCada rol ve y modifica información diferente.","textPreview":"Cliente · Veterinario · Administrador | Cada rol ve y modifica información diferente.","textChars":83,"textLines":2,"bbox":[1087.85,775.45,724.15,196.55]}
+{"kind":"notes","id":"nt/hwbqtkby","slide":2,"text":"Tiempo sugerido: 1 minuto.\nExplicar que la separación de roles es una decisión central: el cliente ve sus mascotas, el veterinario trabaja con información clínica y el administrador opera la agenda sin leer diagnósticos.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/ofy9wn61","slide":3,"title":"99,5 % disponible","textShapes":7}
+{"kind":"shape","id":"sh/cza94vmx","slide":3,"name":"Freeform 2","bbox":[841.91,108,236.19,228.67]}
+{"kind":"shape","id":"sh/d0jax03i","slide":3,"name":"Freeform 3","bbox":[1686.81,540,312.04,302.11]}
+{"kind":"shape","id":"sh/3ah8rqlg","slide":3,"name":"AutoShape 5","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/obq90bml","slide":3,"name":"AutoShape 6","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/pcjqtg36","slide":3,"name":"AutoShape 7","bbox":[1766.68,142,45.32,0]}
+{"kind":"textbox","id":"sh/n6ls3alk","slide":3,"name":"TextBox 9","text":"99,5 % disponible\nReserva de turnos 24/7\n→ Replicación","textPreview":"99,5 % disponible | Reserva de turnos 24/7 | → Replicación","textChars":54,"textLines":3,"bbox":[1219.16,232.06,467.17,130.19]}
+{"kind":"shape","id":"sh/m1c3mlsn","slide":3,"name":"Freeform 11","bbox":[1149.66,222.34,29.34,152.65]}
+{"kind":"shape","id":"sh/943mhgre","slide":3,"name":"TextBox 12","bbox":[1149.66,207.15,29.34,167.84]}
+{"kind":"textbox","id":"sh/v6l4jq94","slide":3,"name":"TextBox 14","text":"99,9 % disponible\nAgenda e historial en horario clínico\n→ Replicación","textPreview":"99,9 % disponible | Agenda e historial en horario clínico | → Replicación","textChars":69,"textLines":3,"bbox":[1210.35,423.05,541.18,130.19]}
+{"kind":"shape","id":"sh/x8nml0ra","slide":3,"name":"Freeform 16","bbox":[1149.66,413.32,25.62,152.65]}
+{"kind":"shape","id":"sh/w7ulsvqp","slide":3,"name":"TextBox 17","bbox":[1149.66,398.14,25.62,167.84]}
+{"kind":"textbox","id":"sh/i9w3u58v","slide":3,"name":"TextBox 19","text":"Acceso según rol\n→ Autenticar + autorizar","textPreview":"Acceso según rol | → Autenticar + autorizar","textChars":41,"textLines":2,"bbox":[114.46,856.02,541.18,130.19]}
+{"kind":"shape","id":"sh/f29gbyx0","slide":3,"name":"Freeform 21","bbox":[53.76,846.3,25.62,152.65]}
+{"kind":"shape","id":"sh/03ix43e5","slide":3,"name":"TextBox 22","bbox":[53.76,831.11,25.62,167.84]}
+{"kind":"textbox","id":"sh/6d0fytg3","slide":3,"name":"TextBox 24","text":"Administrador sin contenido clínico\n→ Autorizar","textPreview":"Administrador sin contenido clínico | → Autorizar","textChars":47,"textLines":2,"bbox":[742.35,856.02,541.18,163.19]}
+{"kind":"shape","id":"sh/sfix03y9","slide":3,"name":"Freeform 26","bbox":[681.65,846.3,25.62,152.65]}
+{"kind":"shape","id":"sh/tgry9ofu","slide":3,"name":"TextBox 27","bbox":[681.65,831.11,25.62,167.84]}
+{"kind":"shape","id":"sh/batgjixs","slide":3,"name":"Freeform 29","bbox":[1309.55,845.58,25.62,152.65]}
+{"kind":"shape","id":"sh/l4fi9cza","slide":3,"name":"TextBox 30","bbox":[1309.55,830.39,25.62,167.84]}
+{"kind":"shape","id":"sh/z2d07mh4","slide":3,"name":"Freeform 32","bbox":[18.06,126,1089.76,630.96]}
+{"kind":"textbox","id":"sh/x0vi5czy","slide":3,"name":"TextBox 34","text":"Recuperación < 2 min\nSin perder turnos ni historial\n→ Replicación + reintentos","textPreview":"Recuperación < 2 min | Sin perder turnos ni historial | → Replicación + reintentos","textChars":78,"textLines":3,"bbox":[1210.35,614.04,541.18,130.19]}
+{"kind":"shape","id":"sh/byd032h8","slide":3,"name":"Freeform 36","bbox":[1149.66,604.31,25.62,152.65]}
+{"kind":"shape","id":"sh/ax4zax0n","slide":3,"name":"TextBox 37","bbox":[1149.66,589.12,25.62,167.84]}
+{"kind":"textbox","id":"sh/hwzihwzi","slide":3,"name":"TextBox 38","text":"De requerimientos a tácticas","textPreview":"De requerimientos a tácticas","textChars":28,"textLines":1,"bbox":[1149.66,71.6,693.17,403.2]}
+{"kind":"textbox","id":"sh/wv61obyx","slide":3,"name":"TextBox 39","text":"Combinación elegida\nDisponibilidad + seguridad","textPreview":"Combinación elegida | Disponibilidad + seguridad","textChars":46,"textLines":2,"bbox":[1370.24,854.31,541.18,164.19]}
+{"kind":"notes","id":"nt/ofy9wn61","slide":3,"text":"Tiempo sugerido: 1 minuto 30 segundos.\nAclarar que los ASR provienen del trabajo anterior. La combinación elegida es una de las permitidas: replicación y reintentos para disponibilidad, más autenticar y autorizar actores para resistir ataques.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/jyx0ra1s","slide":4,"title":"La demo corre en Docker Compose con dos réplicas de la misma API.","textShapes":8}
+{"kind":"shape","id":"sh/0ba143al","slide":4,"name":"AutoShape 3","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/rm1k7yt4","slide":4,"name":"AutoShape 4","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/ql8jytsj","slide":4,"name":"AutoShape 5","bbox":[1766.68,142,45.32,0]}
+{"kind":"shape","id":"sh/doj29oba","slide":4,"name":"Freeform 6","bbox":[72.39,405.39,349.1,337.99]}
+{"kind":"textbox","id":"sh/sna103ap","slide":4,"name":"TextBox 7","text":"La demo corre en Docker Compose con dos réplicas de la misma API.","textPreview":"La demo corre en Docker Compose con dos réplicas de la misma API.","textChars":65,"textLines":1,"bbox":[72.39,160.4,1676.08,94.06]}
+{"kind":"shape","id":"sh/3ihk3et8","slide":4,"name":"Freeform 8","bbox":[543.64,243.52,349.1,337.99]}
+{"kind":"shape","id":"sh/ih8ju9sn","slide":4,"name":"Freeform 9","bbox":[1014.89,405.39,349.1,337.99]}
+{"kind":"shape","id":"sh/kbm987y5","slide":4,"name":"Freeform 10","bbox":[1462.9,254.47,349.1,337.99]}
+{"kind":"shape","id":"sh/5cva1cfq","slide":4,"name":"Freeform 11","bbox":[1323.91,323.46,92.6,276.42]}
+{"kind":"shape","id":"sh/i94r6xgz","slide":4,"name":"Freeform 12","bbox":[800.39,349.43,319.22,110.13]}
+{"kind":"textbox","id":"sh/jadsz2xk","slide":4,"name":"TextBox 13","text":"1\nPostman","textPreview":"1 | Postman","textChars":9,"textLines":2,"bbox":[108,489.07,258.44,147.8]}
+{"kind":"textbox","id":"sh/w72947yt","slide":4,"name":"TextBox 14","text":"La arquitectura convierte las tácticas en comportamiento observable","textPreview":"La arquitectura convierte las tácticas en comportamiento observable","textChars":67,"textLines":1,"bbox":[72.39,35.59,1676.08,268.8]}
+{"kind":"textbox","id":"sh/x8vaxsfe","slide":4,"name":"TextBox 15","text":"2\nNginx\n:8000","textPreview":"2 | Nginx | :8000","textChars":13,"textLines":3,"bbox":[588.97,328.99,258.44,151.16]}
+{"kind":"textbox","id":"sh/a5kr2xg3","slide":4,"name":"TextBox 16","text":"3\nFastAPI × 2","textPreview":"3 | FastAPI × 2","textChars":13,"textLines":2,"bbox":[1060.22,516.06,258.44,147.8]}
+{"kind":"textbox","id":"sh/v6tsv2xo","slide":4,"name":"TextBox 17","text":"4\nPostgreSQL","textPreview":"4 | PostgreSQL","textChars":12,"textLines":2,"bbox":[1508.23,336.12,258.44,147.8]}
+{"kind":"shape","id":"sh/g36tgryd","slide":4,"name":"Freeform 18","bbox":[454.88,474.04,77.56,231.54]}
+{"kind":"textbox","id":"sh/h4fa9wfy","slide":4,"name":"TextBox 19","text":"Nginx reparte solicitudes y reintenta con otra réplica cuando una falla.","textPreview":"Nginx reparte solicitudes y reintenta con otra réplica cuando una falla.","textChars":72,"textLines":1,"bbox":[108,825.38,739.06,142.06]}
+{"kind":"textbox","id":"sh/p0batw72","slide":4,"name":"TextBox 20","text":"Las dos APIs comparten una única base persistente y los mismos secretos.","textPreview":"Las dos APIs comparten una única base persistente y los mismos secretos.","textChars":72,"textLines":1,"bbox":[1072.94,825.38,739.06,142.06]}
+{"kind":"notes","id":"nt/jyx0ra1s","slide":4,"text":"Tiempo sugerido: 1 minuto 30 segundos.\nRecorrer el pedido de izquierda a derecha. Señalar que no existen dos bases: hay un solo PostgreSQL compartido. La demostración de replicación cubre la API; la base sigue siendo un punto único de falla y se reconoce como limitación.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/i107q5of","slide":5,"title":"Autenticar","textShapes":7}
+{"kind":"shape","id":"sh/cf2tcr61","slide":5,"name":"AutoShape 3","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/z2tcnm5s","slide":5,"name":"AutoShape 4","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/yhkbe1o7","slide":5,"name":"AutoShape 5","bbox":[1766.68,142,45.32,0]}
+{"kind":"shape","id":"sh/l4bupwny","slide":5,"name":"Freeform 6","bbox":[-48.96,-57.35,355.46,344.15]}
+{"kind":"shape","id":"sh/032tgr6d","slide":5,"name":"Freeform 7","bbox":[616.56,361.6,343.44,432]}
+{"kind":"shape","id":"sh/n6dcr65o","slide":5,"name":"Freeform 8","bbox":[1363.99,463.67,384.48,432]}
+{"kind":"shape","id":"sh/m5kbi1oj","slide":5,"name":"Freeform 9","bbox":[108,463.67,360.72,432]}
+{"kind":"textbox","id":"sh/w32dkbuh","slide":5,"name":"TextBox 10","text":"Autenticar\n¿Quién sos?\n\nAutorizar\n¿Qué podés hacer?","textPreview":"Autenticar | ¿Quién sos? |  | Autorizar | ¿Qué podés hacer?","textChars":51,"textLines":5,"bbox":[210.36,535,463.2,214.6]}
+{"kind":"textbox","id":"sh/x4vedgvm","slide":5,"name":"TextBox 11","text":"Seguridad","textPreview":"Seguridad","textChars":9,"textLines":1,"bbox":[183.53,467.05,258.44,50.39]}
+{"kind":"shape","id":"sh/ahkvi1cb","slide":5,"name":"TextBox 12","bbox":[72.39,35.59,1676.08,129.81]}
+{"kind":"textbox","id":"sh/v2twb6dw","slide":5,"name":"TextBox 13","text":"Las cuatro tácticas conviven en un mismo pedido","textPreview":"Las cuatro tácticas conviven en un mismo pedido","textChars":47,"textLines":1,"bbox":[72.39,160.4,1676.08,94.07]}
+{"kind":"textbox","id":"sh/k7mxovud","slide":5,"name":"TextBox 14","text":"Recuperación","textPreview":"Recuperación","textChars":12,"textLines":1,"bbox":[830.78,335.2,258.44,302.32]}
+{"kind":"textbox","id":"sh/58vehgvy","slide":5,"name":"TextBox 15","text":"Reintentos\nFalla transitoria de BD\n\nMáximo 3 intentos","textPreview":"Reintentos | Falla transitoria de BD |  | Máximo 3 intentos","textChars":53,"textLines":4,"bbox":[857.62,407.52,463.2,171.68]}
+{"kind":"textbox","id":"sh/i54fmlc7","slide":5,"name":"TextBox 16","text":"Continuidad","textPreview":"Continuidad","textChars":11,"textLines":1,"bbox":[1363.99,631.87,258.44,50.39]}
+{"kind":"textbox","id":"sh/j6dwfqds","slide":5,"name":"TextBox 17","text":"Replicación\nUna API cae\n\nLa otra responde","textPreview":"Replicación | Una API cae |  | La otra responde","textChars":41,"textLines":4,"bbox":[1456.8,696.87,463.2,171.68]}
+{"kind":"notes","id":"nt/i107q5of","slide":5,"text":"Tiempo sugerido: 1 minuto 15 segundos.\nDiferenciar los conceptos: autenticación identifica; autorización verifica permisos; reintentos absorbe fallas breves; replicación mantiene el servicio si una instancia completa cae.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/x8f69ofe","slide":6,"title":"Demostración en vivo","textShapes":5}
+{"kind":"shape","id":"sh/zi98nu94","slide":6,"name":"AutoShape 3","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/87ipkzal","slide":6,"name":"AutoShape 4","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/98rqt4r6","slide":6,"name":"AutoShape 5","bbox":[1766.68,142,45.32,0]}
+{"kind":"textbox","id":"sh/ml07i9sv","slide":6,"name":"TextBox 6","text":"Demostración en vivo","textPreview":"Demostración en vivo","textChars":20,"textLines":1,"bbox":[491.71,212.81,936.57,263.81]}
+{"kind":"shape","id":"sh/pc76hkr2","slide":6,"name":"Freeform 9","bbox":[26.57,513.43,623.32,182.66]}
+{"kind":"shape","id":"sh/h4bupgn6","slide":6,"name":"TextBox 10","bbox":[26.57,496.45,623.32,199.64]}
+{"kind":"textbox","id":"sh/w32twb6l","slide":6,"name":"TextBox 11","text":"1 · Autenticar actores","textPreview":"1 · Autenticar actores","textChars":22,"textLines":1,"bbox":[78.79,566.47,518.89,84.74]}
+{"kind":"shape","id":"sh/5svutgni","slide":6,"name":"Freeform 14","bbox":[664.56,511.06,623.32,182.66]}
+{"kind":"shape","id":"sh/47mt0b6x","slide":6,"name":"TextBox 15","bbox":[664.56,494.07,623.32,199.64]}
+{"kind":"textbox","id":"sh/j6dcr65c","slide":6,"name":"TextBox 16","text":"2 · Autorizar actores","textPreview":"2 · Autorizar actores","textChars":21,"textLines":1,"bbox":[716.78,567.23,518.89,84.74]}
+{"kind":"shape","id":"sh/svmt4v6t","slide":6,"name":"Freeform 19","bbox":[1302.56,513.43,615.21,180.28]}
+{"kind":"shape","id":"sh/cbe5g3ih","slide":6,"name":"TextBox 20","bbox":[1302.56,496.67,615.21,197.05]}
+{"kind":"textbox","id":"sh/dcnm98zm","slide":6,"name":"TextBox 21","text":"3 · Replicación y reintentos","textPreview":"3 · Replicación y reintentos","textChars":28,"textLines":1,"bbox":[1355.61,565.73,512.14,43.27]}
+{"kind":"shape","id":"sh/qpwnet0b","slide":6,"name":"Freeform 22","bbox":[191.74,237.89,236.19,228.67]}
+{"kind":"shape","id":"sh/bq547yhw","slide":6,"name":"Freeform 23","bbox":[1492.07,237.89,236.19,228.67]}
+{"kind":"textbox","id":"sh/0fy5k3id","slide":6,"name":"TextBox 24","text":"Problema → táctica → evidencia observable","textPreview":"Problema → táctica → evidencia observable","textChars":41,"textLines":1,"bbox":[184.9,726.9,1538.87,221.95]}
+{"kind":"notes","id":"nt/x8f69ofe","slide":6,"text":"Tiempo sugerido: 15 segundos.\nAbrir Postman y la terminal. Las cuatro demostraciones deben ocupar aproximadamente 7 minutos en total. Mantener esta diapositiva como respaldo si la demo tarda en abrir.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/gnmp4jqx","slide":7,"title":"Autenticar","textShapes":6}
+{"kind":"shape","id":"sh/dcbud0ra","slide":7,"name":"AutoShape 3","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/ydkbm5sv","slide":7,"name":"AutoShape 4","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/zedcfa9g","slide":7,"name":"AutoShape 5","bbox":[1766.68,142,45.32,0]}
+{"kind":"textbox","id":"sh/l0vuh0rm","slide":7,"name":"TextBox 7","text":"Autenticar","textPreview":"Autenticar","textChars":10,"textLines":1,"bbox":[100.3,348.7,736.7,269.25]}
+{"kind":"textbox","id":"sh/eh0ba1sr","slide":7,"name":"TextBox 8","text":"Verificar la identidad antes de dar acceso","textPreview":"Verificar la identidad antes de dar acceso","textChars":42,"textLines":1,"bbox":[100.3,651.38,736.7,42.92]}
+{"kind":"shape","id":"sh/fi9c369c","slide":7,"name":"Freeform 9","bbox":[666.97,62.89,355.46,344.15]}
+{"kind":"textbox","id":"sh/a9ojq5kz","slide":7,"name":"TextBox 11","text":"Sin token","textPreview":"Sin token","textChars":9,"textLines":1,"bbox":[1085.89,187.4,573.61,59.72]}
+{"kind":"textbox","id":"sh/xcz2l03q","slide":7,"name":"TextBox 12","text":"GET /demo/instancia\n→ 401 Unauthorized","textPreview":"GET /demo/instancia | → 401 Unauthorized","textChars":38,"textLines":2,"bbox":[1060.47,259.58,724.15,196.55]}
+{"kind":"shape","id":"sh/n6x0fqlo","slide":7,"name":"Freeform 14","bbox":[1033.11,243.12,27.36,263.01]}
+{"kind":"shape","id":"sh/25ojml43","slide":7,"name":"TextBox 15","bbox":[1033.11,227.93,27.36,278.2]}
+{"kind":"shape","id":"sh/p8fih03e","slide":7,"name":"Freeform 16","bbox":[507.87,799.93,355.46,344.15]}
+{"kind":"shape","id":"sh/o761ov2t","slide":7,"name":"Freeform 17","bbox":[110.87,877.8,97.3,94.2]}
+{"kind":"shape","id":"sh/id4ju1oz","slide":7,"name":"Freeform 20","bbox":[1035.06,756.09,27.36,209.5]}
+{"kind":"shape","id":"sh/jedkn654","slide":7,"name":"TextBox 21","bbox":[1035.06,740.9,27.36,224.69]}
+{"kind":"textbox","id":"sh/4fm1wb6p","slide":7,"name":"TextBox 22","text":"Con identidad verificada","textPreview":"Con identidad verificada","textChars":24,"textLines":1,"bbox":[1087.85,700.37,573.61,59.72]}
+{"kind":"textbox","id":"sh/50v2pgna","slide":7,"name":"TextBox 23","text":"POST /auth/login → JWT\nGET /demo/instancia → 200 OK","textPreview":"POST /auth/login → JWT | GET /demo/instancia → 200 OK","textChars":51,"textLines":2,"bbox":[1087.85,775.45,724.15,196.55]}
+{"kind":"notes","id":"nt/gnmp4jqx","slide":7,"text":"Tiempo sugerido de demo: 1 minuto 15 segundos.\nEn Postman abrir Seguridad_Collection y ejecutar las peticiones 1, 2 y 3. Mostrar que el mismo recurso primero rechaza la solicitud y luego la acepta al recibir Authorization: Bearer <token>.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/fu1gfa1s","slide":8,"title":"Autorizar","textShapes":6}
+{"kind":"shape","id":"sh/g72x4zyd","slide":8,"name":"AutoShape 3","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/ri9g7uhw","slide":8,"name":"AutoShape 4","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/6h0fypgb","slide":8,"name":"AutoShape 5","bbox":[1766.68,142,45.32,0]}
+{"kind":"textbox","id":"sh/sjix0zy1","slide":8,"name":"TextBox 7","text":"Autorizar","textPreview":"Autorizar","textChars":9,"textLines":1,"bbox":[150,348.7,700,269.25]}
+{"kind":"textbox","id":"sh/je9g3ahk","slide":8,"name":"TextBox 8","text":"Decidir qué puede hacer cada identidad","textPreview":"Decidir qué puede hacer cada identidad","textChars":38,"textLines":1,"bbox":[100.3,651.38,736.7,42.92]}
+{"kind":"shape","id":"sh/id0fu50z","slide":8,"name":"Freeform 9","bbox":[666.97,62.89,355.46,344.15]}
+{"kind":"textbox","id":"sh/98rehwve","slide":8,"name":"TextBox 11","text":"Token de CLIENTE","textPreview":"Token de CLIENTE","textChars":16,"textLines":1,"bbox":[1085.89,187.4,573.61,59.72]}
+{"kind":"textbox","id":"sh/m5gvmhwn","slide":8,"name":"TextBox 12","text":"GET /agenda\n→ 403 Forbidden","textPreview":"GET /agenda | → 403 Forbidden","textChars":27,"textLines":2,"bbox":[1100,259.58,650,196.55]}
+{"kind":"shape","id":"sh/0jydkreh","slide":8,"name":"Freeform 14","bbox":[1033.11,243.12,27.36,263.01]}
+{"kind":"shape","id":"sh/1k7edwv2","slide":8,"name":"TextBox 15","bbox":[1033.11,227.93,27.36,278.2]}
+{"kind":"shape","id":"sh/ehgvihwr","slide":8,"name":"Freeform 16","bbox":[507.87,799.93,355.46,344.15]}
+{"kind":"shape","id":"sh/zipwbmdc","slide":8,"name":"Freeform 17","bbox":[110.87,877.8,97.3,94.2]}
+{"kind":"shape","id":"sh/tw7e9gnq","slide":8,"name":"Freeform 20","bbox":[1035.06,756.09,27.36,209.5]}
+{"kind":"shape","id":"sh/svydgb65","slide":8,"name":"TextBox 21","bbox":[1035.06,740.9,27.36,224.69]}
+{"kind":"textbox","id":"sh/7u5w765k","slide":8,"name":"TextBox 22","text":"Token de VETERINARIO","textPreview":"Token de VETERINARIO","textChars":20,"textLines":1,"bbox":[1087.85,700.37,573.61,59.72]}
+{"kind":"textbox","id":"sh/6twve1oz","slide":8,"name":"TextBox 23","text":"GET /agenda\n→ 200 OK","textPreview":"GET /agenda | → 200 OK","textChars":20,"textLines":2,"bbox":[1087.85,775.45,724.15,196.55]}
+{"kind":"notes","id":"nt/fu1gfa1s","slide":8,"text":"Tiempo sugerido de demo: 1 minuto 15 segundos.\nContinuar con las peticiones 4, 5 y 6 de Seguridad_Collection. Subrayar que 403 no significa identidad desconocida: el cliente fue autenticado, pero su rol no tiene permiso para consultar la agenda veterinaria.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/udsvah03","slide":9,"title":"Dos contenedores ejecutan la misma API; Nginx distribuye los pedidos.","textShapes":8}
+{"kind":"shape","id":"sh/0b65obm9","slide":9,"name":"AutoShape 3","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/nex4jq5k","slide":9,"name":"AutoShape 4","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/mdonql4z","slide":9,"name":"AutoShape 5","bbox":[1766.68,142,45.32,0]}
+{"kind":"shape","id":"sh/9gzml0nq","slide":9,"name":"Freeform 6","bbox":[72.39,405.39,349.1,337.99]}
+{"kind":"textbox","id":"sh/ofq5svm5","slide":9,"name":"TextBox 7","text":"Dos contenedores ejecutan la misma API; Nginx distribuye los pedidos.","textPreview":"Dos contenedores ejecutan la misma API; Nginx distribuye los pedidos.","textChars":69,"textLines":1,"bbox":[72.39,160.4,1676.08,94.06]}
+{"kind":"shape","id":"sh/bih4na5w","slide":9,"name":"Freeform 8","bbox":[543.64,243.52,349.1,337.99]}
+{"kind":"shape","id":"sh/ah8nu54b","slide":9,"name":"Freeform 9","bbox":[1014.89,405.39,349.1,337.99]}
+{"kind":"shape","id":"sh/oza1gfyh","slide":9,"name":"Freeform 10","bbox":[1462.9,254.47,349.1,337.99]}
+{"kind":"shape","id":"sh/p0ji9kf2","slide":9,"name":"Freeform 11","bbox":[1323.91,323.46,92.6,276.42]}
+{"kind":"shape","id":"sh/2xsjepgb","slide":9,"name":"Freeform 12","bbox":[800.39,349.43,319.22,110.13]}
+{"kind":"textbox","id":"sh/3y107axw","slide":9,"name":"TextBox 13","text":"1\nLogin","textPreview":"1 | Login","textChars":7,"textLines":2,"bbox":[108,489.07,258.44,147.8]}
+{"kind":"textbox","id":"sh/cnu1kzyd","slide":9,"name":"TextBox 14","text":"Replicación: una instancia cae y el servicio continúa","textPreview":"Replicación: una instancia cae y el servicio continúa","textChars":53,"textLines":1,"bbox":[72.39,35.59,1676.08,268.8]}
+{"kind":"textbox","id":"sh/do3id4fy","slide":9,"name":"TextBox 15","text":"2\nAlternan\nhostnames","textPreview":"2 | Alternan | hostnames","textChars":20,"textLines":3,"bbox":[588.97,328.99,258.44,151.16]}
+{"kind":"textbox","id":"sh/qlcjipgn","slide":9,"name":"TextBox 16","text":"3\nDetener\nuna réplica","textPreview":"3 | Detener | una réplica","textChars":21,"textLines":3,"bbox":[1060.22,516.06,258.44,151.16]}
+{"kind":"textbox","id":"sh/bml0buxs","slide":9,"name":"TextBox 17","text":"4\nSigue\n200 OK","textPreview":"4 | Sigue | 200 OK","textChars":14,"textLines":3,"bbox":[1508.23,336.12,258.44,151.16]}
+{"kind":"shape","id":"sh/0ru1ozyp","slide":9,"name":"Freeform 18","bbox":[454.88,474.04,77.56,231.54]}
+{"kind":"textbox","id":"sh/lsn2h4fa","slide":9,"name":"TextBox 19","text":"Antes: dos identificadores demuestran balanceo round-robin.","textPreview":"Antes: dos identificadores demuestran balanceo round-robin.","textChars":59,"textLines":1,"bbox":[108,825.38,739.06,142.06]}
+{"kind":"textbox","id":"sh/98ji147e","slide":9,"name":"TextBox 20","text":"Después: queda un identificador y no se interrumpe el servicio.","textPreview":"Después: queda un identificador y no se interrumpe el servicio.","textChars":63,"textLines":1,"bbox":[1072.94,825.38,739.06,142.06]}
+{"kind":"notes","id":"nt/udsvah03","slide":9,"text":"Tiempo sugerido de demo: 2 minutos 15 segundos.\nUsar Replicacion_Collection. Ejecutar varias veces Identificar instancia y mostrar dos hostnames. En terminal detener server-1. Repetir la petición: debe seguir en 200 desde la réplica activa. Si aparece X-Upstream-Status: 502, 200, señalar que Nginx falló contra una réplica y reintentó con la otra.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/m90b6t0r","slide":10,"title":"Se simulan dos fallas de conexión para observar el mecanismo de recuperación.","textShapes":8}
+{"kind":"shape","id":"sh/cbu58j2h","slide":10,"name":"AutoShape 3","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/zelojyl8","slide":10,"name":"AutoShape 4","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/ydcnatkn","slide":10,"name":"AutoShape 5","bbox":[1766.68,142,45.32,0]}
+{"kind":"shape","id":"sh/l036l83y","slide":10,"name":"Freeform 6","bbox":[72.39,405.39,349.1,337.99]}
+{"kind":"textbox","id":"sh/kzu5c32t","slide":10,"name":"TextBox 7","text":"Se simulan dos fallas de conexión para observar el mecanismo de recuperación.","textPreview":"Se simulan dos fallas de conexión para observar el mecanismo de recuperación.","textChars":77,"textLines":1,"bbox":[72.39,160.4,1676.08,94.06]}
+{"kind":"shape","id":"sh/725onyl4","slide":10,"name":"Freeform 8","bbox":[543.64,243.52,349.1,337.99]}
+{"kind":"shape","id":"sh/m1cnetkj","slide":10,"name":"Freeform 9","bbox":[1014.89,405.39,349.1,337.99]}
+{"kind":"shape","id":"sh/s7yt4b21","slide":10,"name":"Freeform 10","bbox":[1462.9,254.47,349.1,337.99]}
+{"kind":"shape","id":"sh/d87uxg3m","slide":10,"name":"Freeform 11","bbox":[1323.91,323.46,92.6,276.42]}
+{"kind":"shape","id":"sh/q5gb21kb","slide":10,"name":"Freeform 12","bbox":[800.39,349.43,319.22,110.13]}
+{"kind":"textbox","id":"sh/r6pcv6lw","slide":10,"name":"TextBox 13","text":"1\nSimular 2 fallas","textPreview":"1 | Simular 2 fallas","textChars":18,"textLines":2,"bbox":[108,489.07,258.44,147.8]}
+{"kind":"textbox","id":"sh/0bit8b2d","slide":10,"name":"TextBox 14","text":"Reintentos: una falla transitoria no llega al usuario","textPreview":"Reintentos: una falla transitoria no llega al usuario","textChars":53,"textLines":1,"bbox":[72.39,35.59,1676.08,268.8]}
+{"kind":"textbox","id":"sh/1cru1g3y","slide":10,"name":"TextBox 15","text":"2\nIntento 1\n+ 0,5 s","textPreview":"2 | Intento 1 | + 0,5 s","textChars":19,"textLines":3,"bbox":[588.97,328.99,258.44,151.16]}
+{"kind":"textbox","id":"sh/e9gb61k7","slide":10,"name":"TextBox 16","text":"3\nIntento 2\n+ 1 s","textPreview":"3 | Intento 2 | + 1 s","textChars":17,"textLines":3,"bbox":[1060.22,516.06,258.44,151.16]}
+{"kind":"textbox","id":"sh/fapcz6ls","slide":10,"name":"TextBox 17","text":"4\nIntento 3\n200 OK","textPreview":"4 | Intento 3 | 200 OK","textChars":18,"textLines":3,"bbox":[1508.23,336.12,258.44,151.16]}
+{"kind":"shape","id":"sh/ozitcv29","slide":10,"name":"Freeform 18","bbox":[454.88,474.04,77.56,231.54]}
+{"kind":"textbox","id":"sh/p0ru503u","slide":10,"name":"TextBox 19","text":"Evidencia: intentos_usados = 3 y duración aproximada de 1,5 s.","textPreview":"Evidencia: intentos_usados = 3 y duración aproximada de 1,5 s.","textChars":62,"textLines":1,"bbox":[108,825.38,739.06,142.06]}
+{"kind":"textbox","id":"sh/xwnupgvy","slide":10,"name":"TextBox 20","text":"El límite evita ocultar una falla permanente o saturar la base.","textPreview":"El límite evita ocultar una falla permanente o saturar la base.","textChars":63,"textLines":1,"bbox":[1072.94,825.38,739.06,142.06]}
+{"kind":"notes","id":"nt/m90b6t0r","slide":10,"text":"Tiempo sugerido de demo: 2 minutos 15 segundos.\nDejar temporalmente una sola réplica porque la falla simulada vive en memoria. Usar Re-intentos_Collection: login, simular 2 fallas, GET /mascotas y consultar el último intento. Mostrar intentos_usados: 3, exitoso: true y la demora cercana a 1,5 segundos.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/jetc3ut0","slide":11,"title":"Replicación","textShapes":7}
+{"kind":"shape","id":"sh/xcryxg7y","slide":11,"name":"Freeform 2","bbox":[841.91,108,236.19,228.67]}
+{"kind":"shape","id":"sh/wbih4b6d","slide":11,"name":"Freeform 3","bbox":[1686.81,540,312.04,302.11]}
+{"kind":"shape","id":"sh/250zy18b","slide":11,"name":"AutoShape 5","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/98rytw72","slide":11,"name":"AutoShape 6","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/o7ih0r6h","slide":11,"name":"AutoShape 7","bbox":[1766.68,142,45.32,0]}
+{"kind":"textbox","id":"sh/61kzalof","slide":11,"name":"TextBox 9","text":"Replicación\nMás recursos activos\ny coordinación","textPreview":"Replicación | Más recursos activos | y coordinación","textChars":47,"textLines":3,"bbox":[1219.16,232.06,467.17,130.19]}
+{"kind":"shape","id":"sh/9gza9sze","slide":11,"name":"Freeform 11","bbox":[1149.66,222.34,29.34,152.65]}
+{"kind":"shape","id":"sh/mdobedg3","slide":11,"name":"TextBox 12","bbox":[1149.66,207.15,29.34,167.84]}
+{"kind":"textbox","id":"sh/0b6tc3yx","slide":11,"name":"TextBox 14","text":"Reintentos\nDeben tener límite\ny espera gradual","textPreview":"Reintentos | Deben tener límite | y espera gradual","textChars":46,"textLines":3,"bbox":[1210.35,423.05,541.18,130.19]}
+{"kind":"shape","id":"sh/epobatgr","slide":11,"name":"Freeform 16","bbox":[1149.66,413.32,25.62,152.65]}
+{"kind":"shape","id":"sh/zaxs3yhc","slide":11,"name":"TextBox 17","bbox":[1149.66,398.14,25.62,167.84]}
+{"kind":"textbox","id":"sh/dofa18z6","slide":11,"name":"TextBox 19","text":"Autorización\nVerificación constante por rol","textPreview":"Autorización | Verificación constante por rol","textChars":43,"textLines":2,"bbox":[114.46,856.02,541.18,130.19]}
+{"kind":"shape","id":"sh/87ehgv6d","slide":11,"name":"Freeform 21","bbox":[53.76,846.3,25.62,152.65]}
+{"kind":"shape","id":"sh/7650nq5s","slide":11,"name":"TextBox 22","bbox":[53.76,831.11,25.62,167.84]}
+{"kind":"textbox","id":"sh/l43ilgn2","slide":11,"name":"TextBox 24","text":"Alcance\nSe replica la API, no PostgreSQL","textPreview":"Alcance | Se replica la API, no PostgreSQL","textChars":40,"textLines":2,"bbox":[742.35,856.02,541.18,163.19]}
+{"kind":"shape","id":"sh/j2lgjq5w","slide":11,"name":"Freeform 26","bbox":[681.65,846.3,25.62,152.65]}
+{"kind":"shape","id":"sh/y1czalob","slide":11,"name":"TextBox 27","bbox":[681.65,831.11,25.62,167.84]}
+{"kind":"shape","id":"sh/4zyhofml","slide":11,"name":"Freeform 29","bbox":[1309.55,845.58,25.62,152.65]}
+{"kind":"shape","id":"sh/m58fih43","slide":11,"name":"TextBox 30","bbox":[1309.55,830.39,25.62,167.84]}
+{"kind":"shape","id":"sh/o7axk7m9","slide":11,"name":"Freeform 32","bbox":[18.06,126,1089.76,630.96]}
+{"kind":"textbox","id":"sh/eh8fex47","slide":11,"name":"TextBox 34","text":"Autenticación\nAgrega fricción\ny gestión de tokens","textPreview":"Autenticación | Agrega fricción | y gestión de tokens","textChars":49,"textLines":3,"bbox":[1210.35,614.04,541.18,130.19]}
+{"kind":"shape","id":"sh/03qxg7mx","slide":11,"name":"Freeform 36","bbox":[1149.66,604.31,25.62,152.65]}
+{"kind":"shape","id":"sh/14ze9c3i","slide":11,"name":"TextBox 37","bbox":[1149.66,589.12,25.62,167.84]}
+{"kind":"textbox","id":"sh/ydcfq1kb","slide":11,"name":"TextBox 38","text":"Costos y límites","textPreview":"Costos y límites","textChars":16,"textLines":1,"bbox":[1149.66,71.6,693.17,134.4]}
+{"kind":"textbox","id":"sh/jylwj6lw","slide":11,"name":"TextBox 39","text":"Resultado\nSeguridad y continuidad observables","textPreview":"Resultado | Seguridad y continuidad observables","textChars":45,"textLines":2,"bbox":[1370.24,854.31,541.18,164.19]}
+{"kind":"notes","id":"nt/jetc3ut0","slide":11,"text":"Tiempo sugerido: 1 minuto.\nReconocer los trade-offs demuestra criterio arquitectónico. La base de datos única es una limitación explícita: esta demo prueba recuperación ante la caída de una instancia de aplicación, no alta disponibilidad total de todos los componentes.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}
+{"kind":"slide","id":"sl/8f2psfyx","slide":12,"title":"Las tácticas se notan menos cuando funcionan bien","textShapes":1}
+{"kind":"shape","id":"sh/0f2lgnmp","slide":12,"name":"AutoShape 3","bbox":[1766.68,110,45.32,0]}
+{"kind":"shape","id":"sh/ra943il8","slide":12,"name":"AutoShape 4","bbox":[1766.68,126,45.32,0]}
+{"kind":"shape","id":"sh/q903ad4n","slide":12,"name":"AutoShape 5","bbox":[1766.68,142,45.32,0]}
+{"kind":"shape","id":"sh/dcbm583y","slide":12,"name":"Freeform 6","bbox":[763.3,624,355.46,344.15]}
+{"kind":"shape","id":"sh/sb2lcnmd","slide":12,"name":"Freeform 7","bbox":[208.04,624,355.46,344.15]}
+{"kind":"textbox","id":"sh/b6d4f2lc","slide":12,"name":"TextBox 8","text":"Las tácticas se notan menos cuando funcionan bien","textPreview":"Las tácticas se notan menos cuando funcionan bien","textChars":49,"textLines":1,"bbox":[208.04,132.09,1402.89,648.76]}
+{"kind":"shape","id":"sh/wvupgz6t","slide":12,"name":"Freeform 10","bbox":[1276.23,175.89,466.32,792.27]}
+{"kind":"notes","id":"nt/8f2psfyx","slide":12,"text":"Tiempo sugerido: 1 minuto.\nCerrar con tres ideas: cuatro tácticas demostradas sobre una API real; satisfacen requerimientos anteriores, no inventados para esta entrega; y cada beneficio tiene un costo reconocido. Abrir el espacio para preguntas.\n\n[Sources]\n- Consigna TFU2 y documentación interna de Pet-Core.\n- Repositorio local: compose.yaml, nginx/andis.conf, README.md, scripts y código de la API."}

@@ -1,0 +1,488 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/7urr9o",
+    "id": "7urr9o",
+    "slide": 1,
+    "layoutId": "82a50bd4-5fbe-4a4e-b80d-3d632e0668aa",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "78abbd84-7e18-47bf-9411-ed93e4f180e6",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#0B2D3B",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "82a50bd4-5fbe-4a4e-b80d-3d632e0668aa",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "78abbd84-7e18-47bf-9411-ed93e4f180e6",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "78abbd84-7e18-47bf-9411-ed93e4f180e6",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6x8jyp0n",
+      "id": "1",
+      "bbox": [
+        0,
+        0,
+        1280,
+        18
+      ],
+      "geometry": "rect",
+      "fillColor": "#F26B5B",
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/4nqlw3y9",
+      "id": "2",
+      "bbox": [
+        880,
+        60,
+        360,
+        360
+      ],
+      "geometry": "rect",
+      "contentType": "image/png",
+      "imageFit": "contain",
+      "imageMask": {
+        "geometry": "rect"
+      },
+      "asset": {
+        "assetId": "0cd94bfb-097f-4f89-ba51-d09a33ac14ba",
+        "contentType": "image/png",
+        "byteLength": 297653
+      }
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/sza10fit",
+      "id": "3",
+      "bbox": [
+        76,
+        72,
+        690,
+        30
+      ],
+      "geometry": "rect",
+      "text": "TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II",
+      "textPreview": "TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#BFE4DF",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#BFE4DF",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II",
+              "fontSize": 15,
+              "color": "#BFE4DF",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/f21kbuh4",
+      "id": "4",
+      "bbox": [
+        76,
+        170,
+        760,
+        180
+      ],
+      "geometry": "rect",
+      "text": "Tácticas de\narquitectura",
+      "textPreview": "Tácticas de | arquitectura",
+      "resolvedFontSize": 66,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 66,
+        "typeface": "+mn-lt",
+        "color": "#FFFFFF",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Tácticas de"
+          },
+          {
+            "index": 2,
+            "text": "arquitectura"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Tácticas de",
+          "resolvedTextStyle": {
+            "fontSize": 66,
+            "color": "#FFFFFF",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Tácticas de",
+              "fontSize": 66,
+              "color": "#FFFFFF",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "arquitectura",
+          "resolvedTextStyle": {
+            "fontSize": 66,
+            "color": "#FFFFFF",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "arquitectura",
+              "fontSize": 66,
+              "color": "#FFFFFF",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/e1sj2p0j",
+      "id": "5",
+      "bbox": [
+        80,
+        376,
+        760,
+        55
+      ],
+      "geometry": "rect",
+      "text": "Disponibilidad y seguridad sobre una API REST real",
+      "textPreview": "Disponibilidad y seguridad sobre una API REST real",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 25,
+        "typeface": "+mn-lt",
+        "color": "#BFE4DF",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Disponibilidad y seguridad sobre una API REST real"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Disponibilidad y seguridad sobre una API REST real",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "color": "#BFE4DF",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Disponibilidad y seguridad sobre una API REST real",
+              "fontSize": 25,
+              "color": "#BFE4DF",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/14j2d4za",
+      "id": "6",
+      "bbox": [
+        80,
+        458,
+        132,
+        6
+      ],
+      "geometry": "rect",
+      "fillColor": "#F26B5B",
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/g3a14zip",
+      "id": "7",
+      "bbox": [
+        80,
+        484,
+        300,
+        34
+      ],
+      "geometry": "rect",
+      "text": "PET-CORE",
+      "textPreview": "PET-CORE",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#FFFFFF",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "PET-CORE"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "PET-CORE",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#FFFFFF",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "PET-CORE",
+              "fontSize": 18,
+              "color": "#FFFFFF",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/361kfuhg",
+      "id": "8",
+      "bbox": [
+        80,
+        548,
+        700,
+        72
+      ],
+      "geometry": "rect",
+      "text": "Constanza Blanco · Manuel Cabrera\nDiego de Oliveira · Martin Mujica",
+      "textPreview": "Constanza Blanco · Manuel Cabrera | Diego de Oliveira · Martin Mujica",
+      "resolvedFontSize": 20,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 20,
+        "typeface": "+mn-lt",
+        "color": "#D7E8E8",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Constanza Blanco · Manuel Cabrera"
+          },
+          {
+            "index": 2,
+            "text": "Diego de Oliveira · Martin Mujica"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Constanza Blanco · Manuel Cabrera",
+          "resolvedTextStyle": {
+            "fontSize": 20,
+            "color": "#D7E8E8",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Constanza Blanco · Manuel Cabrera",
+              "fontSize": 20,
+              "color": "#D7E8E8",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 2,
+          "text": "Diego de Oliveira · Martin Mujica",
+          "resolvedTextStyle": {
+            "fontSize": 20,
+            "color": "#D7E8E8",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Diego de Oliveira · Martin Mujica",
+              "fontSize": 20,
+              "color": "#D7E8E8",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

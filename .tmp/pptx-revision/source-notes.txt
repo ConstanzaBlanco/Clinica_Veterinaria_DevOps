@@ -1,0 +1,5 @@
+Fuentes de contenido:
+- Documento de la TFU2 provisto por el equipo: ASR-DISPONIBILIDAD-01a, 01b, 02;
+  ASR-SEGURIDAD-01 y 02.
+- Texto provisto por el equipo sobre ventajas y desventajas de las cuatro tácticas.
+- README.md, compose.yaml, nginx/andis.conf y código local para el contexto de la demo.

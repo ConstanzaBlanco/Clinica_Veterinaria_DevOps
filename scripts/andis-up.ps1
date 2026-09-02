@@ -1,11 +1,11 @@
 $ErrorActionPreference = "Stop"
 
-Write-Host "Construyendo y levantando la aplicacion con dos replicas..."
+Write-Host "Construyendo y levantando PostgreSQL y dos replicas de la API..."
 
-docker compose up --build -d --scale server=2
+docker compose up --build -d --scale server=2 db server
 
 if ($LASTEXITCODE -ne 0) {
-    throw "No se pudo levantar la aplicacion."
+    throw "No se pudieron levantar PostgreSQL y las replicas de la API."
 }
 
 Write-Host "Actualizando el balanceador..."
@@ -17,10 +17,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host ""
-Write-Host "Aplicación iniciada."
-Write-Host "Frontend: http://localhost:5173"
+Write-Host "API iniciada con dos replicas."
 Write-Host "API: http://localhost:8000"
 Write-Host "Documentación: http://localhost:8000/docs"
 Write-Host ""
-Write-Host "Contenedores:"
-docker compose ps
+Write-Host "Contenedores utilizados por la demo:"
+docker compose ps db server balanceador

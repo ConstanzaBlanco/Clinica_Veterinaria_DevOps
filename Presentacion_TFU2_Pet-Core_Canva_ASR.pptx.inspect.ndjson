@@ -1,0 +1,255 @@
+{"kind":"deck","id":"pr/5mhjk0","name":"Deck"}
+{"kind":"layout","layoutId":"b5086b2e-1336-4033-aae1-56a230f87164","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"dd173969-cfc6-4e2d-8f1e-569239012e84","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/bk9qwa","slide":1,"title":"TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II","textShapes":5}
+{"kind":"shape","id":"sh/h07ulknu","slide":1,"bbox":[0,0,1280,18]}
+{"kind":"textbox","id":"sh/vy5cju5o","slide":1,"text":"TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II","textPreview":"TFU2 · ANÁLISIS Y DISEÑO DE APLICACIONES II","textChars":43,"textLines":1,"bbox":[76,72,690,30]}
+{"kind":"textbox","id":"sh/8vedofmd","slide":1,"text":"Tácticas de\narquitectura","textPreview":"Tácticas de | arquitectura","textChars":24,"textLines":2,"bbox":[76,170,760,180]}
+{"kind":"textbox","id":"sh/twnuhkny","slide":1,"text":"Disponibilidad y seguridad sobre una API REST real","textPreview":"Disponibilidad y seguridad sobre una API REST real","textChars":50,"textLines":1,"bbox":[80,376,760,55]}
+{"kind":"shape","id":"sh/6twbm547","slide":1,"bbox":[80,458,132,6]}
+{"kind":"textbox","id":"sh/7u5cfa5s","slide":1,"text":"PET-CORE","textPreview":"PET-CORE","textChars":8,"textLines":1,"bbox":[80,484,300,34]}
+{"kind":"textbox","id":"sh/sryd0zmh","slide":1,"text":"Constanza Blanco · Manuel Cabrera\nDiego de Oliveira · Martin Mujica","textPreview":"Constanza Blanco · Manuel Cabrera | Diego de Oliveira · Martin Mujica","textChars":67,"textLines":2,"bbox":[80,548,700,72]}
+{"kind":"image","id":"im/fipsvudk","slide":1,"name":"","geometry":"rect","bbox":[880,60,360,360]}
+{"kind":"notes","id":"nt/bk9qwa","slide":1,"text":"Tiempo sugerido: 30 segundos. Presentar al equipo y anticipar que se demostrarán cuatro tácticas con comportamiento observable.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/tskkci","slide":2,"title":"NEGOCIO","textShapes":14}
+{"kind":"shape","id":"sh/bix8v618","slide":2,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/cj6pob2t","slide":2,"text":"NEGOCIO","textPreview":"NEGOCIO","textChars":7,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/dkfqxgje","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/2t47i1kr","slide":2,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/3udor61c","slide":2,"name":"slide-title","text":"Pet-Core organiza la atención de una clínica veterinaria","textPreview":"Pet-Core organiza la atención de una clínica veterinaria","textChars":56,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"textbox","id":"sh/ovmpkr2x","slide":2,"text":"La aplicación convierte tareas operativas en procesos digitales trazables.","textPreview":"La aplicación convierte tareas operativas en procesos digitales trazables.","textChars":74,"textLines":1,"bbox":[68,132,1110,44]}
+{"kind":"shape","id":"sh/pwf6twji","slide":2,"bbox":[74,198,1118,92]}
+{"kind":"textbox","id":"sh/mp87ulkv","slide":2,"text":"Cliente  →  operación de la clínica  →  equipo veterinario","textPreview":"Cliente  →  operación de la clínica  →  equipo veterinario","textChars":58,"textLines":1,"bbox":[110,222,1045,40]}
+{"kind":"shape","id":"sh/7qh83q1g","slide":2,"bbox":[74,334,344,205]}
+{"kind":"textbox","id":"sh/fmpo7uxg","slide":2,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[102,358,54,32]}
+{"kind":"textbox","id":"sh/elg7epgv","slide":2,"text":"Reserva de turnos","textPreview":"Reserva de turnos","textChars":17,"textLines":1,"bbox":[102,410,290,38]}
+{"kind":"textbox","id":"sh/1o7694fm","slide":2,"text":"El cliente elige mascota, tipo de atención, veterinario y horario.","textPreview":"El cliente elige mascota, tipo de atención, veterinario y horario.","textChars":66,"textLines":1,"bbox":[102,464,282,58]}
+{"kind":"shape","id":"sh/0nypgzy1","slide":2,"bbox":[448,334,344,205]}
+{"kind":"textbox","id":"sh/nqpobexs","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[476,358,54,32]}
+{"kind":"textbox","id":"sh/2pg7i9g7","slide":2,"text":"Agenda diaria","textPreview":"Agenda diaria","textChars":13,"textLines":1,"bbox":[476,410,290,38]}
+{"kind":"textbox","id":"sh/psr6dofi","slide":2,"text":"El veterinario consulta sus turnos y registra la atención.","textPreview":"El veterinario consulta sus turnos y registra la atención.","textChars":58,"textLines":1,"bbox":[476,464,282,58]}
+{"kind":"shape","id":"sh/orypkjyd","slide":2,"bbox":[822,334,344,205]}
+{"kind":"textbox","id":"sh/bu9ofexo","slide":2,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[850,358,54,32]}
+{"kind":"textbox","id":"sh/at07m9g3","slide":2,"text":"Historial clínico","textPreview":"Historial clínico","textChars":17,"textLines":1,"bbox":[850,410,290,38]}
+{"kind":"textbox","id":"sh/6pkred0b","slide":2,"text":"Las consultas quedan asociadas a cada mascota y disponibles según el rol.","textPreview":"Las consultas quedan asociadas a cada mascota y disponibles según el rol.","textChars":73,"textLines":1,"bbox":[850,464,282,58]}
+{"kind":"notes","id":"nt/tskkci","slide":2,"text":"Tiempo sugerido: 45 segundos. Presentar el negocio y los tres procesos automatizados antes de hablar de arquitectura.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/c48ngr","slide":3,"title":"ROLES","textShapes":16}
+{"kind":"shape","id":"sh/uh4bmx8j","slide":3,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/hkvuxsra","slide":3,"text":"ROLES","textPreview":"ROLES","textChars":5,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/gjmtonqp","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/3mxcz29g","slide":3,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/ilobqx8v","slide":3,"name":"slide-title","text":"Cada rol existe para una responsabilidad distinta","textPreview":"Cada rol existe para una responsabilidad distinta","textChars":49,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"textbox","id":"sh/58fu1c76","slide":3,"text":"Los permisos limitan el acceso a la información y a las operaciones necesarias.","textPreview":"Los permisos limitan el acceso a la información y a las operaciones necesarias.","textChars":79,"textLines":1,"bbox":[68,132,1110,44]}
+{"kind":"shape","id":"sh/476ts7q1","slide":3,"bbox":[74,202,344,350]}
+{"kind":"shape","id":"sh/jqtsny9w","slide":3,"bbox":[74,202,344,9]}
+{"kind":"textbox","id":"sh/ypkbed8r","slide":3,"text":"Cliente","textPreview":"Cliente","textChars":7,"textLines":1,"bbox":[102,236,276,40]}
+{"kind":"textbox","id":"sh/4relcjud","slide":3,"text":"Gestiona sus mascotas y reserva turnos.","textPreview":"Gestiona sus mascotas y reserva turnos.","textChars":39,"textLines":1,"bbox":[102,302,284,76]}
+{"kind":"textbox","id":"sh/psnmloby","slide":3,"text":"Permisos generales","textPreview":"Permisos generales","textChars":18,"textLines":1,"bbox":[102,414,250,26]}
+{"kind":"textbox","id":"sh/2pc3a9c7","slide":3,"text":"Ver mascotas · reservar/cancelar turnos · consultar su historial","textPreview":"Ver mascotas · reservar/cancelar turnos · consultar su historial","textChars":64,"textLines":1,"bbox":[102,456,284,70]}
+{"kind":"shape","id":"sh/3ql4jets","slide":3,"bbox":[448,202,344,350]}
+{"kind":"shape","id":"sh/cve5g3ap","slide":3,"bbox":[448,202,344,9]}
+{"kind":"textbox","id":"sh/dwnmpobu","slide":3,"text":"Veterinario","textPreview":"Veterinario","textChars":11,"textLines":1,"bbox":[476,236,276,40]}
+{"kind":"textbox","id":"sh/qtwnetcj","slide":3,"text":"Atiende pacientes y registra información clínica.","textPreview":"Atiende pacientes y registra información clínica.","textChars":49,"textLines":1,"bbox":[476,302,284,76]}
+{"kind":"textbox","id":"sh/ru54nyt4","slide":3,"text":"Permisos generales","textPreview":"Permisos generales","textChars":18,"textLines":1,"bbox":[476,414,250,26]}
+{"kind":"textbox","id":"sh/szulkzu5","slide":3,"text":"Ver agenda · consultar historial · registrar consultas","textPreview":"Ver agenda · consultar historial · registrar consultas","textChars":54,"textLines":1,"bbox":[476,456,284,70]}
+{"kind":"shape","id":"sh/t03md4bq","slide":3,"bbox":[822,202,344,350]}
+{"kind":"shape","id":"sh/9gv2h03e","slide":3,"bbox":[822,202,344,9]}
+{"kind":"textbox","id":"sh/8fm18vm9","slide":3,"text":"Administrador","textPreview":"Administrador","textChars":13,"textLines":1,"bbox":[850,236,276,40]}
+{"kind":"textbox","id":"sh/nutkfqlo","slide":3,"text":"Coordina la agenda sin acceder al contenido clínico.","textPreview":"Coordina la agenda sin acceder al contenido clínico.","textChars":52,"textLines":1,"bbox":[850,302,284,76]}
+{"kind":"textbox","id":"sh/mtkj6l43","slide":3,"text":"Permisos generales","textPreview":"Permisos generales","textChars":18,"textLines":1,"bbox":[850,414,250,26]}
+{"kind":"textbox","id":"sh/xkv2l03q","slide":3,"text":"Gestionar turnos de clientes · ver metadatos · sin diagnósticos ni tratamiento","textPreview":"Gestionar turnos de clientes · ver metadatos · sin diagnósticos ni tratamiento","textChars":78,"textLines":1,"bbox":[850,456,284,70]}
+{"kind":"notes","id":"nt/c48ngr","slide":3,"text":"Tiempo sugerido: 55 segundos. Destacar que el administrador puede gestionar turnos, pero no leer contenido clínico; esto anticipa el ASR de seguridad 02.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/6rar5m","slide":4,"title":"CONTEXTO","textShapes":11}
+{"kind":"shape","id":"sh/10zqhgvq","slide":4,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/exor61cf","slide":4,"text":"CONTEXTO","textPreview":"CONTEXTO","textChars":8,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/zyx8f6d0","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/o3q9cbuh","slide":4,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/94zq5gv2","slide":4,"name":"slide-title","text":"Pet-Core expone procesos que no pueden fallar en silencio","textPreview":"Pet-Core expone procesos que no pueden fallar en silencio","textChars":57,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/m18ra1cb","slide":4,"bbox":[66,190,520,390]}
+{"kind":"textbox","id":"sh/n2h8j6dw","slide":4,"text":"Una API REST para la gestión de una clínica veterinaria","textPreview":"Una API REST para la gestión de una clínica veterinaria","textChars":55,"textLines":1,"bbox":[104,228,430,108]}
+{"kind":"textbox","id":"sh/wrq9gvud","slide":4,"text":"La funcionalidad da un contexto real para observar decisiones de arquitectura.","textPreview":"La funcionalidad da un contexto real para observar decisiones de arquitectura.","textChars":78,"textLines":1,"bbox":[104,378,414,88]}
+{"kind":"textbox","id":"sh/xsja90vy","slide":4,"text":"Pet-Core","textPreview":"Pet-Core","textChars":8,"textLines":1,"bbox":[104,500,240,38]}
+{"kind":"shape","id":"sh/h4fqxgbe","slide":4,"bbox":[642,192,548,168]}
+{"kind":"textbox","id":"sh/g36pobat","slide":4,"text":"Procesos críticos","textPreview":"Procesos críticos","textChars":17,"textLines":1,"bbox":[680,216,240,30]}
+{"kind":"textbox","id":"sh/vid8v6to","slide":4,"text":"Reserva de turnos\nAgenda e historial clínico","textPreview":"Reserva de turnos | Agenda e historial clínico","textChars":44,"textLines":2,"bbox":[680,258,450,76]}
+{"kind":"shape","id":"sh/uh47m1s3","slide":4,"bbox":[642,388,548,190]}
+{"kind":"textbox","id":"sh/p8fq1gbq","slide":4,"text":"Tres identidades, permisos diferentes","textPreview":"Tres identidades, permisos diferentes","textChars":37,"textLines":1,"bbox":[680,414,448,34]}
+{"kind":"textbox","id":"sh/476psba5","slide":4,"text":"Cliente  ·  Veterinario  ·  Administrador","textPreview":"Cliente  ·  Veterinario  ·  Administrador","textChars":41,"textLines":1,"bbox":[680,468,450,40]}
+{"kind":"textbox","id":"sh/36x8zqtk","slide":4,"text":"La identidad y el rol determinan qué información puede consultarse.","textPreview":"La identidad y el rol determinan qué información puede consultarse.","textChars":67,"textLines":1,"bbox":[680,520,450,40]}
+{"kind":"notes","id":"nt/6rar5m","slide":4,"text":"Tiempo sugerido: 55 segundos. Explicar el dominio solo lo necesario: procesos críticos y separación de roles.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/cclosj","slide":5,"title":"REQUERIMIENTOS","textShapes":19}
+{"kind":"shape","id":"sh/srax0fat","slide":5,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/7q1wra98","slide":5,"text":"REQUERIMIENTOS","textPreview":"REQUERIMIENTOS","textChars":14,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/6p8fy5s3","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/hwjyxkrq","slide":5,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/gvax4fa5","slide":5,"name":"slide-title","text":"Los ASR definen qué debe proteger la arquitectura","textPreview":"Los ASR definen qué debe proteger la arquitectura","textChars":49,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"textbox","id":"sh/fu1gva9k","slide":5,"text":"Disponibilidad y seguridad se expresan como resultados verificables.","textPreview":"Disponibilidad y seguridad se expresan como resultados verificables.","textChars":68,"textLines":1,"bbox":[68,132,1110,44]}
+{"kind":"textbox","id":"sh/utsf25sz","slide":5,"text":"ASR-DISP-01a","textPreview":"ASR-DISP-01a","textChars":12,"textLines":1,"bbox":[76,196,160,36]}
+{"kind":"shape","id":"sh/x0zel0r6","slide":5,"bbox":[252,194,5,58]}
+{"kind":"textbox","id":"sh/wzqxsval","slide":5,"text":"Turnos disponibles 24/7","textPreview":"Turnos disponibles 24/7","textChars":23,"textLines":1,"bbox":[278,192,292,52]}
+{"kind":"textbox","id":"sh/65szm98r","slide":5,"text":"El sistema deberá mantener disponible el módulo de reserva y gestión de turnos al menos el 99,5 % del tiempo, medido las 24 horas de todos los días del mes.","textPreview":"El sistema deberá mantener disponible el módulo de reserva y gestión de turnos al menos el 99,5 % del tiempo, medido las 24 horas de todo...","textChars":156,"textLines":1,"bbox":[595,190,574,66]}
+{"kind":"textbox","id":"sh/761gfe9c","slide":5,"text":"ASR-DISP-01b","textPreview":"ASR-DISP-01b","textChars":12,"textLines":1,"bbox":[76,283,160,36]}
+{"kind":"shape","id":"sh/s7ahozqx","slide":5,"bbox":[252,281,5,58]}
+{"kind":"textbox","id":"sh/t8jyh4ri","slide":5,"text":"Atención clínica en horario","textPreview":"Atención clínica en horario","textChars":27,"textLines":1,"bbox":[278,279,292,52]}
+{"kind":"textbox","id":"sh/u9szq98n","slide":5,"text":"El sistema deberá mantener disponibles las funciones de consulta de agenda, consulta del historial clínico y registro de consultas al menos el 99,9 % del tiempo, de lunes a viernes entre las 8:00 y las 18:00.","textPreview":"El sistema deberá mantener disponibles las funciones de consulta de agenda, consulta del historial clínico y registro de consultas al men...","textChars":208,"textLines":1,"bbox":[595,277,574,66]}
+{"kind":"textbox","id":"sh/fa10jep8","slide":5,"text":"ASR-DISP-02","textPreview":"ASR-DISP-02","textChars":11,"textLines":1,"bbox":[76,370,160,36]}
+{"kind":"shape","id":"sh/gbahsjqt","slide":5,"bbox":[252,368,5,58]}
+{"kind":"textbox","id":"sh/hc3ilo7e","slide":5,"text":"Recuperación sin perder información","textPreview":"Recuperación sin perder información","textChars":35,"textLines":1,"bbox":[278,366,292,52]}
+{"kind":"textbox","id":"sh/2dczut8z","slide":5,"text":"El sistema deberá recuperarse en un máximo de 2 minutos ante la falla de una instancia de la aplicación, sin perder turnos confirmados ni información del historial clínico.","textPreview":"El sistema deberá recuperarse en un máximo de 2 minutos ante la falla de una instancia de la aplicación, sin perder turnos confirmados ni...","textChars":172,"textLines":1,"bbox":[595,364,574,66]}
+{"kind":"textbox","id":"sh/3el0nypk","slide":5,"text":"ASR-SEG-01","textPreview":"ASR-SEG-01","textChars":10,"textLines":1,"bbox":[76,457,160,36]}
+{"kind":"shape","id":"sh/zilgby5c","slide":5,"bbox":[252,455,5,58]}
+{"kind":"textbox","id":"sh/ehcf2to7","slide":5,"text":"Acceso según rol","textPreview":"Acceso según rol","textChars":16,"textLines":1,"bbox":[278,453,292,52]}
+{"kind":"textbox","id":"sh/14nyd8ni","slide":5,"text":"El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que acceda o modifique información para la cual no está autorizado.","textPreview":"El sistema deberá aplicar control de acceso según el rol del usuario, impidiendo que acceda o modifique información para la cual no está ...","textChars":148,"textLines":1,"bbox":[595,451,574,66]}
+{"kind":"textbox","id":"sh/03eh436x","slide":5,"text":"ASR-SEG-02","textPreview":"ASR-SEG-02","textChars":10,"textLines":1,"bbox":[76,544,160,36]}
+{"kind":"shape","id":"sh/relg7e5g","slide":5,"bbox":[252,542,5,58]}
+{"kind":"textbox","id":"sh/qdcfy9ov","slide":5,"text":"Administrador sin contenido clínico","textPreview":"Administrador sin contenido clínico","textChars":35,"textLines":1,"bbox":[278,540,292,52]}
+{"kind":"textbox","id":"sh/dg3y9onm","slide":5,"text":"El sistema deberá permitir al rol Administrador gestionar turnos de cualquier cliente sin acceder en ningún caso al contenido clínico de las consultas, quedando su acceso limitado a los metadatos del turno.","textPreview":"El sistema deberá permitir al rol Administrador gestionar turnos de cualquier cliente sin acceder en ningún caso al contenido clínico de ...","textChars":206,"textLines":1,"bbox":[595,538,574,66]}
+{"kind":"notes","id":"nt/cclosj","slide":5,"text":"Tiempo sugerido: 1 minuto 30 segundos. Leer el resumen y usar el texto a la derecha para fundamentar cada ASR cuando sea necesario.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/i1ti7e","slide":6,"title":"TÁCTICAS ELEGIDAS","textShapes":13}
+{"kind":"shape","id":"sh/h4bmd0zy","slide":6,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/u103il0n","slide":6,"text":"TÁCTICAS ELEGIDAS","textPreview":"TÁCTICAS ELEGIDAS","textChars":17,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/v2t4bqhs","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/8zilgvih","slide":6,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/t0rm90z2","slide":6,"name":"slide-title","text":"Cuatro tácticas cubren dos atributos de calidad","textPreview":"Cuatro tácticas cubren dos atributos de calidad","textChars":47,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"textbox","id":"sh/6x03el0b","slide":6,"text":"DISPONIBILIDAD","textPreview":"DISPONIBILIDAD","textChars":14,"textLines":1,"bbox":[80,180,510,32]}
+{"kind":"textbox","id":"sh/7y947qhw","slide":6,"text":"SEGURIDAD · RESISTIR ATAQUES","textPreview":"SEGURIDAD · RESISTIR ATAQUES","textChars":28,"textLines":1,"bbox":[690,180,500,32]}
+{"kind":"shape","id":"sh/svm5sfyl","slide":6,"bbox":[74,230,510,142]}
+{"kind":"textbox","id":"sh/dwvmlkz6","slide":6,"text":"Replicación","textPreview":"Replicación","textChars":11,"textLines":1,"bbox":[112,252,250,40]}
+{"kind":"textbox","id":"sh/10natozi","slide":6,"text":"Dos instancias ejecutan la misma API; si una cae, la otra mantiene el servicio.","textPreview":"Dos instancias ejecutan la misma API; si una cae, la otra mantiene el servicio.","textChars":79,"textLines":1,"bbox":[112,302,420,56]}
+{"kind":"shape","id":"sh/gze9kjix","slide":6,"bbox":[74,398,510,142]}
+{"kind":"textbox","id":"sh/fy5srehc","slide":6,"text":"Reintentos","textPreview":"Reintentos","textChars":10,"textLines":1,"bbox":[112,420,250,40]}
+{"kind":"textbox","id":"sh/excrit0r","slide":6,"text":"Una operación fallida se repite con espera y un límite explícito.","textPreview":"Una operación fallida se repite con espera y un límite explícito.","textChars":65,"textLines":1,"bbox":[112,470,420,56]}
+{"kind":"shape","id":"sh/tw3apoz6","slide":6,"bbox":[682,230,510,142]}
+{"kind":"textbox","id":"sh/svu9gjil","slide":6,"text":"Autenticar actores","textPreview":"Autenticar actores","textChars":18,"textLines":1,"bbox":[720,252,340,40]}
+{"kind":"textbox","id":"sh/rulsneh0","slide":6,"text":"Correo y contraseña válidos permiten emitir un token JWT.","textPreview":"Correo y contraseña válidos permiten emitir un token JWT.","textChars":57,"textLines":1,"bbox":[720,302,420,56]}
+{"kind":"shape","id":"sh/69cre90v","slide":6,"bbox":[682,398,510,142]}
+{"kind":"textbox","id":"sh/ds7a18za","slide":6,"text":"Autorizar actores","textPreview":"Autorizar actores","textChars":17,"textLines":1,"bbox":[720,420,340,40]}
+{"kind":"textbox","id":"sh/cryts3i5","slide":6,"text":"El rol del token determina si una operación está permitida.","textPreview":"El rol del token determina si una operación está permitida.","textChars":59,"textLines":1,"bbox":[720,470,420,56]}
+{"kind":"notes","id":"nt/i1ti7e","slide":6,"text":"Tiempo sugerido: 1 minuto. Diferenciar claramente disponibilidad de seguridad y nombrar las cuatro tácticas seleccionadas.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/klzyex","slide":7,"title":"ARQUITECTURA","textShapes":3}
+{"kind":"shape","id":"sh/7m5c329w","slide":7,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/8nydc7q1","slide":7,"text":"ARQUITECTURA","textPreview":"ARQUITECTURA","textChars":12,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/9o7u5crm","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/upgveh87","slide":7,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/vqpw7m9s","slide":7,"name":"slide-title","text":"La arquitectura vuelve observables las cuatro tácticas","textPreview":"La arquitectura vuelve observables las cuatro tácticas","textChars":54,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/wrydgrqd","slide":7,"bbox":[56,150,1168,490]}
+{"kind":"image","id":"im/0nu9gzel","slide":7,"name":"","geometry":"rect","bbox":[80,166,1120,454]}
+{"kind":"notes","id":"nt/klzyex","slide":7,"text":"Tiempo sugerido: 1 minuto 30 segundos. Recorrer Postman, Nginx, dos réplicas, seguridad/reintentos dentro de la API, PostgreSQL, volumen y secretos. Aclarar que no hay frontend en la demo.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/8qvi4k","slide":8,"title":"CÓMO ACTÚAN","textShapes":20}
+{"kind":"shape","id":"sh/3e18b2po","slide":8,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/4fa94769","slide":8,"text":"CÓMO ACTÚAN","textPreview":"CÓMO ACTÚAN","textChars":11,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/pgjqds7u","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/up87yd87","slide":8,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/fah87ips","slide":8,"name":"slide-title","text":"Las tácticas se aplican en distintos momentos del pedido","textPreview":"Las tácticas se aplican en distintos momentos del pedido","textChars":56,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/gbap0n6d","slide":8,"bbox":[76,192,1120,106]}
+{"kind":"textbox","id":"sh/hcjq9s7y","slide":8,"text":"Postman","textPreview":"Postman","textChars":7,"textLines":1,"bbox":[106,222,130,40]}
+{"kind":"textbox","id":"sh/6l87ud8b","slide":8,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[244,220,50,40]}
+{"kind":"textbox","id":"sh/7mh83ipg","slide":8,"text":"Nginx","textPreview":"Nginx","textChars":5,"textLines":1,"bbox":[306,222,130,40]}
+{"kind":"textbox","id":"sh/nu9g7mtw","slide":8,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[445,220,50,40]}
+{"kind":"textbox","id":"sh/mt0zy1cb","slide":8,"text":"FastAPI","textPreview":"FastAPI","textChars":7,"textLines":1,"bbox":[510,222,150,40]}
+{"kind":"textbox","id":"sh/9wby9wbm","slide":8,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[664,220,50,40]}
+{"kind":"textbox","id":"sh/ovih0ru1","slide":8,"text":"JWT + rol","textPreview":"JWT + rol","textChars":9,"textLines":1,"bbox":[720,222,170,40]}
+{"kind":"textbox","id":"sh/bytgb6ts","slide":8,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[895,220,50,40]}
+{"kind":"textbox","id":"sh/axkz21c7","slide":8,"text":"PostgreSQL","textPreview":"PostgreSQL","textChars":10,"textLines":1,"bbox":[952,222,205,40]}
+{"kind":"shape","id":"sh/x0bydgby","slide":8,"bbox":[76,350,250,190]}
+{"kind":"shape","id":"sh/wz2h4bud","slide":8,"bbox":[76,350,250,8]}
+{"kind":"textbox","id":"sh/r2pgz2to","slide":8,"text":"Replicación","textPreview":"Replicación","textChars":11,"textLines":1,"bbox":[102,374,200,36]}
+{"kind":"textbox","id":"sh/q1gfqhc3","slide":8,"text":"Nginx elige una réplica disponible.","textPreview":"Nginx elige una réplica disponible.","textChars":35,"textLines":1,"bbox":[102,426,196,84]}
+{"kind":"shape","id":"sh/uxojypwr","slide":8,"bbox":[356,350,250,190]}
+{"kind":"shape","id":"sh/fixk7adc","slide":8,"bbox":[356,350,250,8]}
+{"kind":"textbox","id":"sh/gj610feh","slide":8,"text":"Autenticación","textPreview":"Autenticación","textChars":13,"textLines":1,"bbox":[382,374,200,36]}
+{"kind":"textbox","id":"sh/hkf29kv2","slide":8,"text":"FastAPI comprueba la identidad y valida el JWT.","textPreview":"FastAPI comprueba la identidad y valida el JWT.","textChars":47,"textLines":1,"bbox":[382,426,196,84]}
+{"kind":"shape","id":"sh/6t4ju5wf","slide":8,"bbox":[636,350,250,190]}
+{"kind":"shape","id":"sh/7udk3ad0","slide":8,"bbox":[636,350,250,8]}
+{"kind":"textbox","id":"sh/sv61wfel","slide":8,"text":"Autorización","textPreview":"Autorización","textChars":12,"textLines":1,"bbox":[662,374,200,36]}
+{"kind":"textbox","id":"sh/twf25kv6","slide":8,"text":"El rol habilita o rechaza la operación.","textPreview":"El rol habilita o rechaza la operación.","textChars":39,"textLines":1,"bbox":[662,426,196,84]}
+{"kind":"shape","id":"sh/ip4jq5wj","slide":8,"bbox":[916,350,250,190]}
+{"kind":"shape","id":"sh/jqd0zqd4","slide":8,"bbox":[916,350,250,8]}
+{"kind":"textbox","id":"sh/1kjm58fm","slide":8,"text":"Reintentos","textPreview":"Reintentos","textChars":10,"textLines":1,"bbox":[942,374,200,36]}
+{"kind":"textbox","id":"sh/0ja5c3y1","slide":8,"text":"La conexión a datos se repite ante una falla transitoria.","textPreview":"La conexión a datos se repite ante una falla transitoria.","textChars":57,"textLines":1,"bbox":[942,426,196,84]}
+{"kind":"notes","id":"nt/8qvi4k","slide":8,"text":"Tiempo sugerido: 1 minuto 15 segundos. Mostrar que no son cuatro demos aisladas: las tácticas forman parte de un mismo recorrido.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/xadq87","slide":9,"title":"DEMOSTRACIÓN EN VIVO","textShapes":7}
+{"kind":"textbox","id":"sh/yh43u9c3","slide":9,"text":"DEMOSTRACIÓN EN VIVO","textPreview":"DEMOSTRACIÓN EN VIVO","textChars":20,"textLines":1,"bbox":[76,78,600,30]}
+{"kind":"textbox","id":"sh/jix4nedo","slide":9,"text":"De la decisión\na la evidencia","textPreview":"De la decisión | a la evidencia","textChars":29,"textLines":2,"bbox":[76,170,690,176]}
+{"kind":"textbox","id":"sh/wfmlszux","slide":9,"text":"1  Autenticación","textPreview":"1  Autenticación","textChars":16,"textLines":1,"bbox":[800,172,330,40]}
+{"kind":"textbox","id":"sh/xgvml4vi","slide":9,"text":"2  Autorización","textPreview":"2  Autorización","textChars":15,"textLines":1,"bbox":[800,238,330,40]}
+{"kind":"textbox","id":"sh/ad43qpcr","slide":9,"text":"3  Replicación","textPreview":"3  Replicación","textChars":14,"textLines":1,"bbox":[800,304,330,40]}
+{"kind":"textbox","id":"sh/bed4judc","slide":9,"text":"4  Reintentos","textPreview":"4  Reintentos","textChars":13,"textLines":1,"bbox":[800,370,330,40]}
+{"kind":"textbox","id":"sh/obmlozu1","slide":9,"text":"Postman + terminal · 7 minutos","textPreview":"Postman + terminal · 7 minutos","textChars":30,"textLines":1,"bbox":[800,488,350,34]}
+{"kind":"image","id":"im/4nu5k3yt","slide":9,"name":"","geometry":"rect","bbox":[64,392,250,250]}
+{"kind":"notes","id":"nt/xadq87","slide":9,"text":"Tiempo sugerido: 15 segundos. Abrir Postman y terminal. Las cuatro demostraciones ocupan aproximadamente siete minutos.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/zyodu5","slide":10,"title":"TÁCTICA · SEGURIDAD","textShapes":8}
+{"kind":"shape","id":"sh/21cna50f","slide":10,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/p43ml0jq","slide":10,"text":"TÁCTICA · SEGURIDAD","textPreview":"TÁCTICA · SEGURIDAD","textChars":19,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/o3u5cfi5","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/fy14fq1o","slide":10,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/exsn6l03","slide":10,"name":"slide-title","text":"Autenticar actores confirma la identidad antes de dar acceso","textPreview":"Autenticar actores confirma la identidad antes de dar acceso","textChars":60,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/10jmh0ju","slide":10,"bbox":[76,200,1118,92]}
+{"kind":"textbox","id":"sh/gza58vi9","slide":10,"text":"Qué logramos: ningún endpoint protegido responde sin una identidad validada con JWT.","textPreview":"Qué logramos: ningún endpoint protegido responde sin una identidad validada con JWT.","textChars":84,"textLines":1,"bbox":[108,226,1056,40]}
+{"kind":"shape","id":"sh/ra14bq1s","slide":10,"bbox":[76,334,530,210]}
+{"kind":"textbox","id":"sh/69832l07","slide":10,"text":"Ventaja","textPreview":"Ventaja","textChars":7,"textLines":1,"bbox":[112,364,190,36]}
+{"kind":"textbox","id":"sh/onq54buh","slide":10,"text":"Es la base de todo el control de acceso: sin saber quién es el usuario, no se puede aplicar ningún permiso.","textPreview":"Es la base de todo el control de acceso: sin saber quién es el usuario, no se puede aplicar ningún permiso.","textChars":107,"textLines":1,"bbox":[112,424,440,78]}
+{"kind":"shape","id":"sh/9oz6xgvm","slide":10,"bbox":[664,334,530,210]}
+{"kind":"textbox","id":"sh/ml8n21cb","slide":10,"text":"Desventaja","textPreview":"Desventaja","textChars":10,"textLines":1,"bbox":[700,364,220,36]}
+{"kind":"textbox","id":"sh/nmhov6dw","slide":10,"text":"Agrega fricción: iniciar sesión y verificar el token en cada request aumenta el trabajo del usuario y del sistema.","textPreview":"Agrega fricción: iniciar sesión y verificar el token en cada request aumenta el trabajo del usuario y del sistema.","textChars":114,"textLines":1,"bbox":[700,424,442,78]}
+{"kind":"notes","id":"nt/zyodu5","slide":10,"text":"Transición o demo: la autenticación identifica al actor. Relacionarla con ASR-SEG-01.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/8xiawm","slide":11,"title":"TÁCTICA · SEGURIDAD","textShapes":8}
+{"kind":"shape","id":"sh/4369szu9","slide":11,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/j2x8judo","slide":11,"text":"TÁCTICA · SEGURIDAD","textPreview":"TÁCTICA · SEGURIDAD","textChars":19,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/i1o7qpc3","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/h0fqh4vi","slide":11,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/wf6pozux","slide":11,"name":"slide-title","text":"Autorizar actores aplica permisos a cada operación puntual","textPreview":"Autorizar actores aplica permisos a cada operación puntual","textChars":58,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/ved8fuds","slide":11,"bbox":[76,200,1118,92]}
+{"kind":"textbox","id":"sh/ud47mpc7","slide":11,"text":"Qué logramos: el rol habilita o rechaza acciones específicas, como gestionar turnos sin leer contenido clínico.","textPreview":"Qué logramos: el rol habilita o rechaza acciones específicas, como gestionar turnos sin leer contenido clínico.","textChars":111,"textLines":1,"bbox":[108,220,1056,52]}
+{"kind":"shape","id":"sh/9cvqdkvm","slide":11,"bbox":[76,334,530,210]}
+{"kind":"textbox","id":"sh/8bmpkfu1","slide":11,"text":"Ventaja","textPreview":"Ventaja","textChars":7,"textLines":1,"bbox":[112,364,190,36]}
+{"kind":"textbox","id":"sh/uhwvidcr","slide":11,"text":"Permite reglas de negocio finas: cada rol accede solo a la información y las operaciones que le corresponden.","textPreview":"Permite reglas de negocio finas: cada rol accede solo a la información y las operaciones que le corresponden.","textChars":109,"textLines":1,"bbox":[112,424,440,78]}
+{"kind":"shape","id":"sh/vipwbitc","slide":11,"bbox":[664,334,530,210]}
+{"kind":"textbox","id":"sh/wjyxknux","slide":11,"text":"Desventaja","textPreview":"Desventaja","textChars":10,"textLines":1,"bbox":[700,364,220,36]}
+{"kind":"textbox","id":"sh/hk7edsbi","slide":11,"text":"Suma una verificación por request y obliga a mantener actualizada la relación entre roles y permisos al crecer.","textPreview":"Suma una verificación por request y obliga a mantener actualizada la relación entre roles y permisos al crecer.","textChars":111,"textLines":1,"bbox":[700,424,442,78]}
+{"kind":"notes","id":"nt/8xiawm","slide":11,"text":"Transición o demo: autorización se ejecuta después de la autenticación. Relacionarla con ASR-SEG-01 y ASR-SEG-02.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/4qcugb","slide":12,"title":"TÁCTICA · DISPONIBILIDAD","textShapes":8}
+{"kind":"shape","id":"sh/cfu5oz2d","slide":12,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/relofu1s","slide":12,"text":"TÁCTICA · DISPONIBILIDAD","textPreview":"TÁCTICA · DISPONIBILIDAD","textChars":24,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/qtcnm9k7","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/ps36d4jm","slide":12,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/4ru5kz21","slide":12,"name":"slide-title","text":"Replicación mantiene la API disponible ante la caída de una instancia","textPreview":"Replicación mantiene la API disponible ante la caída de una instancia","textChars":69,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/3qlobu1w","slide":12,"bbox":[76,200,1118,92]}
+{"kind":"textbox","id":"sh/2psnipkb","slide":12,"text":"Qué logramos: varias instancias del backend atienden en paralelo y el tráfico se reparte entre ellas.","textPreview":"Qué logramos: varias instancias del backend atienden en paralelo y el tráfico se reparte entre ellas.","textChars":101,"textLines":1,"bbox":[108,226,1056,40]}
+{"kind":"shape","id":"sh/9o76poj6","slide":12,"bbox":[76,334,530,210]}
+{"kind":"textbox","id":"sh/onepwj2l","slide":12,"text":"Ventaja","textPreview":"Ventaja","textChars":7,"textLines":1,"bbox":[112,364,190,36]}
+{"kind":"textbox","id":"sh/q1kruxwf","slide":12,"text":"El sistema tolera la falla de una instancia sin que el usuario note una interrupción del servicio.","textPreview":"El sistema tolera la falla de una instancia sin que el usuario note una interrupción del servicio.","textChars":98,"textLines":1,"bbox":[112,424,440,78]}
+{"kind":"shape","id":"sh/b2ts32x0","slide":12,"bbox":[664,334,530,210]}
+{"kind":"textbox","id":"sh/c329w7el","slide":12,"text":"Desventaja","textPreview":"Desventaja","textChars":10,"textLines":1,"bbox":[700,364,220,36]}
+{"kind":"textbox","id":"sh/d4va5cf6","slide":12,"text":"Cada réplica consume recursos y debe compartir el mismo estado; los datos locales impedirían que fueran intercambiables.","textPreview":"Cada réplica consume recursos y debe compartir el mismo estado; los datos locales impedirían que fueran intercambiables.","textChars":120,"textLines":1,"bbox":[700,414,442,90]}
+{"kind":"notes","id":"nt/4qcugb","slide":12,"text":"Transición o demo: relacionar replicación con ASR-DISPONIBILIDAD-01a, 01b y 02. Aclarar que PostgreSQL sigue siendo una instancia única.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/d2u95p","slide":13,"title":"TÁCTICA · DISPONIBILIDAD","textShapes":8}
+{"kind":"shape","id":"sh/5gzyhwz6","slide":13,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/idof6hgf","slide":13,"text":"TÁCTICA · DISPONIBILIDAD","textPreview":"TÁCTICA · DISPONIBILIDAD","textChars":24,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/3exwfmh0","slide":13,"text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/gb6x4ry9","slide":13,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/hcfedwzu","slide":13,"name":"slide-title","text":"Reintentos absorben fallas transitorias antes de devolver un error","textPreview":"Reintentos absorben fallas transitorias antes de devolver un error","textChars":66,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/upof2hgj","slide":13,"bbox":[76,200,1118,92]}
+{"kind":"textbox","id":"sh/vqxwbmho","slide":13,"text":"Qué logramos: la conexión a PostgreSQL se reintenta automáticamente con espera creciente entre intentos.","textPreview":"Qué logramos: la conexión a PostgreSQL se reintenta automáticamente con espera creciente entre intentos.","textChars":104,"textLines":1,"bbox":[108,226,1056,40]}
+{"kind":"shape","id":"sh/8nmx07yd","slide":13,"bbox":[76,334,530,210]}
+{"kind":"textbox","id":"sh/tofe9czy","slide":13,"text":"Ventaja","textPreview":"Ventaja","textChars":7,"textLines":1,"bbox":[112,364,190,36]}
+{"kind":"textbox","id":"sh/18321w3q","slide":13,"text":"Una falla breve puede quedar absorbida de forma transparente: el usuario recibe la respuesta sin repetir su operación.","textPreview":"Una falla breve puede quedar absorbida de forma transparente: el usuario recibe la respuesta sin repetir su operación.","textChars":118,"textLines":1,"bbox":[112,414,440,90]}
+{"kind":"shape","id":"sh/07u18rm5","slide":13,"bbox":[664,334,530,210]}
+{"kind":"textbox","id":"sh/z6lkzm50","slide":13,"text":"Desventaja","textPreview":"Desventaja","textChars":10,"textLines":1,"bbox":[700,364,220,36]}
+{"kind":"textbox","id":"sh/elcj6h4f","slide":13,"text":"Sin límites puede ocultar un problema real. Por eso se usa un máximo de 3 intentos; luego se devuelve el error.","textPreview":"Sin límites puede ocultar un problema real. Por eso se usa un máximo de 3 intentos; luego se devuelve el error.","textChars":111,"textLines":1,"bbox":[700,414,442,90]}
+{"kind":"notes","id":"nt/d2u95p","slide":13,"text":"Transición o demo: relacionar reintentos con ASR-DISPONIBILIDAD-02. Mostrar que el máximo de tres intentos evita ocultar una falla permanente.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}
+{"kind":"slide","id":"sl/rqu0na","slide":14,"title":"CONCLUSIÓN","textShapes":9}
+{"kind":"shape","id":"sh/h4bat0zi","slide":14,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/u1kry50r","slide":14,"text":"CONCLUSIÓN","textPreview":"CONCLUSIÓN","textChars":10,"textLines":1,"bbox":[66,30,530,24]}
+{"kind":"textbox","id":"sh/f2tsrq1c","slide":14,"text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1182,662,42,24]}
+{"kind":"shape","id":"sh/sz29wvi1","slide":14,"bbox":[66,680,1090,2]}
+{"kind":"textbox","id":"sh/t0bap0j6","slide":14,"name":"slide-title","text":"El resultado es observable, pero el alcance tiene límites","textPreview":"El resultado es observable, pero el alcance tiene límites","textChars":57,"textLines":1,"bbox":[66,62,1145,76]}
+{"kind":"shape","id":"sh/6d0rul0v","slide":14,"bbox":[76,190,520,356]}
+{"kind":"textbox","id":"sh/7e9snq1g","slide":14,"text":"Lo que demostramos","textPreview":"Lo que demostramos","textChars":18,"textLines":1,"bbox":[114,224,400,38]}
+{"kind":"textbox","id":"sh/cvmt8fi5","slide":14,"text":"• Continuidad ante la caída de una API\n• Recuperación ante fallas transitorias\n• Identidad mediante JWT\n• Permisos según rol","textPreview":"• Continuidad ante la caída de una API | • Recuperación ante fallas transitorias | • Identidad mediante JWT | • Permisos según rol","textChars":124,"textLines":4,"bbox":[114,292,410,190]}
+{"kind":"shape","id":"sh/dwva1kzq","slide":14,"bbox":[654,190,540,356]}
+{"kind":"textbox","id":"sh/1oritora","slide":14,"text":"Límite reconocido","textPreview":"Límite reconocido","textChars":17,"textLines":1,"bbox":[694,224,400,38]}
+{"kind":"textbox","id":"sh/gni103ap","slide":14,"text":"La API está replicada; PostgreSQL sigue siendo una única instancia.","textPreview":"La API está replicada; PostgreSQL sigue siendo una única instancia.","textChars":67,"textLines":1,"bbox":[694,294,422,98]}
+{"kind":"textbox","id":"sh/fm90ry94","slide":14,"text":"La demo prueba continuidad de la capa de aplicación, no alta disponibilidad total.","textPreview":"La demo prueba continuidad de la capa de aplicación, no alta disponibilidad total.","textChars":82,"textLines":1,"bbox":[694,422,420,70]}
+{"kind":"textbox","id":"sh/el0jytsz","slide":14,"text":"Las tácticas se notan menos cuando funcionan bien.","textPreview":"Las tácticas se notan menos cuando funcionan bien.","textChars":50,"textLines":1,"bbox":[128,594,1020,48]}
+{"kind":"notes","id":"nt/rqu0na","slide":14,"text":"Tiempo sugerido: 1 minuto. Cerrar con los cuatro resultados y reconocer explícitamente que PostgreSQL no está replicado. Abrir preguntas.\n\n[Sources]\n- Consigna TFU2 provista por la cátedra.\n- C:/Proyecto_Clínica_Veterinaria/README.md\n- C:/Proyecto_Clínica_Veterinaria/compose.yaml\n- Código y scripts de demostración del repositorio local."}

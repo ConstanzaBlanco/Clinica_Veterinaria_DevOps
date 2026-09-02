@@ -1,0 +1,6 @@
+La fuente es una presentación creada previamente para este proyecto y no dispone
+de un template importado con placeholders editables. La utilidad de inspección de
+plantilla no pudo desempaquetarla porque el runtime no dispone de unzip. Se
+conserva fielmente su sistema visual mediante el mismo constructor de
+artifact-tool, reutilizando los mismos recursos raster, colores, tipografía y
+geometrías. Los cambios se limitan al contenido pedido por la usuaria.
