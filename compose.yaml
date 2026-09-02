@@ -16,8 +16,8 @@ services:
   server:
     build:
       context: .
-    ports:
-      - 8000:8000
+    expose:
+      - "8000"
     
     # Datos para que FastAPI encuentre PostgreSQL
     environment:
@@ -41,6 +41,16 @@ services:
       - db-password
       - jwt-secret
 
+  # Balancea las solicitudes entre las réplicas de FastAPI
+  balanceador:
+    image: nginx:alpine
+    ports:
+      - "8000:8080"
+    volumes:
+      - ./nginx/andis.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - server
+      
   # Servicio de PostgreSQL
   db:
     image: postgres:18

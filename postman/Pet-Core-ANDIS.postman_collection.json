@@ -1,0 +1,54 @@
+{
+  "info": {
+    "_postman_id": "878571f6-d981-42da-a47d-15f032302649",
+    "name": "Pet-Core ANDIS",
+    "description": "Peticiones para demostrar las tacticas de arquitectura de Pet-Core.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Disponibilidad",
+      "item": [
+        {
+          "name": "Identificar instancia",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"La API responde correctamente\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"La respuesta identifica la instancia\", function () {",
+                  "    const respuesta = pm.response.json();",
+                  "    pm.expect(respuesta).to.have.property(\"instancia\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/demo/instancia",
+              "host": ["{{base_url}}"],
+              "path": ["demo", "instancia"]
+            },
+            "description": "Identifica el contenedor de FastAPI que atendio la solicitud."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}

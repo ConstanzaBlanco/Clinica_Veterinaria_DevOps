@@ -20,6 +20,7 @@ from app.disponibilidad.controller import router as disponibilidad_router
 from app.agenda.controller import router as agenda_router
 from app.historial.controller import router as historial_router
 from app.pacientes.controller import router as pacientes_router
+from app.demo.controller import router as demo_router
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
@@ -59,6 +60,7 @@ app.include_router(disponibilidad_router)
 app.include_router(agenda_router)
 app.include_router(historial_router)
 app.include_router(pacientes_router)
+app.include_router(demo_router)
 
 @app.get("/")
 def hello():
