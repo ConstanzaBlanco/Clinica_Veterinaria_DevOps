@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.database import FALLAR_PROXIMAS_CONEXIONES, ULTIMO_INTENTO_CONEXION
 from app.Middleware.middleware import JWTMiddleware
 from app.turnos.tareas_programadas import ejecutar_tarea_periodica
 from app.Auth.login.controller import router as login_router
@@ -68,3 +69,14 @@ def hello():
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+# Solo para demostrar los reintentos de conexión a la base (ver app/database.py).
+@app.post("/debug/simular-falla-conexion")
+def simular_falla_conexion(veces: int = 2) -> dict:
+    FALLAR_PROXIMAS_CONEXIONES["cantidad"] = veces
+    return {"mensaje": f"Las próximas {veces} conexiones van a fallar"}
+
+# Datos del último intento de conexión a la base (ver app/database.py).
+@app.get("/debug/ultimo-intento-conexion")
+def ultimo_intento_conexion() -> dict:
+    return ULTIMO_INTENTO_CONEXION
