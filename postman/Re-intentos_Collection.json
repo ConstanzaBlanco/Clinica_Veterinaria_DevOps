@@ -1,0 +1,103 @@
+{
+  "info": {
+    "_postman_id": "7ed1cf25-35aa-4024-bbba-478f880968d8",
+    "name": "Pet-Core Re-intentos",
+    "description": "Peticiones para demostrar reintentos ante fallas simuladas de conexion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 - Iniciar sesion",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test(\"El inicio de sesion fue correcto\", function () {",
+            "    pm.response.to.have.status(200);",
+            "});",
+            "if (pm.response.code === 200) {",
+            "    pm.collectionVariables.set(\"access_token\", pm.response.json().access_token);",
+            "}"
+          ]
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json", "type": "text"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"{{correo_prueba}}\",\n  \"contrasena\": \"{{contrasena_prueba}}\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2 - Simular fallas de conexion",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{"key": "token", "value": "{{access_token}}", "type": "string"}]
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/debug/simular-falla-conexion?veces=5",
+          "host": ["{{base_url}}"],
+          "path": ["debug", "simular-falla-conexion"],
+          "query": [{"key": "veces", "value": "5"}]
+        },
+        "description": "Configura cinco fallas simuladas para la demostracion."
+      },
+      "response": []
+    },
+    {
+      "name": "3 - Ejecutar operacion con reintentos",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{"key": "token", "value": "{{access_token}}", "type": "string"}]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/mascotas",
+          "host": ["{{base_url}}"],
+          "path": ["mascotas"]
+        },
+        "description": "Ejecuta una operacion que activa el mecanismo de reintentos."
+      },
+      "response": []
+    },
+    {
+      "name": "4 - Consultar ultimo intento",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{"key": "token", "value": "{{access_token}}", "type": "string"}]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/debug/ultimo-intento-conexion",
+          "host": ["{{base_url}}"],
+          "path": ["debug", "ultimo-intento-conexion"]
+        },
+        "description": "Consulta la informacion registrada durante la ultima prueba."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8000", "type": "string"},
+    {"key": "correo_prueba", "value": "ana.cliente@petcore.com", "type": "string"},
+    {"key": "contrasena_prueba", "value": "Password123!", "type": "string"},
+    {"key": "access_token", "value": "", "type": "string"}
+  ]
+}

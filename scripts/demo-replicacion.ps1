@@ -10,12 +10,31 @@ if ($replicas.Count -lt 2) {
     throw "La demostracion necesita dos replicas de la API."
 }
 
+Write-Host "Iniciando sesion para acceder al endpoint protegido..."
+
+$datosLogin = @{
+    correo = "ana.cliente@petcore.com"
+    contrasena = "Password123!"
+} | ConvertTo-Json
+
+$login = Invoke-RestMethod `
+    -Method Post `
+    -Uri "http://localhost:8000/auth/login" `
+    -ContentType "application/json" `
+    -Body $datosLogin `
+    -TimeoutSec 5
+
+$encabezados = @{
+    Authorization = "Bearer $($login.access_token)"
+}
+
 Write-Host ""
 Write-Host "Solicitudes antes de la falla:"
 
 for ($i = 1; $i -le 6; $i++) {
     $respuesta = Invoke-RestMethod `
         -Uri "http://localhost:8000/demo/instancia" `
+        -Headers $encabezados `
         -TimeoutSec 3
 
     Write-Host "Solicitud $i atendida por $($respuesta.instancia)"
@@ -44,6 +63,7 @@ Write-Host "Solicitudes despues de la falla:"
 for ($i = 1; $i -le 10; $i++) {
     $respuesta = Invoke-RestMethod `
         -Uri "http://localhost:8000/demo/instancia" `
+        -Headers $encabezados `
         -TimeoutSec 3
 
     Write-Host "Solicitud $i atendida por $($respuesta.instancia)"

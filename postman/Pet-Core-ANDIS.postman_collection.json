@@ -7,6 +7,58 @@
   },
   "item": [
     {
+      "name": "Autenticacion",
+      "item": [
+        {
+          "name": "Iniciar sesion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"El inicio de sesion fue correcto\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const respuesta = pm.response.json();",
+                  "    pm.collectionVariables.set(\"access_token\", respuesta.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{correo_prueba}}\",\n  \"contrasena\": \"{{contrasena_prueba}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Inicia sesion y guarda el JWT en la variable access_token de la coleccion."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Disponibilidad",
       "item": [
         {
@@ -30,6 +82,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -37,7 +99,7 @@
               "host": ["{{base_url}}"],
               "path": ["demo", "instancia"]
             },
-            "description": "Identifica el contenedor de FastAPI que atendio la solicitud."
+            "description": "Identifica el contenedor de FastAPI que atendio la solicitud. Requiere autenticacion."
           },
           "response": []
         }
@@ -48,6 +110,21 @@
     {
       "key": "base_url",
       "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "correo_prueba",
+      "value": "ana.cliente@petcore.com",
+      "type": "string"
+    },
+    {
+      "key": "contrasena_prueba",
+      "value": "Password123!",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
       "type": "string"
     }
   ]

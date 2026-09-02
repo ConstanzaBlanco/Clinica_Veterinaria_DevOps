@@ -10,6 +10,7 @@ Este proyecto utiliza una API REST desarrollada con FastAPI para demostrar táct
 - [Estructura](#estructura)
 - [Importar las peticiones en Postman](#importar-las-peticiones-en-postman)
 - [Demostración manual con Postman](#demostración-manual-con-postman)
+- [Demostración de reintentos con Postman](#demostración-de-reintentos-con-postman)
 - [Demostración automática](#demostración-automática)
 - [Detener la aplicación](#detener-la-aplicación)
 - [Datos de prueba](#datos-de-prueba)
@@ -110,11 +111,12 @@ El valor es el hostname asignado por Docker al contenedor que respondió. Cada r
 ## Importar las peticiones en Postman
 
 1. Abrir Postman y seleccionar **Import**.
-2. Seleccionar `postman/Pet-Core-ANDIS.postman_collection.json`.
-3. Abrir la colección **Pet-Core ANDIS**.
-4. Ejecutar **Disponibilidad > Identificar instancia**.
+2. Seleccionar `postman/Pet-Core-ANDIS.postman_collection.json` y `postman/Re-intentos_Collection.json`.
+3. Abrir la colección que se quiera utilizar.
+4. Ejecutar primero **Autenticación > Iniciar sesión**. La prueba de Postman guarda automáticamente el token recibido.
+5. Ejecutar **Disponibilidad > Identificar instancia**.
 
-La colección utiliza `base_url = http://localhost:8000`.
+La colección utiliza `base_url = http://localhost:8000` y las credenciales del cliente incluido en los datos de prueba. El endpoint de demostración requiere un token válido, pero acepta cualquier rol autenticado.
 
 ## Demostración manual con Postman
 
@@ -126,7 +128,7 @@ Levantar la aplicación:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\andis-up.ps1
 ```
 
-Ejecutar varias veces en Postman:
+Ejecutar primero **Autenticación > Iniciar sesión** y luego ejecutar varias veces:
 
 ```http
 GET http://localhost:8000/demo/instancia
@@ -199,6 +201,41 @@ docker compose up -d --scale server=2 server
 docker compose up -d --no-deps --force-recreate balanceador
 docker compose ps
 ```
+
+## Demostración de reintentos con Postman
+
+Esta demostración utiliza la colección **Pet-Core Re-intentos**, guardada en `postman/Re-intentos_Collection.json`.
+
+Las peticiones están numeradas en el orden en que deben ejecutarse:
+
+1. **Iniciar sesion** autentica al cliente y guarda automáticamente el JWT en `access_token`.
+2. **Simular fallas de conexion** configura cinco fallas mediante `POST /debug/simular-falla-conexion?veces=5`.
+3. **Ejecutar operacion con reintentos** llama a `GET /mascotas`, que accede a la base de datos y activa la lógica de reintentos.
+4. **Consultar ultimo intento** llama a `GET /debug/ultimo-intento-conexion` para observar la información registrada durante la prueba.
+
+### Paso a paso
+
+1. Levantar el ambiente:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\andis-up.ps1
+```
+
+2. Importar `postman/Re-intentos_Collection.json` en Postman.
+3. Ejecutar **1 - Iniciar sesion** y comprobar que responda `200 OK`. La pestaña **Test Results** debe indicar que el inicio fue correcto.
+4. Ejecutar **2 - Simular fallas de conexion**. El parámetro `veces=5` determina cuántas fallas se simulan.
+5. Ejecutar **3 - Ejecutar operacion con reintentos**. Esta solicitud intenta obtener las mascotas mientras está activa la simulación.
+6. Ejecutar **4 - Consultar ultimo intento** para observar el resultado y la cantidad de intentos registrados.
+
+Las tres peticiones posteriores al login envían automáticamente:
+
+```http
+Authorization: Bearer {{access_token}}
+```
+
+La colección queda preparada para enviar autenticación en toda la demostración. Cuando se integre el código de los endpoints `debug`, también se debe comprobar que sus controladores validen el usuario actual y respondan `401 Unauthorized` cuando no reciben un token.
+
+> Los endpoints `/debug/simular-falla-conexion` y `/debug/ultimo-intento-conexion` todavía no están presentes en la rama `andis`. La demostración quedará operativa cuando se integre el código correspondiente de la rama de reintentos.
 
 ## Demostración automática
 
