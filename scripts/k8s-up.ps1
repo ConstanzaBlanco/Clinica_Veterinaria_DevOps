@@ -1,6 +1,10 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# Evita que los acentos se corrompan al pasar el YAML de kubectl por el pipeline de PowerShell
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 # Detiene el script cuando un programa externo devuelve un error
 function Confirm-NativeCommand {
     param(
