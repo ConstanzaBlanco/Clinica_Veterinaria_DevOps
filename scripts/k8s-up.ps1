@@ -1,6 +1,10 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# Evita que los tildes se corrompan al pasar el YAML de kubectl por el pipeline de PowerShell
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 # Este script construye exclusivamente la version Blue v1.
 $currentBranch = git branch --show-current
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Boton from '../../../components/common/Boton'
+import { API_URL } from '../../../api/client'
 import './Auth.css'
 
 const DATOS_INICIALES = {
@@ -59,7 +60,7 @@ function RegistroPage() {
     setCargando(true)
 
     try {
-      const respuesta = await fetch('http://localhost:8000/auth/register', {
+      const respuesta = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
