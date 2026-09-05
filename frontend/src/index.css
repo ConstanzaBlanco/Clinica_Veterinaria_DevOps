@@ -3,10 +3,10 @@
 :root {
   color-scheme: light;
 
-  /* Paleta Pet-Core */
-  --navy: #062a3d;
-  --navy-hover: #0a3e58;
-  --navy-active: #04202f;
+  /* Paleta Pet-Core (Green) */
+  --navy: #0d3d24;
+  --navy-hover: #135834;
+  --navy-active: #082818;
   --white: #ffffff;
   --gray-card: #f2f6f8;
   --border: #dce4e9;
