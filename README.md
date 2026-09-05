@@ -357,6 +357,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-switch-blue.ps
 
 Este script devuelve los selectores de ambos Services a `version: blue`. El rollback no necesita reconstruir imágenes, eliminar Green ni reiniciar PostgreSQL. Los túneles pueden permanecer abiertos: al actualizar el navegador, los mismos Services dirigirán las solicitudes nuevamente a Blue.
 
+> [!NOTE]
+> Si quiere ver inmediatmaente el cambio, debe de desactivar el cache del navegador web. En caso de no desactivarlo puede tardar unos minutos en que la pagina cargue.
+
 ### Base de datos compartida
 
 Blue y Green utilizan el mismo StatefulSet de PostgreSQL y el mismo volumen persistente. No existe un volumen diferente para cada versión y el volumen no se guarda en Git.
