@@ -375,6 +375,8 @@ La contraseña de todos los usuarios de prueba es `Password123!`:
 | bruno.vet@petcore.com | VETERINARIO |
 | carla.admin@petcore.com | ADMINISTRADOR |
 
+> *Aclaración:* El rol administrador no tiene panel implementado en la rama Blue. En Green se agregó una ruta /admin con un aviso de "en construcción" para evitar que el login quede en un estado inconsistente.
+
 También incluye 2 mascotas, 3 tipos de atención, la disponibilidad semanal del veterinario y un turno ya agendado.
 
 Si el volumen ya existía antes de agregar este archivo, hay que recrearlo para que los datos se carguen:
