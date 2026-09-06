@@ -90,6 +90,7 @@ src/
 | `/turnos/:id/historial` | HistorialMascotaPage | cliente | Placeholder |
 | `/agenda` | AgendaDiariaPage | veterinario | Placeholder |
 | `/` | — | — | Redirige a `/mascotas` o `/agenda` según `ROL_ACTUAL` |
+| `/admin` | EnConstruccionPage | administrador | Placeholder — solo disponible en la versión Green; en Blue el login de admin no tiene a dónde redirigir |
 
 `RoleGuard` (en `components/layout/`) protege las rutas de cliente y veterinario: si `ROL_ACTUAL` no coincide con la sección, redirige a `/`.
 
