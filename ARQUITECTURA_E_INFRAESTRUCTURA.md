@@ -693,7 +693,7 @@ La demostración completa es:
 
 No es necesario duplicar el código en dos carpetas. Las dos versiones quedan representadas por imágenes Docker distintas.
 
-Para demostrarlo al docente se podrán mostrar:
+Para demostrarlo se podrán mostrar:
 
 ```powershell
 minikube kubectl -- get pods -L version --namespace=clinica-veterinaria
