@@ -19,15 +19,27 @@ export function AuthProvider({ children }) {
       return
     }
 
+    let cancelado = false
+
     obtenerUsuarioActual(token)
-      .then(setUsuario)
-      .catch(() => {
-        // Token vencido o inválido: se descarta la sesión guardada.
-        localStorage.removeItem(TOKEN_KEY)
-        setToken(null)
-        setUsuario(null)
+      .then((datosUsuario) => {
+        if (!cancelado) setUsuario(datosUsuario)
       })
-      .finally(() => setCargando(false))
+      .catch(() => {
+        if (!cancelado) {
+        // Token vencido o inválido: se descarta la sesión guardada.
+          localStorage.removeItem(TOKEN_KEY)
+          setToken(null)
+          setUsuario(null)
+        }
+      })
+      .finally(() => {
+        if (!cancelado) setCargando(false)
+      })
+
+    return () => {
+      cancelado = true
+    }
   }, [token])
 
   async function login(correo, contrasena) {
