@@ -18,6 +18,7 @@ router = APIRouter(
 
 
 def crear_service(session):
+    """Arma el MeService con su repository para esta request."""
     repository = MeRepository(session)
 
     return MeService(repository)
@@ -38,6 +39,8 @@ def obtener_mi_usuario(
     ),
     session=Depends(get_session),
 ):
+    """Devuelve los datos del usuario autenticado según el `sub` del JWT.
+    Disponible para los tres roles: cada uno consulta sus propios datos."""
     service = crear_service(session)
 
     try:

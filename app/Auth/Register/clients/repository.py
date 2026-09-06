@@ -3,6 +3,8 @@ from sqlalchemy.exc import IntegrityError
 
 
 class RegisterRepository:
+    """Acceso a datos para el alta de clientes."""
+
     def __init__(self, session):
         self.session = session
 
@@ -10,6 +12,7 @@ class RegisterRepository:
         self,
         correo: str,
     ):
+        """Chequeo previo de duplicado por correo (además de la constraint UNIQUE)."""
         consulta = text(
             """
             SELECT id_usuario
@@ -34,6 +37,7 @@ class RegisterRepository:
         self,
         documento: str,
     ):
+        """Chequeo previo de duplicado por documento (además de la constraint UNIQUE)."""
         consulta = text(
             """
             SELECT id_usuario
@@ -63,6 +67,8 @@ class RegisterRepository:
         telefono: str,
         contrasena_hash: str,
     ):
+        """Inserta el usuario y su especialización `cliente` en una sola transacción,
+        y le arma la respuesta con `rol` fijo en CLIENTE (es la única vía de este endpoint)."""
         try:
             consulta_usuario = text(
                 """

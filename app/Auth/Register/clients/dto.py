@@ -8,6 +8,8 @@ from pydantic import (
 
 
 class RegisterRequest(BaseModel):
+    """Datos del formulario de autorregistro de un cliente."""
+
     nombre: str = Field(
         min_length=1,
         max_length=100,
@@ -30,6 +32,8 @@ class RegisterRequest(BaseModel):
 
 
 class RegisterResponse(BaseModel):
+    """Datos del cliente recién creado, devueltos tras el registro."""
+
     model_config = ConfigDict(
         from_attributes=True
     )

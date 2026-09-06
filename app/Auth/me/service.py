@@ -3,6 +3,8 @@ from app.Auth.me.repository import MeRepository
 
 
 class MeService:
+    """Reglas de negocio de GET /auth/me."""
+
     def __init__(
         self,
         repository: MeRepository,
@@ -14,6 +16,8 @@ class MeService:
         id_usuario: int,
         rol: str,
     ) -> MeResponse:
+        """Busca al usuario del token y valida que siga existiendo y activo.
+        El rol no se vuelve a leer de la base: viene tal cual del JWT."""
         usuario = self.repository.buscar_por_id(
             id_usuario
         )

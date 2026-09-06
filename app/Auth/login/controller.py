@@ -21,6 +21,7 @@ router = APIRouter(
 
 
 def crear_service(session):
+    """Arma el LoginService con su repository para esta request."""
     repository = LoginRepository(session)
 
     return LoginService(repository)
@@ -35,6 +36,7 @@ def iniciar_sesion(
     datos: LoginRequest,
     session=Depends(get_session),
 ):
+    """Ruta pública: valida credenciales y devuelve el JWT de acceso."""
     service = crear_service(session)
 
     try:

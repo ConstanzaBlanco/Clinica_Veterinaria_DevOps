@@ -20,14 +20,16 @@ password_context = PasswordHash(
 
 
 class RegistroInvalidoError(ValueError):
-    pass
+    """Datos del formulario que no cumplen las reglas de validación (vacíos, contraseña débil, etc.)."""
 
 
 class RegistroDuplicadoError(ValueError):
-    pass
+    """Ya existe un usuario con el mismo correo o documento."""
 
 
 class RegisterService:
+    """Reglas de negocio del autorregistro de clientes."""
+
     def __init__(
         self,
         repository: RegisterRepository,
@@ -38,6 +40,10 @@ class RegisterService:
         self,
         datos: RegisterRequest,
     ) -> RegisterResponse:
+        """Normaliza y valida los datos del formulario, chequea duplicados de
+        correo/documento, hashea la contraseña y crea el usuario como CLIENTE.
+        El `IntegrityError` de la constraint UNIQUE es la red de seguridad final
+        contra una carrera entre el chequeo previo y el INSERT."""
         nombre_limpio = " ".join(
             datos.nombre.split()
         )
