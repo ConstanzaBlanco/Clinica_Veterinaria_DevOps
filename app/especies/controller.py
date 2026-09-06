@@ -14,6 +14,7 @@ router = APIRouter(
 
 
 def crear_service(session):
+    """Arma el EspecieService con su repository para esta request."""
     repository = EspecieRepository(session)
 
     return EspecieService(repository)
@@ -24,6 +25,7 @@ def listar_especies(
     session=Depends(get_session),
     _usuario: dict = Depends(requerir_rol("CLIENTE")),
 ):
+    """Lista las especies activas, para el selector al registrar una mascota."""
     service = crear_service(session)
 
     return service.listar_activas()

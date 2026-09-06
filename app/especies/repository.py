@@ -2,10 +2,13 @@ from sqlalchemy import text
 
 
 class EspecieRepository:
+    """Acceso a datos del catálogo de especies."""
+
     def __init__(self, session):
         self.session = session
 
     def listar_activas(self):
+        """Especies con estado ACTIVO, ordenadas por nombre."""
         consulta = text(
             """
             SELECT id_especie, nombre, estado

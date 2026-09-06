@@ -2,10 +2,13 @@ from sqlalchemy import text
 
 
 class TipoAtencionRepository:
+    """Acceso a datos del catálogo de tipos de atención."""
+
     def __init__(self, session):
         self.session = session
 
     def listar(self):
+        """Todos los tipos de atención, activos e inactivos, ordenados por nombre."""
         consulta = text(
             """
             SELECT
@@ -28,8 +31,8 @@ class TipoAtencionRepository:
 
         return tipos_atencion
 
-    # Antes de agregar un tipo de atencion, revisa si ya existe ese nombre
     def buscar_por_nombre(self, nombre: str):
+        """Chequeo previo de duplicado por nombre antes de crear un tipo de atención."""
         consulta = text(
             """
             SELECT
@@ -60,6 +63,7 @@ class TipoAtencionRepository:
         duracion_minutos: int,
         reservable_cliente: bool,
     ):
+        """Inserta el tipo de atención nuevo (queda ACTIVO por default del esquema)."""
         consulta = text(
             """
             INSERT INTO tipo_atencion (
