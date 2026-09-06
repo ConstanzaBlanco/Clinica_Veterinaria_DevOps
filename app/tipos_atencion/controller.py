@@ -43,9 +43,9 @@ def listar_tipos_atencion(
 def crear_tipo_atencion(
     datos: TipoAtencionCreate,
     session=Depends(get_session),
+    _usuario: dict = Depends(requerir_rol("ADMINISTRADOR")),
 ):
-    """Crea un tipo de atención nuevo. Nota: a diferencia del resto de los
-    endpoints de escritura del proyecto, esta ruta no lleva `requerir_rol`."""
+    """Crea un tipo de atención nuevo. Solo el administrador gestiona este catálogo."""
     service = crear_service(session)
 
     try:

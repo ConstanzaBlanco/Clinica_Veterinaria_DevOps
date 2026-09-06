@@ -14,11 +14,11 @@ router = APIRouter(
 
 def crear_service(session: Session) -> VeterinarioService:
     """
-    Crea el servicio necesario para gestionar las mascotas.
+    Crea el servicio necesario para gestionar los veterinarios.
         session: Sesion de SQLAlchemy proporcionada por FastAPI.
 
     Return:
-        Servicio de mascotas configurado.
+        Servicio de veterinarios configurado.
     """
     repository:VeterinarioRepository = VeterinarioRepository(session)
 
@@ -29,4 +29,5 @@ def obtener_veterinarios(
     session: Session = Depends(get_session),
     _usuario: dict = Depends(requerir_rol("CLIENTE")),
 ):
+    """Lista los veterinarios activos, para el selector al reservar un turno."""
     return crear_service(session).listar_veterinarios()

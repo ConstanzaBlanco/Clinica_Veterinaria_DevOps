@@ -2,6 +2,8 @@ from app.veterinarios.repository import VeterinarioRepository
 
 
 class VeterinarioService:
+    """Reglas de negocio relacionadas con los veterinarios."""
+
     def __init__(self, repository: VeterinarioRepository) -> None:
         """
         Inicializa el servicio.
