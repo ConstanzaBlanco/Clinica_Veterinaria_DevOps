@@ -138,6 +138,18 @@ def actualizar_mascota(
     usuario: dict[str, Any] = Depends(requerir_rol("CLIENTE")),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
+    """
+    Actualiza los campos editables de una mascota del cliente autenticado.
+        id_mascota: Identificador de la mascota.
+        datos: Campos a modificar (solo los enviados por el cliente).
+        usuario: Informacion del usuario obtenida del token JWT.
+
+    Return:
+        Datos actualizados de la mascota.
+
+    Raises:
+        HTTPException: Si la mascota no existe o no es del cliente.
+    """
     id_cliente: int = usuario["id_usuario"]
     service: MascotaService = crear_service(session)
 

@@ -126,6 +126,18 @@ class MascotaService:
         return dict(mascota)
 
     def actualizar(self, id_mascota: int, id_cliente: int, datos: MascotaUpdate) -> dict:
+        """
+        Actualiza los campos editables de una mascota del cliente autenticado.
+            id_mascota: Identificador de la mascota.
+            id_cliente: Identificador del cliente autenticado.
+            datos: Campos a modificar; los no enviados se ignoran (`exclude_unset`).
+
+        Returns:
+            Datos actualizados de la mascota.
+
+        Raises:
+            LookupError: Si la mascota no existe o no es del cliente.
+        """
         campos = datos.model_dump(exclude_unset=True)  # solo lo que el cliente mandó
         mascota = self.repository.actualizar(id_mascota, id_cliente, campos)
         if not mascota:
