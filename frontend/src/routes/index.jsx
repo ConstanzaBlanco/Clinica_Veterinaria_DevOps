@@ -14,11 +14,14 @@ import ReservarTurnoPage from '../features/turnos/pages/ReservarTurnoPage'
 import HistorialMascotaPage from '../features/historial/pages/HistorialMascotaPage'
 import AgendaDiariaPage from '../features/agenda/pages/AgendaDiariaPage'
 import PacientesPage from '../features/pacientes/pages/PacientesPage'
+import AdminLayout from '../layouts/AdminLayout'
+import EnConstruccionPage from '../features/admin/pages/EnConstruccionPage'
 
 // Ruta de entrada por rol, una vez autenticado.
 const RUTA_INICIO_POR_ROL = {
   cliente: '/mascotas',
   veterinario: '/agenda',
+  administrador: '/admin',
 }
 
 function AppRoutes() {
@@ -58,6 +61,16 @@ function AppRoutes() {
             <Route path="agenda" element={<AgendaDiariaPage />} />
             <Route path="pacientes" element={<PacientesPage />} />
             <Route path="pacientes/:idMascota/historial" element={<HistorialMascotaPage />} />
+          </Route>
+
+          <Route
+            element={
+              <RoleGuard rolPermitido="administrador">
+                <AdminLayout />
+              </RoleGuard>
+            }
+          >
+            <Route path="admin" element={<EnConstruccionPage mensaje="El panel de administrador aún no está implementado." />} />
           </Route>
         </Route>
       </Route>
