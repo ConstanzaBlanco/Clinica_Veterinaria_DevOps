@@ -3,9 +3,8 @@ import MascotaCard from '../components/MascotaCard'
 import FormularioMascota from '../components/FormularioMascota'
 import Boton from '../../../components/common/Boton'
 import { useAuth } from '../../../app/AuthContext'
+import { API_URL } from '../../../api/client'
 import './ListaMascotasPage.css'
-
-const API_URL = 'http://localhost:8000'
 
 function obtenerMensajeError(
   detalle,
