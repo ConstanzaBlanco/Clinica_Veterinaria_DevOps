@@ -23,6 +23,8 @@ from app.pacientes.controller import router as pacientes_router
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    """Arranca la tarea en segundo plano que marca turnos vencidos como
+    NO_ASISTIO mientras la API esté activa, y la cancela prolijamente al apagar."""
     # Marca turnos vencidos como NO_ASISTIO en segundo plano mientras la API esté activa.
     tarea = asyncio.create_task(ejecutar_tarea_periodica())
 
@@ -62,9 +64,11 @@ app.include_router(pacientes_router)
 
 @app.get("/")
 def hello():
+    """Ruta pública usada como readinessProbe de los Deployments de Kubernetes."""
     return "Hello, Docker!"
 
-#Verifica que la API esté funcionando correctamente.
+
 @app.get("/health")
 def health() -> dict:
+    """Chequeo de salud simple: si la API responde, ya está OK (no consulta la base)."""
     return {"status": "ok"}

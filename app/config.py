@@ -13,6 +13,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    """Configuración leída de variables de entorno y/o archivos de secretos
+    (mismo código sirve para Docker Compose y Kubernetes; lo que cambia es
+    quién provee cada variable)."""
+
     # PostgreSQL
     POSTGRES_SERVER: str
     POSTGRES_PORT: int = 5432
@@ -165,6 +169,8 @@ class Settings(BaseSettings):
     def SQLALCHEMY_DATABASE_URI(
         self,
     ) -> PostgresDsn:
+        """Arma la URL de conexión a PostgreSQL, priorizando POSTGRES_PASSWORD
+        sobre el valor ya leído de POSTGRES_PASSWORD_FILE."""
         password = (
             self.POSTGRES_PASSWORD
             if self.POSTGRES_PASSWORD
