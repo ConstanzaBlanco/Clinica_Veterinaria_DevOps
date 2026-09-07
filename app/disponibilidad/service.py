@@ -16,6 +16,10 @@ HORA_FIN_CLINICA = time(18, 0)
 
 
 class DisponibilidadService:
+    """Calcula la grilla de horarios disponibles de un veterinario para una
+    fecha y un tipo de atención, cruzando disponibilidad recurrente,
+    excepciones puntuales y turnos ya ocupados."""
+
     def __init__(self, repository: DisponibilidadRepository) -> None:
         self.repository: DisponibilidadRepository = repository
 
@@ -149,6 +153,7 @@ class DisponibilidadService:
 
     @staticmethod
     def _slot(inicio: time, disponible: bool, motivo: str | None = None) -> dict:
+        """Arma el dict de un slot individual en el formato de SlotDisponibilidad."""
         return {
             "inicio": inicio.strftime("%H:%M"),
             "disponible": disponible,
@@ -157,10 +162,12 @@ class DisponibilidadService:
 
     @staticmethod
     def _solapa(inicio_a: time, fin_a: time, inicio_b: time, fin_b: time) -> bool:
+        """True si el intervalo [inicio_a, fin_a) se superpone con [inicio_b, fin_b)."""
         return inicio_a < fin_b and inicio_b < fin_a
 
     @staticmethod
     def _sumar_minutos(hora: time, minutos: int) -> time:
+        """Suma minutos a una hora sin cruzar de día (la agenda no pasa medianoche)."""
         return (
             datetime.combine(date.min, hora) + timedelta(minutes=minutos)
         ).time()

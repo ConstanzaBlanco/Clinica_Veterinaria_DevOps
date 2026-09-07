@@ -12,6 +12,8 @@ SQLSTATE_EXCLUSION_VIOLATION = "23P01"
 
 
 class TurnoRepository:
+    """Acceso a datos de turnos: reserva, consulta, cancelación y registro de consulta clínica."""
+
     def __init__(self, session: Session) -> None:
         self.session: Session = session
 
@@ -46,6 +48,7 @@ class TurnoRepository:
         ).mappings().first()
 
     def obtener_veterinario_activo(self, id_veterinario: int):
+        """Veterinario activo, para validar que se le pueda asignar el turno."""
         consulta = text(
             """
             SELECT u.id_usuario
@@ -111,6 +114,7 @@ class TurnoRepository:
             raise
 
     def listar_por_cliente(self, id_cliente: int, periodo: str) -> list:
+        """Turnos del cliente, filtrados por período ('proximos', 'pasados' o 'todos')."""
         condicion_periodo = {
             "proximos": "AND t.fecha_hora_inicio >= now()",
             "pasados": "AND t.fecha_hora_inicio < now()",
@@ -138,6 +142,7 @@ class TurnoRepository:
         return self.session.execute(consulta, {"id_cliente": id_cliente}).mappings().all()
 
     def obtener_por_id(self, id_turno: int, id_cliente: int):
+        """Detalle de un turno puntual, verificando que sea del cliente dado."""
         consulta = text(
             """
             SELECT
@@ -159,6 +164,7 @@ class TurnoRepository:
         ).mappings().first()
 
     def cancelar(self, id_turno: int, id_cliente: int):
+        """Cancela el turno si es del cliente, sigue CONFIRMADO y falta más de 1 hora."""
         consulta = text(
             """
             UPDATE turno t
@@ -186,6 +192,9 @@ class TurnoRepository:
         id_veterinario: int,
         datos: dict,
     ) -> dict | None:
+        """Inserta la consulta clínica y pasa el turno a ATENDIDO en una sola
+        transacción, tras verificar que el turno sea del veterinario y esté
+        CONFIRMADO (devuelve None si no lo es)."""
         # Verifica que el turno sea del veterinario y esté CONFIRMADO
         verificacion = text(
             """

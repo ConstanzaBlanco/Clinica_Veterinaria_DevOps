@@ -11,10 +11,13 @@ ZONA_CLINICA = ZoneInfo("America/Montevideo")
 
 
 class TurnoService:
+    """Reglas de negocio de turnos: reserva, cancelación, consulta y registro clínico."""
+
     def __init__(self, repository: TurnoRepository) -> None:
         self.repository: TurnoRepository = repository
 
     def _a_dict(self, fila) -> dict:
+        """Arma la respuesta de un turno y calcula `puede_cancelar` (CONFIRMADO y futuro)."""
         from datetime import datetime, timezone
 
         puede_cancelar = (
@@ -40,16 +43,19 @@ class TurnoService:
         }
 
     def listar_por_cliente(self, id_cliente: int, periodo: str) -> list[dict]:
+        """Turnos del cliente autenticado, filtrados por período."""
         filas = self.repository.listar_por_cliente(id_cliente, periodo)
         return [self._a_dict(f) for f in filas]
 
     def obtener_por_id(self, id_turno: int, id_cliente: int) -> dict:
+        """Detalle de un turno del cliente autenticado."""
         fila = self.repository.obtener_por_id(id_turno, id_cliente)
         if not fila:
             raise LookupError("Turno no encontrado.")
         return self._a_dict(fila)
 
     def cancelar(self, id_turno: int, id_cliente: int) -> None:
+        """Cancela un turno del cliente; falla si no está CONFIRMADO o falta menos de 1 hora."""
         resultado = self.repository.cancelar(id_turno, id_cliente)
         if not resultado:
             raise ValueError(
