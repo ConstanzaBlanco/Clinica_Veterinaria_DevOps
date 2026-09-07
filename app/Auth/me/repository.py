@@ -2,6 +2,8 @@ from sqlalchemy import text
 
 
 class MeRepository:
+    """Acceso a datos para GET /auth/me."""
+
     def __init__(self, session):
         self.session = session
 
@@ -9,6 +11,7 @@ class MeRepository:
         self,
         id_usuario: int,
     ):
+        """Trae los datos básicos y el estado del usuario a partir del id del JWT."""
         consulta = text(
             """
             SELECT

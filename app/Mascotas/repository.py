@@ -136,6 +136,14 @@ class MascotaRepository:
         return dict(fila)
 
     def obtener_mascota_por_id(self, id_mascota: int, id_cliente: int) -> dict[str, Any] | None:
+        """
+        Busca una mascota puntual, verificando que sea del cliente dado.
+            id_mascota: Identificador de la mascota.
+            id_cliente: Identificador del cliente autenticado.
+
+        Return:
+            Datos de la mascota, o None si no existe o no es del cliente.
+        """
         consulta = text(
             """
             SELECT id_mascota, nombre, especie, raza, fecha_nacimiento, sexo, observaciones, estado
@@ -151,6 +159,15 @@ class MascotaRepository:
         return dict(fila) if fila else None
 
     def actualizar(self, id_mascota: int, id_cliente: int, datos: dict) -> dict[str, Any] | None:
+        """
+        Actualiza solo las columnas presentes en `datos` (UPDATE dinámico).
+            id_mascota: Identificador de la mascota.
+            id_cliente: Identificador del cliente autenticado.
+            datos: Diccionario columna -> valor nuevo, ya validado por el service.
+
+        Return:
+            Datos actualizados de la mascota, o None si no existe o no es del cliente.
+        """
         if not datos:
             return self.obtener_mascota_por_id(id_mascota, id_cliente)
 

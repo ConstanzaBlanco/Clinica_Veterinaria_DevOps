@@ -5,12 +5,15 @@ from sqlalchemy.orm import Session
 
 
 class HistorialRepository:
+    """Acceso a datos del historial clínico y a su auditoría de accesos."""
+
     def __init__(self, session: Session) -> None:
         self.session: Session = session
 
     # --- Común ---
 
     def obtener_info_mascota(self, id_mascota: int) -> dict | None:
+        """Ficha de la mascota (con dueño y peso más reciente), o None si no existe."""
         consulta = text(
             """
             SELECT
@@ -29,6 +32,7 @@ class HistorialRepository:
         return dict(fila) if fila else None
 
     def mascota_pertenece_a_cliente(self, id_mascota: int, id_cliente: int) -> bool:
+        """Chequea la propiedad antes de dejar ver el historial a un cliente."""
         consulta = text(
             "SELECT 1 FROM mascota WHERE id_mascota = :id_mascota AND id_cliente = :id_cliente"
         )
@@ -40,6 +44,7 @@ class HistorialRepository:
     # --- Cliente ---
 
     def contar_consultas_cliente(self, id_mascota: int) -> int:
+        """Total de consultas originales (no correcciones) para paginar la vista del cliente."""
         consulta = text(
             """
             SELECT COUNT(*) FROM consulta_clinica
@@ -49,6 +54,7 @@ class HistorialRepository:
         return self.session.execute(consulta, {"id_mascota": id_mascota}).scalar_one()
 
     def listar_consultas_cliente(self, id_mascota: int, limite: int, offset: int) -> list:
+        """Página de consultas originales de la mascota, con el contenido clínico completo."""
         consulta = text(
             """
             SELECT
@@ -82,6 +88,8 @@ class HistorialRepository:
     # --- Veterinario ---
 
     def ids_esperados(self, id_mascota: int, tipo: str | None) -> set[int]:
+        """IDs de todas las consultas originales que deberían existir, para
+        comparar contra las que efectivamente se pudieron leer."""
         condicion_tipo = "AND ta.nombre = :tipo" if tipo else ""
         consulta = text(
             f"""
@@ -100,6 +108,7 @@ class HistorialRepository:
         return {f["id_consulta"] for f in filas}
 
     def listar_originales_recuperadas(self, id_mascota: int, tipo: str | None) -> list:
+        """Consultas originales que sí se pudieron leer, con el contenido clínico completo."""
         condicion_tipo = "AND ta.nombre = :tipo" if tipo else ""
         consulta = text(
             f"""
@@ -127,6 +136,7 @@ class HistorialRepository:
         return self.session.execute(consulta, parametros).mappings().all()
 
     def listar_correcciones(self, id_mascota: int) -> list:
+        """Todas las correcciones (filas con `id_consulta_original`) de la mascota."""
         consulta = text(
             """
             SELECT
@@ -152,6 +162,8 @@ class HistorialRepository:
         resultado: str,
         motivo_rechazo: str | None = None,
     ) -> None:
+        """Deja constancia en acceso_historial de cada lectura del historial
+        clínico, permitida o rechazada, con commit propio."""
         consulta = text(
             """
             INSERT INTO acceso_historial (

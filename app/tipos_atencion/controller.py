@@ -17,6 +17,7 @@ router = APIRouter(
 
 
 def crear_service(session):
+    """Arma el TipoAtencionService con su repository para esta request."""
     repository = TipoAtencionRepository(session)
 
     return TipoAtencionService(repository)
@@ -27,6 +28,8 @@ def listar_tipos_atencion(
     session=Depends(get_session),
     _usuario: dict = Depends(requerir_rol("CLIENTE", "VETERINARIO")),
 ):
+    """Lista todos los tipos de atención (activos e inactivos), para los
+    selectores de reserva de turno y agenda."""
     service = crear_service(session)
 
     return service.listar()
@@ -40,7 +43,9 @@ def listar_tipos_atencion(
 def crear_tipo_atencion(
     datos: TipoAtencionCreate,
     session=Depends(get_session),
+    _usuario: dict = Depends(requerir_rol("ADMINISTRADOR")),
 ):
+    """Crea un tipo de atención nuevo. Solo el administrador gestiona este catálogo."""
     service = crear_service(session)
 
     try:

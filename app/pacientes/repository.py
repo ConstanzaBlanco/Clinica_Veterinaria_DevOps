@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 
 
 class PacienteRepository:
+    """Acceso a datos para el buscador de pacientes del veterinario."""
+
     def __init__(self, session: Session) -> None:
         self.session: Session = session
 
@@ -13,6 +15,13 @@ class PacienteRepository:
         alcance: str,
         especie: str | None,
     ) -> list:
+        """
+        Busca mascotas filtrando por nombre (`q`), especie y `alcance`
+        ('mios' restringe a mascotas con algún turno del veterinario autenticado,
+        cualquier otro valor es 'toda la clínica'). Cada fila trae, vía subconsultas,
+        la cantidad de consultas, la última atención y el turno de hoy si existe —
+        todo metadatos, sin contenido clínico.
+        """
         condiciones = []
         parametros = {"id_veterinario": id_veterinario}
 
@@ -96,6 +105,7 @@ class PacienteRepository:
         return self.session.execute(consulta, parametros).mappings().all()
 
     def registrar_auditoria(self, id_veterinario: int, filtros: dict) -> None:
+        """Deja constancia en auditoria_sistema de cada búsqueda de pacientes, con commit propio."""
         consulta = text(
             """
             INSERT INTO auditoria_sistema (id_usuario_actor, accion, resultado, detalle)

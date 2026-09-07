@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 
 
 class DisponibilidadRepository:
+    """Acceso a datos para calcular la grilla de horarios de un veterinario."""
+
     def __init__(self, session: Session) -> None:
         self.session: Session = session
 

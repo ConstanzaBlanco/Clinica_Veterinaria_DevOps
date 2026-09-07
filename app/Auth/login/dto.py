@@ -7,8 +7,9 @@ from pydantic import (
 )
 
 
-# Datos necesarios para iniciar sesión
 class LoginRequest(BaseModel):
+    """Credenciales enviadas por el cliente al iniciar sesión."""
+
     correo: EmailStr
     contrasena: SecretStr = Field(
         min_length=1,
@@ -16,8 +17,9 @@ class LoginRequest(BaseModel):
     )
 
 
-# Datos del usuario autenticado
 class UsuarioLoginResponse(BaseModel):
+    """Datos públicos del usuario autenticado, incluidos en la respuesta del login."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id_usuario: int
@@ -27,8 +29,9 @@ class UsuarioLoginResponse(BaseModel):
     rol: str
 
 
-# Respuesta del login
 class LoginResponse(BaseModel):
+    """Token de acceso emitido tras un login exitoso, junto con los datos del usuario."""
+
     access_token: str
     token_type: str
     expires_in: int

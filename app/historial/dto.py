@@ -6,6 +6,8 @@ from pydantic import BaseModel, ConfigDict
 # --- Respuesta para CLIENTE ---
 
 class ConsultaClienteItem(BaseModel):
+    """Una consulta clínica tal como la ve el cliente dueño de la mascota."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id_consulta: int
@@ -25,6 +27,8 @@ class ConsultaClienteItem(BaseModel):
 
 
 class HistorialClienteResponse(BaseModel):
+    """Respuesta de GET /mascotas/{id}/historial para un CLIENTE, paginada."""
+
     total: int
     consultas: list[ConsultaClienteItem]
 
@@ -32,6 +36,8 @@ class HistorialClienteResponse(BaseModel):
 # --- Respuesta para VETERINARIO ---
 
 class MascotaHistorialInfo(BaseModel):
+    """Ficha resumida de la mascota mostrada junto al historial del veterinario."""
+
     id: int
     nombre: str
     especie: str
@@ -43,6 +49,8 @@ class MascotaHistorialInfo(BaseModel):
 
 
 class CorreccionItem(BaseModel):
+    """Una corrección posterior de una consulta original (fila con `id_consulta_original`)."""
+
     id: int
     fecha: date
     hora: str
@@ -59,6 +67,8 @@ class CorreccionItem(BaseModel):
 
 
 class ConsultaRecuperada(BaseModel):
+    """Consulta original que se pudo leer bien, con sus correcciones si las tiene."""
+
     id: int
     recuperada: bool = True
     fecha: date
@@ -78,6 +88,9 @@ class ConsultaRecuperada(BaseModel):
 
 
 class ConsultaNoRecuperada(BaseModel):
+    """Placeholder para una consulta que se esperaba pero no se pudo recuperar
+    (ver `consistente`/`advertencias` en HistorialVeterinarioResponse)."""
+
     id: None = None
     recuperada: bool = False
     mensaje: str = (
@@ -87,6 +100,9 @@ class ConsultaNoRecuperada(BaseModel):
 
 
 class HistorialVeterinarioResponse(BaseModel):
+    """Respuesta de GET /mascotas/{id}/historial para un VETERINARIO. `consistente`
+    es False si `recuperadas` < `esperadas` (alguna consulta no se pudo leer)."""
+
     mascota: MascotaHistorialInfo
     consistente: bool
     recuperadas: int

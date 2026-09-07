@@ -4,7 +4,8 @@ from app.historial.repository import HistorialRepository
 
 
 class HistorialService:
-    
+    """Reglas de negocio del historial clínico, separadas por rol (cliente/veterinario)."""
+
     def __init__(self, repository: HistorialRepository) -> None:
         self.repository: HistorialRepository = repository
 
@@ -13,6 +14,8 @@ class HistorialService:
     def obtener_historial_cliente(
         self, id_mascota: int, id_cliente: int, limite: int, offset: int
     ) -> dict:
+        """Consultas paginadas de una mascota del cliente, con auditoría del acceso.
+        Levanta LookupError si la mascota no existe o no es del cliente."""
         if not self.repository.mascota_pertenece_a_cliente(id_mascota, id_cliente):
             self.repository.registrar_acceso(
                 id_cliente, id_mascota, "CLIENTE", "RECHAZADO",
@@ -32,6 +35,13 @@ class HistorialService:
     def obtener_historial_veterinario(
         self, id_mascota: int, id_veterinario: int, tipo: str | None
     ) -> dict:
+        """
+        Arma la ficha completa de la mascota para el veterinario: todas las
+        consultas originales recuperadas, con sus correcciones agrupadas y
+        marcando cuál es la vigente (la última). Compara contra `ids_esperados`
+        para detectar y reportar consultas que existen en la base pero no se
+        pudieron leer, en vez de fallar silenciosamente.
+        """
         info_mascota = self.repository.obtener_info_mascota(id_mascota)
         if not info_mascota:
             self.repository.registrar_acceso(

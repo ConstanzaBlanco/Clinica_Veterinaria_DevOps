@@ -25,6 +25,9 @@ ALGORITMO_JWT = "HS256"
 
 
 class LoginService:
+    """Reglas de negocio del login: validación de credenciales, bloqueo por
+    intentos fallidos (RNF-02) y emisión del JWT de acceso."""
+
     def __init__(self, repository: LoginRepository):
         self.repository = repository
 
@@ -32,6 +35,9 @@ class LoginService:
         self,
         datos: LoginRequest,
     ) -> LoginResponse:
+        """Valida correo/contraseña contra la base y, si son correctos, emite el
+        token de acceso. Cada rechazo (usuario inexistente, bloqueado, inactivo o
+        contraseña incorrecta) queda registrado en auditoría antes de levantar el error."""
         correo_limpio = str(datos.correo).strip().lower()
 
         usuario = self.repository.buscar_por_correo(
@@ -156,6 +162,8 @@ class LoginService:
         id_usuario: int,
         rol: str,
     ) -> tuple[str, int]:
+        """Firma el JWT de acceso (HS256) con claims estándar más `rol` y `jti`,
+        y devuelve el token junto con su duración en segundos."""
         ahora = datetime.now(timezone.utc)
 
         duracion = timedelta(

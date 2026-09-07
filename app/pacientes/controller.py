@@ -13,6 +13,7 @@ router = APIRouter(tags=["Pacientes"])
 
 
 def crear_service(session: Session) -> PacienteService:
+    """Arma el PacienteService con su repository para esta request."""
     return PacienteService(PacienteRepository(session))
 
 
@@ -24,6 +25,10 @@ def buscar_pacientes(
     usuario: dict[str, Any] = Depends(requerir_rol("VETERINARIO")),
     session: Session = Depends(get_session),
 ) -> list[dict[str, Any]]:
+    """Busca mascotas de toda la clínica (o solo las atendidas por el
+    veterinario autenticado, según `alcance`), con datos resumidos —
+    no expone el contenido clínico de las consultas. Cada búsqueda
+    queda registrada en auditoria_sistema."""
     service: PacienteService = crear_service(session)
 
     return service.buscar(

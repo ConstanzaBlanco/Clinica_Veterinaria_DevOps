@@ -1,5 +1,7 @@
 # Pet-Core
 
+> Si querés entender cómo está diseñado y armado el sistema (Docker, Docker Compose, Kubernetes, y cómo se relaciona todo), ver [`ARQUITECTURA_E_INFRAESTRUCTURA.md`](ARQUITECTURA_E_INFRAESTRUCTURA.md). Este README se enfoca en cómo ejecutar el proyecto paso a paso.
+
 ## Índice
 
 - [Requisitos](#requisitos)

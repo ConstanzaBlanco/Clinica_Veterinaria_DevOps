@@ -31,6 +31,12 @@ class MascotaResponse(BaseModel):
     estado: str
 
 class MascotaUpdate(BaseModel):
+    """
+    Datos editables de una mascota. Todos los campos son opcionales:
+    solo se actualizan los que el cliente envía (ver `exclude_unset`
+    en MascotaService.actualizar).
+    """
+
     nombre: str | None = None
     raza: str | None = None
     fecha_nacimiento: date | None = None

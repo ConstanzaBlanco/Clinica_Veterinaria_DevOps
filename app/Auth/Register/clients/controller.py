@@ -26,6 +26,7 @@ router = APIRouter(
 
 
 def crear_service(session):
+    """Arma el RegisterService con su repository para esta request."""
     repository = RegisterRepository(session)
 
     return RegisterService(repository)
@@ -40,6 +41,9 @@ def registrar_cliente(
     datos: RegisterRequest,
     session=Depends(get_session),
 ):
+    """Ruta pública de autorregistro: crea un usuario con rol CLIENTE.
+    Solo sirve para el alta de clientes; veterinarios y administradores
+    se crean por otra vía (no expuesta acá)."""
     service = crear_service(session)
 
     try:

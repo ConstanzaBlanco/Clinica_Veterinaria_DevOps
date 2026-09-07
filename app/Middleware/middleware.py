@@ -28,6 +28,12 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 
 class JWTMiddleware(BaseHTTPMiddleware):
+    """Corre en cada request. Si viene un JWT válido en `Authorization: Bearer`,
+    deja el usuario decodificado en `request.state.usuario`; si no, deja el motivo
+    del rechazo en `request.state.error_autenticacion`. No bloquea la request por sí
+    solo (rutas públicas deben poder seguir sin token) — el bloqueo real lo hace
+    `obtener_usuario_actual`/`requerir_rol` más abajo."""
+
     async def dispatch(self, request: Request, call_next):
         request.state.usuario = None
         request.state.error_autenticacion = None
@@ -123,6 +129,10 @@ def obtener_usuario_actual(
         HTTPAuthorizationCredentials | None
     ) = Security(bearer_scheme),
 ) -> dict:
+    """Dependencia para rutas protegidas: exige que `JWTMiddleware` haya dejado
+    un usuario válido en `request.state`, o levanta 401. `_credenciales` solo
+    está para que Swagger muestre el candado de auth; el token real ya lo
+    procesó el middleware."""
     error = request.state.error_autenticacion
 
     if error is not None:
@@ -149,6 +159,10 @@ def obtener_usuario_actual(
 
 
 def requerir_rol(*roles_permitidos: str):
+    """Dependencia parametrizable para proteger un endpoint por rol. Uso:
+    `Depends(requerir_rol("VETERINARIO"))` o con varios roles permitidos a la vez.
+    Es la única forma prevista para restringir un endpoint por rol — no reimplementar
+    esta validación a mano en un controller nuevo."""
     roles_normalizados = {
         rol.upper()
         for rol in roles_permitidos
@@ -169,6 +183,8 @@ def requerir_rol(*roles_permitidos: str):
             obtener_usuario_actual
         ),
     ) -> dict:
+        """Ya sabe que hay un usuario autenticado (vía obtener_usuario_actual);
+        acá solo chequea que su rol esté entre los permitidos, o levanta 403."""
         if usuario["rol"] not in roles_normalizados:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -3,15 +3,17 @@ from app.tipos_atencion.repository import TipoAtencionRepository
 
 
 class TipoAtencionService:
+    """Reglas de negocio del catálogo de tipos de atención."""
+
     def __init__(self, repository: TipoAtencionRepository):
         self.repository = repository
 
-    # GET
     def listar(self):
+        """Todos los tipos de atención, activos e inactivos."""
         return self.repository.listar()
 
-    # POST
     def crear(self, datos: TipoAtencionCreate):
+        """Valida que el nombre no esté vacío ni repetido, y crea el tipo de atención."""
         nombre_limpio = datos.nombre.strip()
 
         if nombre_limpio == "":

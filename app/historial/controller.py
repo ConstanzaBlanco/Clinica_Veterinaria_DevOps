@@ -13,6 +13,7 @@ router = APIRouter(tags=["Historial"])
 
 
 def crear_service(session: Session) -> HistorialService:
+    """Arma el HistorialService con su repository para esta request."""
     return HistorialService(HistorialRepository(session))
 
 
@@ -28,6 +29,11 @@ def ver_historial(
     usuario: dict[str, Any] = Depends(obtener_usuario_actual),
     session: Session = Depends(get_session),
 ):
+    """Historial clínico de una mascota. La respuesta cambia según el rol:
+    el CLIENTE ve sus consultas paginadas, el VETERINARIO ve la ficha completa
+    con detección de consultas faltantes/corregidas. El ADMINISTRADOR (o
+    cualquier otro rol) no tiene acceso al contenido clínico y queda registrado
+    en acceso_historial como intento rechazado."""
     service = crear_service(session)
 
     try:

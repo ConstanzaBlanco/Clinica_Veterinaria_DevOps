@@ -4,10 +4,14 @@ from sqlalchemy import text
 
 
 class LoginRepository:
+    """Acceso a datos para el login: búsqueda de usuario y auditoría de intentos."""
+
     def __init__(self, session):
         self.session = session
 
     def buscar_por_correo(self, correo: str):
+        """Trae el usuario junto con su rol (CLIENTE/VETERINARIO/ADMINISTRADOR)
+        y bloquea la fila (FOR UPDATE) para serializar intentos de login concurrentes."""
         consulta = text(
             """
             SELECT
@@ -66,6 +70,8 @@ class LoginRepository:
         bloqueado_hasta: datetime | None,
         resultado: str,
     ):
+        """Actualiza el contador de intentos fallidos (y el bloqueo temporal si corresponde)
+        y deja el evento en auditoria_sistema, todo en una sola transacción."""
         try:
             consulta = text(
                 """
@@ -104,6 +110,7 @@ class LoginRepository:
         id_usuario: int,
         correo: str,
     ):
+        """Limpia el contador de intentos y el bloqueo tras un login correcto."""
         try:
             consulta = text(
                 """
@@ -142,6 +149,8 @@ class LoginRepository:
         detalle: str,
         id_usuario: int | None = None,
     ):
+        """Registra en auditoria_sistema un evento de login que no cambia contadores
+        (usuario inexistente, cuenta bloqueada o inactiva)."""
         try:
             self._registrar_auditoria(
                 id_usuario=id_usuario,
@@ -163,6 +172,8 @@ class LoginRepository:
         detalle: str,
         id_usuario: int | None,
     ):
+        """Inserta la fila de auditoría. No hace commit: lo hace el método que la llama,
+        para que quede en la misma transacción que la actualización del usuario."""
         consulta = text(
             """
             INSERT INTO auditoria_sistema (

@@ -2,6 +2,8 @@ from app.pacientes.repository import PacienteRepository
 
 
 class PacienteService:
+    """Reglas de negocio del buscador de pacientes del veterinario."""
+
     def __init__(self, repository: PacienteRepository) -> None:
         self.repository: PacienteRepository = repository
 
@@ -12,6 +14,8 @@ class PacienteService:
         alcance: str,
         especie: str | None,
     ) -> list[dict]:
+        """Busca pacientes con los filtros dados y arma la ficha resumida de
+        cada uno (última atención y turno de hoy, si existen)."""
         filas = self.repository.buscar(id_veterinario, q, alcance, especie)
         self.repository.registrar_auditoria(
             id_veterinario, {"q": q, "alcance": alcance, "especie": especie}

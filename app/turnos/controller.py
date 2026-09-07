@@ -17,6 +17,7 @@ router = APIRouter(prefix="/turnos", tags=["Turnos"])
 
 
 def crear_service(session: Session) -> TurnoService:
+    """Arma el TurnoService con su repository para esta request."""
     repository: TurnoRepository = TurnoRepository(session)
     return TurnoService(repository)
 
@@ -27,6 +28,7 @@ def listar_turnos(
     usuario: dict[str, Any] = Depends(requerir_rol("CLIENTE")),
     session: Session = Depends(get_session),
 ) -> list[dict]:
+    """Lista los turnos del cliente autenticado, filtrados por período."""
     id_cliente: int = usuario["id_usuario"]
     return crear_service(session).listar_por_cliente(id_cliente, periodo)
 
@@ -37,6 +39,7 @@ def ver_turno(
     usuario: dict[str, Any] = Depends(requerir_rol("CLIENTE")),
     session: Session = Depends(get_session),
 ) -> dict:
+    """Detalle de un turno puntual del cliente autenticado."""
     id_cliente: int = usuario["id_usuario"]
     try:
         return crear_service(session).obtener_por_id(id_turno, id_cliente)
@@ -50,6 +53,9 @@ def crear_turno(
     usuario: dict[str, Any] = Depends(requerir_rol("CLIENTE")),
     session: Session = Depends(get_session),
 ) -> dict:
+    """Reserva un turno para el cliente autenticado. Si otro cliente ganó la
+    carrera por el mismo horario (409), recalcula la disponibilidad actualizada
+    para que el frontend pueda ofrecerle otro horario sin perder la selección previa."""
     id_cliente: int = usuario["id_usuario"]
 
     try:
@@ -85,6 +91,7 @@ def cancelar_turno(
     usuario: dict[str, Any] = Depends(requerir_rol("CLIENTE")),
     session: Session = Depends(get_session),
 ) -> None:
+    """Cancela un turno del cliente autenticado (solo si falta más de 1 hora)."""
     id_cliente: int = usuario["id_usuario"]
     try:
         crear_service(session).cancelar(id_turno, id_cliente)
@@ -103,6 +110,8 @@ def registrar_consulta(
     usuario: dict[str, Any] = Depends(requerir_rol("VETERINARIO")),
     session: Session = Depends(get_session),
 ) -> dict:
+    """Registra la consulta clínica de un turno CONFIRMADO del veterinario
+    autenticado y lo pasa a ATENDIDO (ver TurnoRepository.registrar_consulta)."""
     id_veterinario: int = usuario["id_usuario"]
 
     try:
