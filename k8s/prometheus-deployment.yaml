@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+
+# Tipo de objeto que administra el Pod de Prometheus
+kind: Deployment
+
+metadata:
+  name: prometheus
+  namespace: clinica-veterinaria
+
+spec:
+  # Un solo Pod alcanza: Prometheus no tiene versión Blue/Green propia,
+  # scrapea el Service "api" sin importar qué versión esté activa.
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: prometheus
+
+  template:
+    metadata:
+      labels:
+        app: prometheus
+
+    spec:
+      # Por ahora solo scrapea el Service "api" por DNS interno, no necesita
+      # hablarle a la API de Kubernetes (eso cambiaría si más adelante se agrega
+      # el scrape de cAdvisor/kubelet para CPU/RAM).
+      automountServiceAccountToken: false
+
+      containers:
+        - name: prometheus
+          image: prom/prometheus:latest
+
+          # Imagen pública de Docker Hub, a diferencia de la API y el frontend
+          # (que se construyen dentro de Minikube con imagePullPolicy: Never)
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 9090
+
+          volumeMounts:
+            # Pisa /etc/prometheus con el ConfigMap: ahí es donde Prometheus
+            # busca prometheus.yml por defecto
+            - name: config
+              mountPath: /etc/prometheus
+
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: http
+
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+      volumes:
+        - name: config
+          configMap:
+            name: prometheus-config

@@ -1,0 +1,27 @@
+apiVersion: v1
+
+# Deja a Prometheus configurado como datasource de Grafana automáticamente al
+# arrancar, sin tener que cargarlo a mano desde la UI
+kind: ConfigMap
+
+metadata:
+  name: grafana-datasources
+  namespace: clinica-veterinaria
+
+data:
+  datasource.yaml: |
+    apiVersion: 1
+
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+
+        # uid fijo (en vez de dejar que Grafana genere uno random) para que
+        # el dashboard provisionado pueda referenciarlo de forma estable
+        uid: prometheus
+
+        # "prometheus" es el nombre del Service interno (puerto 9090)
+        url: http://prometheus:9090
+
+        isDefault: true

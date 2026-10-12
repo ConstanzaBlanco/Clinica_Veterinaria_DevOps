@@ -1,0 +1,27 @@
+apiVersion: v1
+
+# Guarda el archivo de configuración de Prometheus como datos planos
+kind: ConfigMap
+
+metadata:
+  name: prometheus-config
+  namespace: clinica-veterinaria
+
+data:
+  # Prometheus busca este archivo en /etc/prometheus/prometheus.yml por defecto
+  prometheus.yml: |
+    global:
+      # Cada cuánto scrapea los targets
+      scrape_interval: 15s
+
+    scrape_configs:
+      - job_name: "pet-core-api"
+        metrics_path: /metrics
+
+        # Apunta al Service "api-monitoring", el Deployment dedicado a este
+        # entregable — a propósito NO es el Service "api" de Blue/Green: ese es
+        # requisito del entregable 1, y el monitoreo queda desacoplado de esa
+        # complejidad (no depende de qué versión esté activa, ni de tener
+        # Blue/Green desplegado para funcionar).
+        static_configs:
+          - targets: ["api-monitoring:8000"]

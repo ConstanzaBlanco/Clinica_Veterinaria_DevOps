@@ -73,6 +73,25 @@ services:
       timeout: 5s
       retries: 5
 
+  # Prometheus: scrapea /metrics de "server". Independiente de Kubernetes y
+  # de Blue/Green — no depende de que esas ramas existan ni estén desplegadas.
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - 9090:9090
+
+  # Grafana: ya arranca con Prometheus provisionado como datasource.
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+    ports:
+      - 3000:3000
+    depends_on:
+      - prometheus
+
 # Crea un volumen para guardar los datos de PostgreSQL
 # Los datos permanecen aunque se elimine el contenedor, mientras no se elimine el volumen
 volumes:

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+
+# Tipo de objeto que administra el Pod de Grafana
+kind: Deployment
+
+metadata:
+  name: grafana
+  namespace: clinica-veterinaria
+
+spec:
+  # Un solo Pod alcanza: igual que Prometheus, Grafana no tiene versión
+  # Blue/Green propia
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: grafana
+
+  template:
+    metadata:
+      labels:
+        app: grafana
+
+    spec:
+      # Grafana no necesita hablarle a la API de Kubernetes
+      automountServiceAccountToken: false
+
+      containers:
+        - name: grafana
+          image: grafana/grafana:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 3000
+
+          # Usuario/contraseña por defecto de la imagen (admin/admin, pide
+          # cambiarla en el primer login). Alcanza para uso local en Minikube;
+          # no se trata como secreto porque no hay datos reales en juego acá.
+
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+
+            - name: dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+
+        - name: dashboards-provider
+          configMap:
+            name: grafana-dashboards

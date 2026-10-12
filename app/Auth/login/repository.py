@@ -2,6 +2,8 @@ from datetime import datetime
 
 from sqlalchemy import text
 
+from app.metrics import logins_fallidos_total
+
 
 class LoginRepository:
     """Acceso a datos para el login: búsqueda de usuario y auditoría de intentos."""
@@ -100,6 +102,7 @@ class LoginRepository:
             )
 
             self.session.commit()
+            logins_fallidos_total.inc()
 
         except Exception:
             self.session.rollback()

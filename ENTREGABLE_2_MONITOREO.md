@@ -61,31 +61,43 @@ El stack "recomendado" por la cátedra es Java/Spring Boot + Prometheus + Grafan
 ## Qué decidimos no hacer
 
 - **No** se mete blue/green dentro del sistema de métricas (nada de labels
-  `version=blue|green` en los contadores). Prometheus y Grafana son componentes nuevos e
-  independientes, con una sola instancia de cada uno — no necesitan su propia versión
-  blue/green, porque ambas versiones de la API exponen el mismo contrato en `/metrics`.
+  `version=blue|green` en los contadores).
+- **No se reusa el Service/Deployments de Blue/Green como blanco de Prometheus.**
+  Blue/Green es un requisito del entregable 1, no de este. Se creó un Deployment propio y
+  simple para este entregable (`api-monitoring`, sin versiones, sin selector de blue/green)
+  — ver la sección siguiente. Esto evita que el monitoreo dependa de que Blue/Green estén
+  mergeados o desplegados en ninguna rama.
 
-## Cómo conviven con el Blue/Green existente (entregable 1)
+## Cómo queda desacoplado de Blue/Green (entregable 1)
 
-- El `Service` `api` (y `frontend`) ya resuelve el "cuál está arriba" vía
-  `selector: version: blue|green` — Kubernetes mantiene los Endpoints automáticamente. Para
-  consultarlo en cualquier momento: `kubectl get svc api -o jsonpath='{.spec.selector}'`.
-- Prometheus scrapea la **URL del Service**, nunca un pod directamente, así que un switch
-  de blue a green en medio de la demo no rompe nada del monitoreo.
-- Los manifests nuevos (`prometheus-*.yaml`, `grafana-*.yaml`) se agregan a `k8s/` sin
-  tocar `api-blue-deployment.yaml`, `api-green-deployment.yaml` ni los scripts
-  `k8s-switch-*.ps1` existentes — mismo criterio que ya se sigue con los scripts SQL de
-  `db/init/` (se agrega, no se edita lo que ya funciona).
+- **`api-monitoring`** (`k8s/api-monitoring-deployment.yaml` + `k8s/api-monitoring-service.yaml`)
+  es un Deployment de un solo Pod, con su propio Service, sin labels `version: blue/green`
+  ni relación con los Services `api`/`frontend` existentes. Reusa la misma imagen y el
+  mismo Postgres (StatefulSet `postgres`) que ya existe — no se duplica la base de datos.
+- **Prometheus scrapea `api-monitoring:8000`**, no el Service `api` de Blue/Green — así el
+  monitoreo no le importa en absoluto si Blue/Green están desplegados, en qué rama están,
+  ni a qué versión apunta el selector en un momento dado.
+- **`scripts/k8s-up-monitoring.ps1`** (nuevo) levanta namespace + secrets + Postgres +
+  `api-monitoring` + Prometheus + Grafana de punta a punta, sin revisar en qué rama de git
+  se está parado (a diferencia de `k8s-up.ps1`/`k8s-up-green.ps1`, que sí lo exigen).
+  Cualquiera de los 4 puede correr este script sin tener Blue/Green desplegado primero.
+- Nada de esto toca `api-blue-deployment.yaml`, `api-green-deployment.yaml`,
+  `api-service.yaml` ni los scripts `k8s-up.ps1`/`k8s-switch-*.ps1` existentes — mismo
+  criterio que ya se sigue con los scripts SQL de `db/init/` (se agrega, no se edita lo que
+  ya funciona).
 
 ## Arquitectura
 
 ![Diagrama de arquitectura del entregable 2](entregable2-diagrama-arquitectura.png)
 
+> El diagrama de arriba todavía muestra la versión anterior (Prometheus apuntando al
+> Service `api` de Blue/Green) — quedó desactualizado tras la decisión de desacoplar de
+> Blue/Green (ver sección anterior). Pendiente de rehacer con `api-monitoring` en el medio.
 
-Resumen del flujo:
+Resumen del flujo (actualizado):
 
-1. Prometheus scrapea `GET /metrics` del `Service: api` cada 15s (pull) — no necesita
-   saber si responde `api-blue` o `api-green`.
+1. Prometheus scrapea `GET /metrics` del `Service: api-monitoring` cada 15s (pull) — un
+   Deployment propio de este entregable, sin relación con `api-blue`/`api-green`.
 2. Grafana consulta Prometheus vía PromQL y arma los dashboards (tasa de requests,
    latencia, errores 5xx, turnos creados, logins fallidos).
 3. Grafana evalúa las reglas de alerta sobre esas series y dispara el aviso si
@@ -93,10 +105,18 @@ Resumen del flujo:
 
 ## Piezas a desplegar (nuevas, en `k8s/`)
 
-- `prometheus-configmap.yaml` — configuración de scrape (target: Service `api`).
-- `prometheus-deployment.yaml` + `prometheus-service.yaml`.
-- `grafana-deployment.yaml` + `grafana-service.yaml` — con Prometheus como datasource,
-  el dashboard y las reglas de alerta ya provisionadas.
+- `api-monitoring-deployment.yaml` + `api-monitoring-service.yaml` — la API sin
+  Blue/Green, el único blanco de Prometheus.
+- `prometheus-configmap.yaml` — configuración de scrape (target: Service
+  `api-monitoring`).
+- `prometheus-deployment.yaml` + `prometheus-service.yaml` (`ClusterIP`, sin acceso
+  externo).
+- `grafana-deployment.yaml` + `grafana-service.yaml` (`NodePort`) — con Prometheus como
+  datasource ya provisionado.
+- `grafana-dashboard-configmap.yaml` — el dashboard de 5 paneles, ya provisionado como
+  código (no hay que armarlo a mano en la UI).
+- `scripts/k8s-up-monitoring.ps1` — levanta todo lo anterior de punta a punta, sin
+  depender de ninguna rama de git.
 - Cambio mínimo en la API: exponer `/metrics` (instrumentación + contadores de negocio).
 
 ## Prioridad de implementación
@@ -132,32 +152,124 @@ código final de la API:
 | `http_requests_total` | counter | automático, lo agrega `prometheus-fastapi-instrumentator` |
 | `http_request_duration_seconds` | histogram | automático, idem |
 
-## Checklist de trabajo
+## Ya hecho (base común, no repartir esto)
 
-Antes de repartir nada entre personas, esto es lo que el trabajo necesita que se haga,
-en el orden en que una cosa depende de la otra:
+Esto ya está commiteado y probado funcionando en Minikube — ninguna de las tareas de abajo
+necesita tocarlo para arrancar:
 
-1. **Instrumentar la API**: agregar `prometheus-fastapi-instrumentator`, exponer `/metrics`,
-   agregar el contador de turnos creados (`TurnoRepository.crear_turno`), el contador de
-   logins fallidos (sobre el mismo evento que ya escribe en `auditoria_sistema`), y la
-   métrica de duración de query a Postgres en el endpoint de turnos.
-2. **Escribir los manifests de Prometheus** en `k8s/` (`prometheus-configmap.yaml`,
-   `prometheus-deployment.yaml`, `prometheus-service.yaml`), apuntando el scrape al
-   `Service: api`, más el RBAC necesario para leer métricas de cAdvisor/kubelet (bonus de
-   CPU/RAM).
-3. **Escribir los manifests de Grafana** en `k8s/` (`grafana-deployment.yaml`,
-   `grafana-service.yaml`), con Prometheus como datasource.
-4. **Armar el dashboard en Grafana**: los paneles ya definidos en el mockup (turnos
-   creados, logins fallidos, latencia por endpoint, error rate, CPU/RAM, correlación
-   latencia-vs-query) y las 2 reglas de alerta (turnos > 10/5min, logins > 3/1min).
-5. **Desplegar todo junto** en el cluster (`kubectl apply`) al lado de lo que ya existe de
-   Blue/Green, sin tocar los manifests existentes.
-6. **Verificar que las alertas disparan de verdad**: generar la condición una vez (crear
-   más de 10 turnos en 5 min, fallar un login 4 veces seguidas) y confirmar que Grafana
-   pasa a estado "Firing".
-7. **Juntar la evidencia y documentar**: capturas reales del dashboard y de una alerta
-   disparada, reemplazando las capturas simuladas de este documento, y dejar los pasos de
-   despliegue finales escritos (acá o en el README).
+- API instrumentada (`/metrics`, contador de turnos creados, contador de logins fallidos).
+- `api-monitoring` + Prometheus + Grafana desplegados en `k8s/`, desacoplados de
+  Blue/Green, levantables con `scripts/k8s-up-monitoring.ps1` sin depender de ninguna rama.
+- Dashboard con 5 paneles ya provisionado como código (`k8s/grafana-dashboard-configmap.yaml`):
+  turnos creados, logins fallidos, tasa de requests por endpoint, latencia p95 por
+  endpoint, errores 5xx.
+- Probado levantando todo de cero (no solo "funcionó una vez").
+
+## Tareas pendientes (para repartir entre el equipo)
+
+Son independientes entre sí — cualquiera puede agarrar cualquiera, sin esperar a que otro
+termine la suya. La única fricción real es que varias tocan el mismo archivo de dashboard
+(`k8s/grafana-dashboard-configmap.yaml`): si dos personas lo editan al mismo tiempo, avisar
+antes para no pisarse al mergear.
+
+**1. Reglas de alerta en Grafana** — la más importante, es el requisito explícito de la
+consigna.
+- Qué hacer: provisionar como código las 2 reglas (`turnos_creados_total` > 10 en 5 min,
+  `logins_fallidos_total` > 3 en 1 min) en un ConfigMap nuevo
+  (`k8s/grafana-alerting-configmap.yaml`), montarlo en `k8s/grafana-deployment.yaml`
+  (`/etc/grafana/provisioning/alerting`), y probar en Minikube que llegan a estado
+  "Firing" de verdad.
+- Toca: archivo nuevo + 1 edición chica en `grafana-deployment.yaml`.
+
+**2. Contador de turnos cancelados** (`turnos_cancelados_total`)
+- Qué hacer: mismo patrón que `turnos_creados_total` — contador en
+  `TurnoRepository.cancelar`, panel nuevo en el dashboard ("cancelados hoy").
+- Toca: `app/metrics.py`, `app/turnos/repository.py`, `k8s/grafana-dashboard-configmap.yaml`.
+
+**3. Contador de clientes nuevos registrados** (`clientes_registrados_total`)
+- Qué hacer: contador en el alta de `app/Auth/Register/clients/`, panel nuevo.
+- Toca: `app/metrics.py`, `app/Auth/Register/clients/*.py`, `k8s/grafana-dashboard-configmap.yaml`.
+
+**4. Métrica de duración de query + panel de correlación (bonus, el de más valor conceptual)**
+- Qué hacer: medir cuánto tarda la query pesada del endpoint de turnos
+  (`pg_query_duration_seconds`, histograma), y armar el panel que correlaciona esa
+  duración con la latencia del endpoint — el ejemplo "monitoreo vs. observabilidad" de la
+  teórica, aplicado al proyecto.
+- Toca: `app/metrics.py`, `app/turnos/repository.py`, `k8s/grafana-dashboard-configmap.yaml`.
+
+**5. CPU/RAM del pod (bonus, el más de infraestructura)**
+- Qué hacer: RBAC (`ClusterRole`/`ClusterRoleBinding`) para que Prometheus pueda scrapear
+  cAdvisor/kubelet, sumar el target en `prometheus-configmap.yaml`, gauge en el dashboard.
+- Toca: archivo de RBAC nuevo en `k8s/`, `k8s/prometheus-configmap.yaml`,
+  `k8s/grafana-dashboard-configmap.yaml`.
+
+**6. Rehacer el diagrama de arquitectura**
+- Qué hacer: `entregable2-diagrama-arquitectura.png` todavía muestra la versión vieja
+  (Prometheus apuntando al Service `api` de Blue/Green). Rehacerlo con `api-monitoring` en
+  el medio, reflejando el diseño desacoplado actual.
+- Toca: solo la imagen, nada de código.
+
+**7. Evidencia final + informe de entrega** — depende de que la tarea 1 (alertas) esté
+lista, así que conviene agarrarla después de esa.
+- Qué hacer: capturas reales del dashboard y de una alerta en estado "Firing" (reemplazando
+  las capturas simuladas que hoy están en este documento), y armar el documento/informe
+  final para entregar.
+- Toca: capturas nuevas + este documento.
+
+## Estado verificado en Minikube
+
+Esto ya se probó corriendo de verdad, con el diseño desacoplado actual (`api-monitoring`,
+no Blue/Green):
+
+- Prometheus scrapea `api-monitoring:8000/metrics` y el target queda en estado `up`.
+- `turnos_creados_total` y `logins_fallidos_total` aparecen como series consultables en
+  Prometheus (en 0, porque todavía no hubo actividad real).
+- Grafana arranca sano y el datasource "Prometheus" queda provisionado solo al arrancar.
+- `scripts/k8s-up-monitoring.ps1` corrido dos veces seguidas (para probar que reinicia
+  Prometheus/Grafana cuando sus ConfigMaps cambian, no solo la primera vez) — confirmado
+  que el target se mantiene correcto después de volver a correrlo.
+- No hizo falta tocar ni reiniciar nada de `api-blue`, `api-green`, `frontend-blue` ni
+  `frontend-green`, que siguieron corriendo igual que antes durante toda la prueba.
+
+**Bug encontrado y corregido en el camino**: `kubectl apply` sobre un ConfigMap no hace que
+el Pod que lo monta relea el archivo solo (Kubernetes no recarga ConfigMaps en caliente).
+El script ahora fuerza `rollout restart` de Prometheus y Grafana en cada corrida para que
+esto no le pase a nadie si vuelve a correr el script después de un cambio de
+configuración.
+
+## Cómo probarlo sin depender de Blue/Green
+
+**Importante: esto es solo para desarrollo, no reemplaza el entregable.** La consigna pide
+Kubernetes explícitamente — eso es lo de `k8s/`, y es lo único que cuenta como entrega.
+
+Hay dos formas de probar sin necesitar Blue/Green desplegado ni mergeado a ninguna rama:
+
+1. **Kubernetes real, desacoplado** (`scripts/k8s-up-monitoring.ps1`): levanta
+   `api-monitoring` + Postgres + Prometheus + Grafana en Minikube, sin revisar rama de git
+   y sin necesitar que `api-blue`/`api-green` existan. Esto **sí** satisface la consigna
+   (corre en un clúster de Kubernetes de verdad) y es lo que cuenta como entrega.
+2. **Docker Compose** (`compose.yaml` + `monitoring/prometheus.yml` +
+   `monitoring/grafana-datasources.yml`): ni siquiera necesita Kubernetes/Minikube. Sirve
+   para iterar más rápido en el código de la API (`docker compose up --build`), pero no es
+   lo que se entrega — la entrega final tiene que mostrarse corriendo en Kubernetes.
+
+Las dos configuraciones de Prometheus (`k8s/prometheus-configmap.yaml` y
+`monitoring/prometheus.yml`) son independientes a propósito: apuntan a nombres de Service
+distintos (`api-monitoring` en K8s, `server` en Compose) porque son entornos distintos, no
+hay que mantenerlos sincronizados más que en el nombre de las métricas que exponen.
+
+## Cómo accede el equipo (decisión de exposición)
+
+Para no sumarle una terminal nueva a cada persona por cada pieza del monitoreo:
+
+- **Prometheus queda como `ClusterIP`** (no expuesto hacia afuera del clúster). Nadie del
+  equipo necesita entrar a su UI para el día a día — eso lo hace Grafana, que ya lo tiene
+  de datasource. Si alguna vez hace falta debuggear un scrape target directamente, se usa
+  `kubectl port-forward svc/prometheus 9090:9090` de forma puntual.
+- **Grafana sí queda expuesto** (`NodePort`), porque es lo único que el equipo necesita
+  mirar. Para abrirlo, correr `scripts/k8s-open-grafana.ps1` (mismo patrón que los demás
+  scripts de `scripts/`) en vez de acordarse el comando de `minikube service` a mano.
+  Usuario/contraseña por defecto de la imagen: `admin` / `admin`.
 
 
 ## Mockup del dashboard (datos simulados, antes del código real)

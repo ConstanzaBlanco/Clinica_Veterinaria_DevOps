@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+
+# Tipo de objeto que administra los Pods de FastAPI
+kind: Deployment
+
+# Deployment de la API dedicado al entregable de monitoreo. A propósito NO
+# tiene version: blue/green ni selector de Service compartido con esos
+# Deployments — es el único que Prometheus mira, separado de Blue/Green por
+# completo (ese es requisito del entregable 1, no de este).
+metadata:
+  name: api-monitoring
+  namespace: clinica-veterinaria
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: clinica-api-monitoring
+
+  template:
+    metadata:
+      labels:
+        app: clinica-api-monitoring
+
+    spec:
+      # FastAPI no necesita acceder a la API interna de Kubernetes
+      automountServiceAccountToken: false
+
+      containers:
+        - name: api
+          image: clinica-veterinaria:monitoring
+
+          # Imagen construida dentro de Minikube, igual que Blue/Green
+          imagePullPolicy: Never
+
+          ports:
+            - name: http
+              containerPort: 8000
+
+          # Mismas variables que usan api-blue/api-green (ver ese archivo
+          # para el detalle de cada una) — reusa el mismo Postgres, no uno
+          # aparte
+          env:
+            - name: POSTGRES_SERVER
+              value: db
+
+            - name: POSTGRES_PORT
+              value: "5432"
+
+            - name: POSTGRES_USER
+              value: petcore_app
+
+            - name: POSTGRES_DB
+              value: postgres
+
+            - name: POSTGRES_PASSWORD_FILE
+              value: /run/secrets/db-password
+
+            - name: JWT_SECRET_KEY_FILE
+              value: /run/jwt-secret/jwt-secret
+
+            - name: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+              value: "15"
+
+            - name: LOGIN_MAX_INTENTOS
+              value: "5"
+
+            - name: LOGIN_BLOQUEO_MINUTOS
+              value: "15"
+
+          volumeMounts:
+            - name: postgres-secret
+              mountPath: /run/secrets
+              readOnly: true
+
+            - name: jwt-secret
+              mountPath: /run/jwt-secret
+              readOnly: true
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+      volumes:
+        - name: postgres-secret
+          secret:
+            secretName: postgres-secret
+
+        - name: jwt-secret
+          secret:
+            secretName: jwt-secret

@@ -22,6 +22,7 @@
   - [Paso 6: acceder y probar Green](#paso-6-acceder-y-probar-green)
   - [Paso 7: realizar rollback a Blue](#paso-7-realizar-rollback-a-blue)
   - [Base de datos compartida](#base-de-datos-compartida)
+- [Monitoreo con Prometheus y Grafana](#monitoreo-con-prometheus-y-grafana)
 - [Datos de prueba](#datos-de-prueba)
 - [Proteger endpoints con el middleware](#proteger-endpoints-con-el-middleware)
 
@@ -124,6 +125,18 @@ Posteriormente, ingresar a:
 
 - Estado de la API: http://127.0.0.1:8000/
 - Documentación interactiva: http://127.0.0.1:8000/docs
+- Prometheus: http://127.0.0.1:9090/
+- Grafana: http://127.0.0.1:3000/ (usuario/contraseña por defecto: `admin` / `admin`)
+
+> **Esto no es lo que se entrega.** La consigna pide Kubernetes, y eso ya está resuelto
+> aparte en `k8s/` (ver más abajo). Prometheus y Grafana acá son solo una copia para
+> desarrollo rápido, completamente independiente de Kubernetes y de Blue/Green: no hace
+> falta tener ninguna rama desplegada ni mergeada para probarlos, con
+> `docker compose up --build` alcanza. Sirve para validar rápido que las métricas nuevas
+> (`turnos_creados_total`, `logins_fallidos_total`) funcionan, sin depender de Minikube ni
+> arriesgar nada de lo que ya está desplegado ahí. Ver
+> [Monitoreo con Prometheus y Grafana](#monitoreo-con-prometheus-y-grafana)
+> para la versión que sí corre en Kubernetes.
 
 Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
 
@@ -367,6 +380,70 @@ Este script devuelve los selectores de ambos Services a `version: blue`. El roll
 Blue y Green utilizan el mismo StatefulSet de PostgreSQL y el mismo volumen persistente. No existe un volumen diferente para cada versión y el volumen no se guarda en Git.
 
 Los archivos de `db/init/` permiten reconstruir la base inicial en un volumen nuevo. Las modificaciones de base realizadas para Green deben ser compatibles con Blue para que el rollback continúe funcionando.
+
+## Monitoreo con Prometheus y Grafana
+
+> Plan completo (qué se mide, por qué, y qué falta) en
+> [`ENTREGABLE_2_MONITOREO.md`](ENTREGABLE_2_MONITOREO.md). Esta sección es solo cómo
+> levantarlo y entrar.
+
+### No depende de Blue/Green
+
+El monitoreo tiene su **propio Deployment de la API** (`api-monitoring`, sin versiones
+`blue`/`green`), así que no hace falta tener Blue/Green desplegado ni mergeado a ninguna
+rama para probarlo. Solo hace falta que la rama que tengas en este momento tenga estos
+archivos (los ves con `git status` o mirando si existe `k8s\api-monitoring-deployment.yaml`).
+
+Para levantar todo (Postgres + `api-monitoring` + Prometheus + Grafana) de punta a punta:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-up-monitoring.ps1
+```
+
+Este script no revisa en qué rama estás (a diferencia de `k8s-up.ps1`/`k8s-up-green.ps1`,
+que exigen `blue`/`green`) y reusa el mismo Postgres si ya existe. Si en algún momento
+esto se mergea a `blue` o `green`, también queda disponible automáticamente al correr esos
+scripts de siempre (aplican toda la carpeta `k8s/`), pero no hace falta esperar a eso.
+
+### Acceder al dashboard
+
+Prometheus queda **interno** (`ClusterIP`, sin URL propia) a propósito: nadie del equipo
+necesita entrar ahí para el día a día, eso lo hace Grafana. Para abrir Grafana:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-open-grafana.ps1
+```
+
+Dejar la terminal abierta (igual que con `frontend` o `api`) y abrir la URL que muestra.
+Usuario y contraseña por defecto de la imagen: `admin` / `admin` (pide cambiarla en el
+primer login).
+
+> **Grafana no tiene almacenamiento persistente**: cada vez que se reinicia el Pod (por
+> ejemplo, al volver a correr `k8s-up-monitoring.ps1` o si alguien hace
+> `rollout restart`), la contraseña vuelve a `admin`/`admin`, aunque la hayas cambiado
+> antes. No es un bug — es el mismo motivo por el que el dashboard y el datasource
+> aparecen solos (se vuelven a provisionar desde los ConfigMaps en cada arranque). Si
+> alguna vez Grafana no te deja entrar con ninguna contraseña, reseteala directo:
+> `minikube kubectl -- exec deploy/grafana --namespace=clinica-veterinaria -- grafana cli admin reset-admin-password <nueva>`.
+
+> Si alguna vez hace falta entrar directo a la UI de Prometheus para debuggear un scrape
+> target, se hace puntualmente con:
+> `minikube kubectl -- port-forward svc/prometheus 9090:9090 --namespace=clinica-veterinaria`
+> y abriendo `http://localhost:9090` en el navegador.
+
+Para probar la API de monitoreo directamente (Swagger, sin pasar por Grafana):
+
+```powershell
+minikube service api-monitoring --namespace=clinica-veterinaria --url
+```
+
+### Qué hay hoy y qué falta
+
+Grafana ya arranca con el dashboard **"Pet-Core — Monitoreo"** armado (carpeta "Pet-Core"),
+con 5 paneles: turnos creados, logins fallidos, tasa de requests por endpoint, latencia p95
+por endpoint y errores 5xx — todo provisionado como código, sin clickear nada en la UI.
+**Lo único que falta es configurar las 2 reglas de alerta** (turnos > 10 en 5 min, logins
+fallidos > 3 en 1 min) — eso es lo próximo del checklist en `ENTREGABLE_2_MONITOREO.md`.
 
 ## Datos de prueba
 

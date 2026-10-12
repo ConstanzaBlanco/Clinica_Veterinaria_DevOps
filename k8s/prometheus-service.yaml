@@ -1,0 +1,24 @@
+apiVersion: v1
+
+# Crea una dirección estable para acceder a Prometheus
+kind: Service
+
+metadata:
+  name: prometheus
+  namespace: clinica-veterinaria
+
+spec:
+  # ClusterIP a propósito, no NodePort: nadie del equipo necesita entrar a la
+  # UI de Prometheus para ver el dashboard (eso lo hace Grafana, que sí tiene
+  # NodePort). Si alguien necesita debuggear scrape targets directamente,
+  # usa "kubectl port-forward svc/prometheus 9090:9090" de forma puntual.
+  type: ClusterIP
+
+  selector:
+    app: prometheus
+
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9090
+      targetPort: http
