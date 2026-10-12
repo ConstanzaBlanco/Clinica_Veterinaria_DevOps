@@ -1,0 +1,12 @@
+# Config de Prometheus para Docker Compose (entorno de desarrollo local).
+# Totalmente separada de k8s/prometheus-configmap.yaml: ese es el entorno de
+# Kubernetes (scrapea el Service "api"), este es el de Compose (scrapea el
+# servicio "server"). No hay dependencia entre uno y otro.
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "pet-core-api"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["server:8000"]

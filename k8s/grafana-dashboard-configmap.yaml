@@ -1,0 +1,151 @@
+apiVersion: v1
+
+# Deja el dashboard de Pet-Core ya cargado en Grafana al arrancar, como código
+# versionado — nadie tiene que armar paneles a mano en la UI, y todo el equipo
+# ve exactamente el mismo dashboard.
+kind: ConfigMap
+
+metadata:
+  name: grafana-dashboards
+  namespace: clinica-veterinaria
+
+data:
+  # Le dice a Grafana "cargá los .json que encuentres en esta carpeta como
+  # dashboards". Va en el mismo directorio que el JSON de abajo.
+  provider.yaml: |
+    apiVersion: 1
+
+    providers:
+      - name: pet-core
+        folder: Pet-Core
+        type: file
+        options:
+          path: /etc/grafana/provisioning/dashboards
+
+  pet-core-monitoring.json: |
+    {
+      "title": "Pet-Core — Monitoreo",
+      "uid": "pet-core-monitoring",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "15s",
+      "time": { "from": "now-1h", "to": "now" },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Turnos creados (ventana 5 min)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "increase(turnos_creados_total[5m])",
+              "legendFormat": "turnos creados"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 10 }
+                ]
+              },
+              "custom": {
+                "thresholdsStyle": { "mode": "line" },
+                "axisSoftMin": 0,
+                "axisSoftMax": 15
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 2,
+          "title": "Logins fallidos (ventana 1 min)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "increase(logins_fallidos_total[1m])",
+              "legendFormat": "logins fallidos"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 3 }
+                ]
+              },
+              "custom": {
+                "thresholdsStyle": { "mode": "line" },
+                "axisSoftMin": 0,
+                "axisSoftMax": 5
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 3,
+          "title": "Tasa de requests por endpoint",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum by (handler) (rate(http_requests_total[5m]))",
+              "legendFormat": "{{handler}}"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Latencia p95 por endpoint",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "histogram_quantile(0.95, sum by (le, handler) (rate(http_request_duration_seconds_bucket[5m])))",
+              "legendFormat": "{{handler}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "s" },
+            "overrides": []
+          }
+        },
+        {
+          "id": 5,
+          "title": "Errores 5xx (tasa)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(rate(http_requests_total{status=\"5xx\"}[5m]))",
+              "legendFormat": "errores 5xx"
+            }
+          ]
+        }
+      ]
+    }

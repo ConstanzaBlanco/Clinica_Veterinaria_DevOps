@@ -4,6 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.metrics import turnos_creados_total
 from app.turnos.excepciones import HorarioNoDisponibleError
 
 # Código SQLSTATE de Postgres para la violación de la restricción de
@@ -105,6 +106,7 @@ class TurnoRepository:
         try:
             fila = self.session.execute(consulta, valores).mappings().one()
             self.session.commit()
+            turnos_creados_total.inc()
             return fila["id_turno"]
         except IntegrityError as error:
             self.session.rollback()

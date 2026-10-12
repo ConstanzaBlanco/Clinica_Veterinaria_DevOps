@@ -1,0 +1,11 @@
+# Provisioning de datasource de Grafana para Docker Compose. Equivalente al
+# k8s/grafana-datasource-configmap.yaml, pero como archivo de bind-mount en
+# vez de ConfigMap (no hay dependencia entre uno y otro).
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
