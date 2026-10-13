@@ -20,7 +20,7 @@ data:
         folder: Pet-Core
         type: file
         options:
-          path: /etc/grafana/provisioning/dashboards
+          path: /var/lib/grafana/dashboards
 
   pet-core-monitoring.json: |
     {

@@ -45,6 +45,9 @@ spec:
             - name: dashboards-provider
               mountPath: /etc/grafana/provisioning/dashboards
 
+            - name: dashboards-json
+              mountPath: /var/lib/grafana/dashboards
+
           readinessProbe:
             httpGet:
               path: /api/health
@@ -63,3 +66,13 @@ spec:
         - name: dashboards-provider
           configMap:
             name: grafana-dashboards
+            items:
+              - key: provider.yaml
+                path: provider.yaml
+
+        - name: dashboards-json
+          configMap:
+            name: grafana-dashboards
+            items:
+              - key: pet-core-monitoring.json
+                path: pet-core-monitoring.json

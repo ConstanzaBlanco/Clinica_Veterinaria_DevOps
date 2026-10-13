@@ -14,8 +14,11 @@ DO $$
 DECLARE
     app_password TEXT;
 BEGIN
-    app_password :=
-        btrim(pg_read_file('/run/secrets/db-password'));
+app_password :=
+    btrim(
+        pg_read_file('/run/secrets/db-password'),
+        E' \t\n\r'
+    );
 
     IF NOT EXISTS (
         SELECT FROM pg_roles
