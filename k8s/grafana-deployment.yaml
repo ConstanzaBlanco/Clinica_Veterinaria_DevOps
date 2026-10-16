@@ -47,6 +47,10 @@ spec:
 
             - name: dashboards-json
               mountPath: /var/lib/grafana/dashboards
+            
+            - name: alerting
+              mountPath: /etc/grafana/provisioning/alerting
+              readOnly: true
 
           readinessProbe:
             httpGet:
@@ -76,3 +80,7 @@ spec:
             items:
               - key: pet-core-monitoring.json
                 path: pet-core-monitoring.json
+        
+        - name: alerting
+          configMap:
+            name: grafana-alerting

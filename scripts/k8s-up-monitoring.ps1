@@ -35,6 +35,7 @@ $requiredFiles = @(
     "k8s\prometheus-service.yaml",
     "k8s\grafana-datasource-configmap.yaml",
     "k8s\grafana-dashboard-configmap.yaml",
+    "k8s\grafana-alerting-configmap.yaml",
     "k8s\grafana-deployment.yaml",
     "k8s\grafana-service.yaml",
     "db\init\01_schema.sql",
@@ -114,6 +115,7 @@ try {
         -f k8s\prometheus-service.yaml `
         -f k8s\grafana-datasource-configmap.yaml `
         -f k8s\grafana-dashboard-configmap.yaml `
+        -f k8s\grafana-alerting-configmap.yaml `
         -f k8s\grafana-deployment.yaml `
         -f k8s\grafana-service.yaml
     Confirm-NativeCommand -Step "aplicar los manifiestos de monitoreo"
