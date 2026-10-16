@@ -41,7 +41,7 @@ El stack "recomendado" por la cátedra es Java/Spring Boot + Prometheus + Grafan
 
 ### 3. Métrica de seguridad: intentos de login fallidos en un período de tiempo
 
-- **Logins fallidos:** se utiliza la tabla `auditoria_sistema`, que ya registra los intentos de inicio de sesión, tanto exitosos como fallidos, bloqueados o rechazados. Por lo tanto, no es necesario modificar la base de datos, sino simplemente agregar un contador que utilice los registros existentes.
+- **Logins fallidos:** el contador se incrementa en `LoginRepository.registrar_intento_fallido`, después de confirmar la transacción que actualiza los intentos de la cuenta y escribe en `auditoria_sistema`. No consulta ni recuenta los registros históricos de auditoría. Actualmente cuenta contraseñas incorrectas de usuarios existentes, incluido el intento que activa el bloqueo; no cuenta correos inválidos, usuarios inexistentes ni intentos realizados durante un bloqueo ya activo.
 
 - **Alerta:** se genera cuando hay más de 3 intentos fallidos en un minuto. Se eligió un intervalo corto para detectar posibles ataques antes de que se active el bloqueo de la cuenta, que ocurre al llegar a 5 intentos fallidos en `Auth/login`.
 
@@ -100,8 +100,9 @@ Resumen del flujo (actualizado):
    Deployment propio de este entregable, sin relación con `api-blue`/`api-green`.
 2. Grafana consulta Prometheus vía PromQL y arma los dashboards (tasa de requests,
    latencia, errores 5xx, turnos creados, logins fallidos).
-3. Grafana evalúa las reglas de alerta sobre esas series y dispara el aviso si
+3. Grafana evalúa las reglas de alerta sobre esas series cada 30 segundos y pasa a `Firing` si
    `turnos_creados` supera 10 en 5 minutos, o `logins_fallidos` supera 3 en 1 minuto.
+   La activación se consulta en Grafana; no se configuraron avisos por correo ni webhook.
 
 ## Piezas a desplegar (nuevas, en `k8s/`)
 
@@ -115,6 +116,8 @@ Resumen del flujo (actualizado):
   datasource ya provisionado.
 - `grafana-dashboard-configmap.yaml` — el dashboard de 5 paneles, ya provisionado como
   código (no hay que armarlo a mano en la UI).
+- `grafana-alerting-configmap.yaml` — las dos reglas de alerta provisionadas como código,
+  montadas en `/etc/grafana/provisioning/alerting` por `grafana-deployment.yaml`.
 - `scripts/k8s-up-monitoring.ps1` — levanta todo lo anterior de punta a punta, sin
   depender de ninguna rama de git.
 - Cambio mínimo en la API: exponer `/metrics` (instrumentación + contadores de negocio).
@@ -164,22 +167,23 @@ necesita tocarlo para arrancar:
   turnos creados, logins fallidos, tasa de requests por endpoint, latencia p95 por
   endpoint, errores 5xx.
 - Probado levantando todo de cero (no solo "funcionó una vez").
+- Punto 1 completado y verificado el 16/10/2026: ambas reglas provisionadas en Grafana
+  llegaron a `Firing` con operaciones reales. Detalles y reproducción en
+  [Reglas de alerta implementadas y cómo probarlas](#reglas-de-alerta-implementadas-y-cómo-probarlas).
 
 ## Tareas pendientes (para repartir entre el equipo)
 
-Son independientes entre sí — cualquiera puede agarrar cualquiera, sin esperar a que otro
-termine la suya. La única fricción real es que varias tocan el mismo archivo de dashboard
+Las tareas 2 a 6 pueden iniciarse en paralelo; el punto 1 ya está completado y se conserva
+con su número para mantener la referencia del equipo. Varias tareas tocan el mismo archivo de dashboard
 (`k8s/grafana-dashboard-configmap.yaml`): si dos personas lo editan al mismo tiempo, avisar
 antes para no pisarse al mergear.
 
-**1. Reglas de alerta en Grafana** — la más importante, es el requisito explícito de la
-consigna.
-- Qué hacer: provisionar como código las 2 reglas (`turnos_creados_total` > 10 en 5 min,
-  `logins_fallidos_total` > 3 en 1 min) en un ConfigMap nuevo
-  (`k8s/grafana-alerting-configmap.yaml`), montarlo en `k8s/grafana-deployment.yaml`
-  (`/etc/grafana/provisioning/alerting`), y probar en Minikube que llegan a estado
-  "Firing" de verdad.
-- Toca: archivo nuevo + 1 edición chica en `grafana-deployment.yaml`.
+**1. Reglas de alerta en Grafana — COMPLETADO (16/10/2026).**
+- Implementado: dos reglas en `k8s/grafana-alerting-configmap.yaml`, montadas por
+  `k8s/grafana-deployment.yaml`. El archivo se valida y aplica desde
+  `scripts/k8s-up-monitoring.ps1`.
+- Verificado: ambas reglas aparecen como `Provisioned` y llegaron a `Firing` en Minikube.
+- Alcance: activación visible en Grafana; sin notificaciones externas configuradas.
 
 **2. Contador de turnos cancelados** (`turnos_cancelados_total`)
 - Qué hacer: mismo patrón que `turnos_creados_total` — contador en
@@ -223,7 +227,11 @@ no Blue/Green):
 
 - Prometheus scrapea `api-monitoring:8000/metrics` y el target queda en estado `up`.
 - `turnos_creados_total` y `logins_fallidos_total` aparecen como series consultables en
-  Prometheus (en 0, porque todavía no hubo actividad real).
+  Prometheus y aumentaron con reservas e intentos de login reales.
+- Se crearon 12 reservas exitosas en menos de 5 minutos mediante `api-monitoring`.
+  Prometheus confirmó que se superó el umbral y Grafana mostró la regla de turnos activa.
+- Tras los intentos de login fallidos, se comprobó en Grafana que ambas reglas estaban
+  activas simultáneamente, con una instancia de alerta cada una.
 - Grafana arranca sano y el datasource "Prometheus" queda provisionado solo al arrancar.
 - `scripts/k8s-up-monitoring.ps1` corrido dos veces seguidas (para probar que reinicia
   Prometheus/Grafana cuando sus ConfigMaps cambian, no solo la primera vez) — confirmado
@@ -231,11 +239,119 @@ no Blue/Green):
 - No hizo falta tocar ni reiniciar nada de `api-blue`, `api-green`, `frontend-blue` ni
   `frontend-green`, que siguieron corriendo igual que antes durante toda la prueba.
 
-**Bug encontrado y corregido en el camino**: `kubectl apply` sobre un ConfigMap no hace que
-el Pod que lo monta relea el archivo solo (Kubernetes no recarga ConfigMaps en caliente).
+**Recarga de configuración**: `kubectl apply` sobre un ConfigMap no hace que Grafana o
+Prometheus recarguen automáticamente su configuración en memoria. Kubernetes puede
+actualizar archivos montados, pero la aplicación debe releerlos.
 El script ahora fuerza `rollout restart` de Prometheus y Grafana en cada corrida para que
 esto no le pase a nadie si vuelve a correr el script después de un cambio de
 configuración.
+
+## Reglas de alerta implementadas y cómo probarlas
+
+### Configuración y estados
+
+Las reglas están en `k8s/grafana-alerting-configmap.yaml`, dentro del grupo
+`pet-core-alertas`, carpeta `Pet-Core`, y consultan el datasource con UID `prometheus`.
+
+| Alerta | Qué mide | Cuándo se activa |
+|---|---|---|
+| Exceso de turnos creados | Reservas guardadas correctamente en los últimos 5 minutos. | Cuando se superan los 10 turnos en ese período. |
+| Exceso de intentos de login fallidos | Intentos con contraseña incorrecta de cuentas existentes en el último minuto. | Cuando se superan los 3 intentos en ese período. |
+
+- Prometheus recoge los datos cada 15 segundos y Grafana comprueba las alertas cada
+  30 segundos. Si detecta que se superó el límite, activa la alerta sin agregar otra espera.
+- Los estados indican qué está pasando: **Normal** significa que no se supera el límite;
+  **Firing**, que la alerta está activa; **No Data**, que faltan datos; y **Error**, que
+  hubo un problema al comprobarlos.
+- **Provisioned** significa que la alerta se creó desde un archivo del proyecto. Para
+  modificarla, se cambia ese archivo.
+- Se revisan siempre los últimos 5 minutos para los turnos y el último minuto para los
+  logins. Cuando pasa el tiempo y ya no se supera el límite, la alerta vuelve a **Normal**.
+  Los gráficos pueden mostrar decimales porque calculan una estimación a partir de los
+  datos recogidos.
+- Para ver las alertas, entrar en **Alerting → Alert rules → Pet-Core → pet-core-alertas**.
+- Las alertas se ven en Grafana. No se envían avisos por correo ni a otros servicios.
+
+### Desplegar o actualizar las reglas
+
+Para levantar el entorno completo, seguir los requisitos y las instrucciones de
+[Monitoreo con Prometheus y Grafana](README.md#monitoreo-con-prometheus-y-grafana).
+El script `scripts/k8s-up-monitoring.ps1` ya incluye el ConfigMap de alertas.
+
+Si el entorno ya está levantado y solo se modificaron las reglas, ejecutar desde la raíz
+del proyecto los siguientes comandos, uno por uno, continuando si el anterior termina bien:
+
+```powershell
+minikube kubectl -- apply -f k8s/grafana-alerting-configmap.yaml
+minikube kubectl -- rollout restart deployment/grafana -n clinica-veterinaria
+minikube kubectl -- rollout status deployment/grafana -n clinica-veterinaria --timeout=180s
+```
+
+Para cambiar X, modificar la expresión B de la regla; para cambiar Y, modificar la ventana
+`[5m]` o `[1m]` en la consulta A y mantener coherente `relativeTimeRange.from` (en segundos).
+Actualizar también el texto de la regla y el panel correspondiente si cambian los umbrales.
+
+### Preparar el frontend para las pruebas
+
+Las operaciones deben llegar a `api-monitoring`, que es el target de Prometheus. El
+frontend Blue/Green habitual apunta a otra instancia de la API.
+
+En una terminal, abrir la API de monitoreo y dejar el comando ejecutándose:
+
+```powershell
+minikube kubectl -- port-forward svc/api-monitoring 8002:8000 -n clinica-veterinaria
+```
+
+En otra terminal PowerShell, desde la raíz del proyecto:
+
+```powershell
+cd frontend
+npm ci
+$env:VITE_API_URL = "http://localhost:8002"
+npm run dev -- --host localhost --port 5173 --strictPort
+```
+
+Abrir `http://localhost:5173`. Si se cambia el puerto del port-forward, cambiar también
+`VITE_API_URL` y reiniciar Vite. Mantener ambas terminales abiertas durante la prueba.
+
+Abrir Grafana con `scripts/k8s-open-grafana.ps1`, seleccionar **Últimos 15 minutos** y
+activar actualización automática cada 5 o 10 segundos. Esperar al menos dos lecturas de
+Prometheus antes de generar operaciones. Un rango de tiempo absoluto antiguo puede
+mostrar cero aunque los eventos actuales se estén recolectando correctamente.
+
+### Prueba de turnos creados
+
+1. Entrar con un cliente de prueba activo y no bloqueado. Puede crearse desde el frontend;
+   registrar una mascota si todavía no tiene ninguna.
+2. Crear 12 reservas confirmadas en menos de 5 minutos, usando horarios futuros
+   disponibles y sin superposición. Para vacunación, cuya duración de prueba es 15
+   minutos, pueden utilizarse horarios consecutivos disponibles de 15 minutos.
+3. Las fechas de atención pueden ser distintas: la ventana mide cuándo se crean las
+   reservas, no cuándo ocurren las consultas. Las respuestas rechazadas no cuentan.
+4. Esperar aproximadamente 15–45 segundos y actualizar las reglas. Comprobar que
+   **Exceso de turnos creados** aparece en `Firing`, con una instancia activa.
+5. Dejar de crear reservas y comprobar que vuelve a `Normal` cuando dejan de superar el
+   umbral en la ventana móvil de 5 minutos.
+
+Las reservas se guardan en PostgreSQL; la prueba no las elimina automáticamente.
+
+### Prueba de logins fallidos
+
+1. Usar una cuenta existente y no bloqueada. Iniciar sesión correctamente y cerrar sesión
+   para comenzar sin intentos fallidos previos en esa cuenta.
+2. Enviar cuatro intentos con el mismo correo y una contraseña incorrecta dentro de un
+   minuto. Debe aparecer el mensaje de credenciales incorrectas, no un error de formato.
+3. Revisar inmediatamente las reglas durante los siguientes 15–45 segundos. Comprobar
+   que **Exceso de intentos de login fallidos** pasa a `Firing`. La ventana corta hace que
+   pueda volver pronto a `Normal`.
+4. Entrar correctamente para limpiar los intentos de la cuenta. Esto no reinicia el
+   contador de Prometheus.
+
+No acumular un quinto fallo: activa un bloqueo de 15 minutos. Si la cuenta ya está
+bloqueada, esperar a que venza el bloqueo o usar otra cuenta de prueba. Los intentos
+durante ese bloqueo no aumentan la métrica actual. Tampoco lo hacen los correos inválidos
+ni los usuarios inexistentes. Si no se observa la transición, revisar rango temporal,
+actualización del dashboard y valores de la consulta antes de repetir los intentos.
 
 ## Cómo probarlo sin depender de Blue/Green
 
