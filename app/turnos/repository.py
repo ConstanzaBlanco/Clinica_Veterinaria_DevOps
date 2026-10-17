@@ -4,7 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.metrics import turnos_creados_total
+from app.metrics import (turnos_cancelados_total, turnos_creados_total,)
 from app.turnos.excepciones import HorarioNoDisponibleError
 
 # Código SQLSTATE de Postgres para la violación de la restricción de
@@ -182,10 +182,20 @@ class TurnoRepository:
             RETURNING t.id_turno
             """
         )
+
         resultado = self.session.execute(
-            consulta, {"id_turno": id_turno, "id_cliente": id_cliente}
+            consulta,
+            {
+                "id_turno": id_turno,
+                "id_cliente": id_cliente,
+            },
         ).mappings().first()
+
         self.session.commit()
+
+        if resultado is not None:
+            turnos_cancelados_total.inc()
+
         return resultado
 
     def registrar_consulta(
