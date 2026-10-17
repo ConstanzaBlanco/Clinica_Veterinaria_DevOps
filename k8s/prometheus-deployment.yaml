@@ -9,7 +9,7 @@ metadata:
 
 spec:
   # Un solo Pod alcanza: Prometheus no tiene versión Blue/Green propia,
-  # scrapea el Service "api" sin importar qué versión esté activa.
+  # scrapea api-monitoring y las metricas de recursos de cAdvisor.
   replicas: 1
 
   selector:
@@ -22,10 +22,8 @@ spec:
         app: prometheus
 
     spec:
-      # Por ahora solo scrapea el Service "api" por DNS interno, no necesita
-      # hablarle a la API de Kubernetes (eso cambiaría si más adelante se agrega
-      # el scrape de cAdvisor/kubelet para CPU/RAM).
-      automountServiceAccountToken: false
+      serviceAccountName: prometheus
+      automountServiceAccountToken: true
 
       containers:
         - name: prometheus

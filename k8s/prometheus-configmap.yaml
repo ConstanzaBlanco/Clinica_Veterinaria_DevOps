@@ -25,3 +25,28 @@ data:
         # Blue/Green desplegado para funcionar).
         static_configs:
           - targets: ["api-monitoring:8000"]
+
+      - job_name: "kubernetes-cadvisor"
+        scheme: https
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node
+        metric_relabel_configs:
+          # Conservar solo el cgroup del pod, evitando sumar tambien sus contenedores.
+          - source_labels: [namespace, pod, container, id]
+            regex: clinica-veterinaria;api-monitoring-.+;;.*/[^/]*pod[^/]+
+            action: keep
+          - source_labels: [__name__]
+            regex: container_cpu_usage_seconds_total|container_spec_cpu_quota|container_spec_cpu_period|container_memory_working_set_bytes|container_spec_memory_limit_bytes
+            action: keep

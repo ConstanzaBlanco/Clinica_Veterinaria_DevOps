@@ -4,7 +4,11 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.metrics import (turnos_cancelados_total, turnos_creados_total,)
+from app.metrics import (
+    listar_turnos_query_duration,
+    turnos_cancelados_total,
+    turnos_creados_total,
+)
 from app.turnos.excepciones import HorarioNoDisponibleError
 
 # Código SQLSTATE de Postgres para la violación de la restricción de
@@ -141,7 +145,10 @@ class TurnoRepository:
             ORDER BY t.fecha_hora_inicio DESC
             """
         )
-        return self.session.execute(consulta, {"id_cliente": id_cliente}).mappings().all()
+        # Incluye ejecutar el SELECT con JOINs y consumir sus resultados.
+        # El context manager tambien observa la duracion si la consulta falla.
+        with listar_turnos_query_duration.time():
+            return self.session.execute(consulta, {"id_cliente": id_cliente}).mappings().all()
 
     def obtener_por_id(self, id_turno: int, id_cliente: int):
         """Detalle de un turno puntual, verificando que sea del cliente dado."""

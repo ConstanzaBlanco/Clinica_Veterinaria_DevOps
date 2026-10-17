@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
+from app.metrics import LATENCY_BUCKETS
 
 from app.Middleware.middleware import JWTMiddleware
 from app.turnos.tareas_programadas import ejecutar_tarea_periodica
@@ -65,7 +66,7 @@ app.include_router(pacientes_router)
 
 # Expone /metrics (requests, latencia por endpoint, errores) para que Prometheus
 # scrapee la API; los contadores de negocio propios viven en app/metrics.py.
-Instrumentator().instrument(app).expose(app)
+Instrumentator().instrument(app, latency_lowr_buckets=LATENCY_BUCKETS).expose(app)
 
 @app.get("/")
 def hello():
