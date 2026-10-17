@@ -34,6 +34,15 @@ spec:
           # Imagen construida dentro de Minikube, igual que Blue/Green
           imagePullPolicy: Never
 
+          # Los gauges muestran uso respecto de estos limites, no del nodo.
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+
           ports:
             - name: http
               containerPort: 8000

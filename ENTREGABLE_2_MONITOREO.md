@@ -194,18 +194,84 @@ antes para no pisarse al mergear.
 - Qué hacer: contador en el alta de `app/Auth/Register/clients/`, panel nuevo.
 - Toca: `app/metrics.py`, `app/Auth/Register/clients/*.py`, `k8s/grafana-dashboard-configmap.yaml`.
 
-**4. Métrica de duración de query + panel de correlación (bonus, el de más valor conceptual)**
+**4. Métrica de duración de query + panel de correlación — IMPLEMENTADO (17/10/2026)**
 - Qué hacer: medir cuánto tarda la query pesada del endpoint de turnos
   (`pg_query_duration_seconds`, histograma), y armar el panel que correlaciona esa
   duración con la latencia del endpoint — el ejemplo "monitoreo vs. observabilidad" de la
   teórica, aplicado al proyecto.
 - Toca: `app/metrics.py`, `app/turnos/repository.py`, `k8s/grafana-dashboard-configmap.yaml`.
 
-**5. CPU/RAM del pod (bonus, el más de infraestructura)**
+**5. CPU/RAM del pod (bonus, el más de infraestructura) — IMPLEMENTADO (17/10/2026)**
 - Qué hacer: RBAC (`ClusterRole`/`ClusterRoleBinding`) para que Prometheus pueda scrapear
   cAdvisor/kubelet, sumar el target en `prometheus-configmap.yaml`, gauge en el dashboard.
 - Toca: archivo de RBAC nuevo en `k8s/`, `k8s/prometheus-configmap.yaml`,
   `k8s/grafana-dashboard-configmap.yaml`.
+
+Implementado con `k8s/prometheus-rbac.yaml`, ServiceAccount propio de Prometheus y
+descubrimiento de nodos. El job `kubernetes-cadvisor` consulta cAdvisor mediante el
+API server usando el token del ServiceAccount y la CA del clúster. Solo conserva las
+cinco métricas necesarias del cgroup de los pods `api-monitoring` (etiqueta
+`container=""` e `id` del pod, sin sumar otra vez los contenedores hijos).
+El permiso `nodes/proxy` permite acceder al kubelet mediante el API server y tiene
+alcance de clúster; no debe asignarse al ServiceAccount de la aplicación.
+
+Los dos gauges muestran un porcentaje **por pod respecto del límite del contenedor**:
+CPU (promedio de 2 minutos / 1 núcleo) y RAM (working set / 512 MiB). Los límites están
+en `api-monitoring-deployment.yaml`; los denominadores se leen desde cAdvisor, por lo
+que las consultas siguen funcionando si se cambian esos límites. Rojo desde el 75%.
+Este punto agrega indicadores visuales, no nuevas reglas de alerta.
+
+### Cómo verificar el punto 5
+
+1. Encender Docker Desktop y ejecutar desde la raíz:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-up-monitoring.ps1
+   ```
+
+2. Comprobar permisos (debe devolver `yes`):
+
+   ```powershell
+   minikube kubectl -- auth can-i get nodes/proxy --as=system:serviceaccount:clinica-veterinaria:prometheus
+   minikube kubectl -- auth can-i list nodes --as=system:serviceaccount:clinica-veterinaria:prometheus
+   ```
+
+3. Abrir Grafana y esperar unos 2 minutos para reunir muestras de CPU:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\k8s-open-grafana.ps1
+   ```
+
+   En **Pet-Core → Pet-Core — Monitoreo**, al final aparecen los gauges CPU y RAM,
+   con valores numéricos por pod. Un uso bajo en reposo es esperable. `No data` no
+   equivale a cero y debe investigarse.
+
+4. En **Explore**, con el datasource Prometheus, consultar:
+
+   ```promql
+   up{job="kubernetes-cadvisor"}
+   container_memory_working_set_bytes{job="kubernetes-cadvisor",namespace="clinica-veterinaria",container="",id=~".*/[^/]*pod[^/]+"}
+   container_spec_cpu_quota{job="kubernetes-cadvisor",namespace="clinica-veterinaria",container="",id=~".*/[^/]*pod[^/]+"}
+   container_spec_memory_limit_bytes{job="kubernetes-cadvisor",namespace="clinica-veterinaria",container="",id=~".*/[^/]*pod[^/]+"}
+   ```
+
+   `up` debe valer 1 por nodo; memoria debe ser positiva y su límite 536870912 bytes.
+   La cuota CPU debe ser positiva. Si faltan las métricas `container_spec_*`, revisar
+   la exposición de cAdvisor del clúster: sin denominador el gauge muestra `No data`.
+   Para ver errores del target, abrir temporalmente Prometheus:
+
+   ```powershell
+   minikube kubectl -- port-forward svc/prometheus 9090:9090 -n clinica-veterinaria
+   ```
+
+   Entrar a `http://localhost:9090/targets` y revisar `kubernetes-cadvisor`.
+   Para comprobar visualmente el umbral sin forzar consumo, duplicar temporalmente
+   un panel en Grafana, reemplazar su consulta por `vector(80)` y verificar el rojo;
+   descartar esa edición al terminar. Esto solo prueba la presentación del umbral.
+
+Validación local: YAML, JSON del dashboard y sintaxis PowerShell comprobados.
+Verificación en vivo: cAdvisor accesible y límites del pod confirmados en Minikube.
+Se corrigió el filtro inicial por contenedor para usar el cgroup del pod que expone este clúster.
 
 **6. Rehacer el diagrama de arquitectura**
 - Qué hacer: `entregable2-diagrama-arquitectura.png` todavía muestra la versión vieja
@@ -396,3 +462,10 @@ Simulación de cómo quedaría el dashboard en Grafana, con los umbrales ya defi
 
 ![Mockup del dashboard — latencia por endpoint y panel de observabilidad](entregable2-mock-dashboard-2.png)
 
+
+## Guía de implementación y pruebas
+
+Ver [Entregable 2: monitoreo y alertas con Grafana y Prometheus](ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md)
+para los puntos 1, 2, 4 y 5, archivos involucrados y pasos de reproducción.
+El punto 4 mide el listado `GET /turnos` desde SQLAlchemy (ejecución y lectura)
+y compara su p95 con el HTTP del mismo endpoint.

@@ -31,6 +31,7 @@ $requiredFiles = @(
     "k8s\api-monitoring-deployment.yaml",
     "k8s\api-monitoring-service.yaml",
     "k8s\prometheus-configmap.yaml",
+    "k8s\prometheus-rbac.yaml",
     "k8s\prometheus-deployment.yaml",
     "k8s\prometheus-service.yaml",
     "k8s\grafana-datasource-configmap.yaml",
@@ -42,6 +43,7 @@ $requiredFiles = @(
     "db\init\02_permisos.sql",
     "db\init\03_excepcion_disponibilidad.sql",
     "db\init\04_datos_prueba.sql"
+    "db\migrations\01_catalogo_especies.sql"
 )
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
@@ -111,6 +113,7 @@ try {
         -f k8s\api-monitoring-deployment.yaml `
         -f k8s\api-monitoring-service.yaml `
         -f k8s\prometheus-configmap.yaml `
+        -f k8s\prometheus-rbac.yaml `
         -f k8s\prometheus-deployment.yaml `
         -f k8s\prometheus-service.yaml `
         -f k8s\grafana-datasource-configmap.yaml `
@@ -137,6 +140,11 @@ try {
     Write-Host "Esperando a PostgreSQL..."
     minikube kubectl -- rollout status statefulset/postgres --namespace=clinica-veterinaria --timeout=180s
     Confirm-NativeCommand -Step "esperar a PostgreSQL"
+
+    Write-Host "Actualizando el catalogo de especies en la base existente..."
+    Get-Content -LiteralPath (Join-Path $projectRoot "db\migrations\01_catalogo_especies.sql") -Raw |
+        minikube kubectl -- exec -i postgres-0 --namespace=clinica-veterinaria -- psql -U postgres -d postgres -v ON_ERROR_STOP=1
+    Confirm-NativeCommand -Step "actualizar el catalogo de especies"
 
     Write-Host "Esperando a api-monitoring..."
     minikube kubectl -- rollout status deployment/api-monitoring --namespace=clinica-veterinaria --timeout=180s
