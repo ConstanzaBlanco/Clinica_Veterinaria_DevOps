@@ -358,7 +358,7 @@ data:
               "placement": "bottom"
             }
           }
-        }
+        },
         {
           "id": 10,
           "title": "Clientes nuevos registrados (últimas 24 h)",
