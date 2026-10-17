@@ -472,6 +472,8 @@ Simulación de cómo quedaría el dashboard en Grafana, con los umbrales ya defi
 
 ![Mockup del dashboard — latencia por endpoint y panel de observabilidad](entregable2-mock-dashboard-2.png)
 
+![Mockup del dashboard — usuarios registrados](entregable2-mock-dashboard-3.png)
+
 
 ## Guía de implementación y pruebas
 
