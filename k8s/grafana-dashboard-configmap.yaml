@@ -359,5 +359,49 @@ data:
             }
           }
         }
+        {
+          "id": 10,
+          "title": "Clientes nuevos registrados (últimas 24 h)",
+          "description": "Estimación de altas de clientes en las últimas 24 horas (increase). El contador vuelve a cero si el pod de la API se reinicia. Solo estadística de negocio, sin alerta asociada.",
+          "type": "stat",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 41 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(increase(clientes_registrados_total[24h])) or vector(0)",
+              "legendFormat": "clientes nuevos",
+              "instant": true
+            }
+          ],
+          "options": {
+            "reduceOptions": {
+              "values": false,
+              "calcs": ["lastNotNull"],
+              "fields": ""
+            },
+            "orientation": "auto",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "decimals": 0,
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "blue", "value": 1 }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        }        
       ]
     }

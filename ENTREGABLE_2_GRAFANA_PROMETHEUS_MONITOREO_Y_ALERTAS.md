@@ -154,6 +154,38 @@ No se cuentan los intentos rechazados ni se suma otra cancelación por el mismo 
 El panel muestra una estimación de las últimas 24 horas, por lo que el valor puede
 no aumentar exactamente en una unidad.
 
+## Contador de clientes nuevos registrados
+
+### Qué hace
+
+`clientes_registrados_total` aumenta después del commit de un alta de cliente
+exitosa. Los intentos rechazados (datos inválidos, email o documento ya registrados) no suman.
+El panel **Clientes nuevos registrados (últimas 24 h)** estima los altas de las
+últimas 24 horas mediante `increase`; no es un conteo desde la medianoche.
+No tiene alerta asociada: es solo una estadística de negocio.
+
+### Archivos de la implementación
+
+| Archivo | Función |
+| --- | --- |
+| `app/metrics.py` | Define `clientes_registrados_total`. |
+| `app/Auth/Register/clients/repository.py` | Incrementa el contador solo tras un alta exitosa. |
+| `k8s/grafana-dashboard-configmap.yaml` | Define el panel y su consulta. |
+| `tests/test_clientes_metrics.py` | Prueba que suma en el alta exitosa y no en los rechazos. |
+
+### Cómo probarlo
+
+1. Levantar el entorno y preparar el frontend como se explica al comienzo de esta guía.
+2. Abrir Grafana y anotar el valor del panel.
+3. En <http://localhost:5173>, registrar uno o más clientes nuevos con emails distintos.
+4. Intentar registrar un email duplicado: no debe aumentar el contador.
+5. Esperar unos 30 segundos y actualizar el dashboard: el panel debe reflejar los altas.
+
+La prueba funciona si el valor sube por cada registro exitoso. Como el panel
+muestra una estimación de 24 h, puede no aumentar en exactamente una unidad.
+Si el pod de la API se reinicia, el contador vuelve a cero.
+
+
 ## Duración de query y comparación con latencia HTTP
 
 ### Qué hace

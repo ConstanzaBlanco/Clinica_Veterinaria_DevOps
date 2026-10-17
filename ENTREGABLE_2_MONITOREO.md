@@ -19,7 +19,9 @@ El stack "recomendado" por la cátedra es Java/Spring Boot + Prometheus + Grafan
 
 **Stats de negocio adicionales (solo paneles por ahora, no van a agregan alertas nuevas):**
 
-- **Clientes nuevos registrados**: contador en el alta de `Register/clients`.
+- **Clientes nuevos registrados**: contador `clientes_registrados_total` en
+  `RegisterRepository.crear_cliente`, tras el commit. Panel de las últimas 24 h
+  (`increase`); sin alerta.
 - **Turnos cancelados**: contador en `TurnoRepository.cancelar`. Panel pensado para
   mostrarse como "cancelados hoy" (acumulado de las últimas 24h vía PromQL). Combinado con turnos creados permite ver un ratio cancelación/creación en el
   dashboard que puede estar bueno.
@@ -149,7 +151,7 @@ código final de la API:
 |---|---|---|
 | `turnos_creados_total` | counter | `TurnoRepository.crear_turno` |
 | `turnos_cancelados_total` | counter | `TurnoRepository.cancelar` |
-| `clientes_registrados_total` | counter | alta en `Register/clients` |
+| `clientes_registrados_total` | counter | `RegisterRepository.crear_cliente`, tras el commit del alta |
 | `logins_fallidos_total` | counter | mismo evento que ya escribe en `auditoria_sistema` (global, sin label por cuenta — ver nota más arriba) |
 | `pg_query_duration_seconds` | histogram | alrededor de la query pesada del endpoint de turnos |
 | `http_requests_total` | counter | automático, lo agrega `prometheus-fastapi-instrumentator` |
@@ -160,12 +162,12 @@ código final de la API:
 Esto ya está commiteado y probado funcionando en Minikube — ninguna de las tareas de abajo
 necesita tocarlo para arrancar:
 
-- API instrumentada (`/metrics`, contador de turnos creados, contador de logins fallidos).
-- `api-monitoring` + Prometheus + Grafana desplegados en `k8s/`, desacoplados de
-  Blue/Green, levantables con `scripts/k8s-up-monitoring.ps1` sin depender de ninguna rama.
-- Dashboard con 5 paneles ya provisionado como código (`k8s/grafana-dashboard-configmap.yaml`):
+- API instrumentada (`/metrics`, contadores de turnos creados, turnos cancelados,
+  clientes registrados y logins fallidos, histograma de duración de query).
+- Dashboard con 10 paneles provisionado como código (`k8s/grafana-dashboard-configmap.yaml`):
   turnos creados, logins fallidos, tasa de requests por endpoint, latencia p95 por
-  endpoint, errores 5xx.
+  endpoint, errores 5xx, turnos cancelados, CPU, RAM, correlación PostgreSQL vs endpoint
+  y clientes nuevos registrados.
 - Probado levantando todo de cero (no solo "funcionó una vez").
 - Punto 1 completado y verificado el 16/10/2026: ambas reglas provisionadas en Grafana
   llegaron a `Firing` con operaciones reales. Detalles y reproducción en
@@ -190,9 +192,17 @@ antes para no pisarse al mergear.
   `TurnoRepository.cancelar`, panel nuevo en el dashboard ("cancelados hoy").
 - Toca: `app/metrics.py`, `app/turnos/repository.py`, `k8s/grafana-dashboard-configmap.yaml`.
 
-**3. Contador de clientes nuevos registrados** (`clientes_registrados_total`)
+**3. Contador de clientes nuevos registrados — IMPLEMENTADO (17/10/2026)**
 - Qué hacer: contador en el alta de `app/Auth/Register/clients/`, panel nuevo.
-- Toca: `app/metrics.py`, `app/Auth/Register/clients/*.py`, `k8s/grafana-dashboard-configmap.yaml`.
+- Toca: `app/metrics.py`, `app/Auth/Register/clients/repository.py`,
+  `k8s/grafana-dashboard-configmap.yaml`, `tests/test_clientes_metrics.py`.
+
+`clientes_registrados_total` se incrementa en `RegisterRepository.crear_cliente`,
+después del `commit()`. Los rechazos por validación o duplicado (correo o documento,
+incluido el `IntegrityError` con rollback) no suman. El panel **Clientes nuevos
+registrados (últimas 24 h)** usa `increase` sobre 24 horas, igual que el de turnos
+cancelados, y no tiene alerta asociada. El contador vuelve a cero si el pod de la API
+se reinicia. Reproducción en la guía enlazada al final de este documento.
 
 **4. Métrica de duración de query + panel de correlación — IMPLEMENTADO (17/10/2026)**
 - Qué hacer: medir cuánto tarda la query pesada del endpoint de turnos
@@ -466,6 +476,6 @@ Simulación de cómo quedaría el dashboard en Grafana, con los umbrales ya defi
 ## Guía de implementación y pruebas
 
 Ver [Entregable 2: monitoreo y alertas con Grafana y Prometheus](ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md)
-para los puntos 1, 2, 4 y 5, archivos involucrados y pasos de reproducción.
+para los puntos 1, 2, 3, 4 y 5, archivos involucrados y pasos de reproducción.
 El punto 4 mide el listado `GET /turnos` desde SQLAlchemy (ejecución y lectura)
 y compara su p95 con el HTTP del mismo endpoint.

@@ -33,3 +33,8 @@ logins_fallidos_total = Counter(
     "Cantidad de intentos de login fallidos, de todas las cuentas (contador global, "
     "no separado por usuario).",
 )
+
+clientes_registrados_total = Counter(
+    "clientes_registrados_total",
+    "Cantidad de clientes registrados exitosamente mediante el autorregistro.",
+)

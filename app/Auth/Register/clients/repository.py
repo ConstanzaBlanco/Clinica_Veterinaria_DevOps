@@ -1,6 +1,8 @@
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
+from app.metrics import clientes_registrados_total
+
 
 class RegisterRepository:
     """Acceso a datos para el alta de clientes."""
@@ -133,6 +135,8 @@ class RegisterRepository:
             )
 
             self.session.commit()
+
+            clientes_registrados_total.inc()
 
             usuario["rol"] = "CLIENTE"
 
