@@ -283,7 +283,7 @@ Validación local: YAML, JSON del dashboard y sintaxis PowerShell comprobados.
 Verificación en vivo: cAdvisor accesible y límites del pod confirmados en Minikube.
 Se corrigió el filtro inicial por contenedor para usar el cgroup del pod que expone este clúster.
 
-**6. Rehacer el diagrama de arquitectura**
+**6. Rehacer el diagrama de arquitectura COMPLETADO (17-10-2026)**
 - Qué hacer: `entregable2-diagrama-arquitectura.png` todavía muestra la versión vieja
   (Prometheus apuntando al Service `api` de Blue/Green). Rehacerlo con `api-monitoring` en
   el medio, reflejando el diseño desacoplado actual.
