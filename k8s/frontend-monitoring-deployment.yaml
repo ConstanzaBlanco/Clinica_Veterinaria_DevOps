@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+
+# Tipo de objeto que administra los Pods del frontend
+kind: Deployment
+
+# Frontend dedicado al entregable de monitoreo. Misma app que Blue/Green,
+# pero construido con nginx-monitoring.conf, que apunta a "api-monitoring"
+# en vez de a "api" — así lo que se hace desde este frontend sí llega a la
+# API que Prometheus observa, sin depender de que Blue/Green esten activos.
+metadata:
+  name: frontend-monitoring
+  namespace: clinica-veterinaria
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: clinica-frontend-monitoring
+
+  template:
+    metadata:
+      labels:
+        app: clinica-frontend-monitoring
+
+    spec:
+      # El frontend no necesita acceder a la API interna de Kubernetes
+      automountServiceAccountToken: false
+
+      containers:
+        - name: frontend
+          image: clinica-frontend:monitoring
+
+          # Imagen construida dentro de Minikube, igual que Blue/Green
+          imagePullPolicy: Never
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3

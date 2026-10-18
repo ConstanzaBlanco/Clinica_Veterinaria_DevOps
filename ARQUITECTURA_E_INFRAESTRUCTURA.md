@@ -332,6 +332,21 @@ La imagen oficial de PostgreSQL ejecuta los archivos de `/docker-entrypoint-init
 
 Reiniciar un Pod o un contenedor no vuelve a cargar estos SQL porque el volumen conserva la base anterior. Para probar una inicialización completamente nueva es necesario eliminar intencionalmente el volumen. Esa operación también elimina todos sus datos.
 
+### Carpeta `db/migrations` (entregable de monitoreo)
+
+A diferencia de `db/init/`, estos archivos no corren solo en la primera inicialización:
+`scripts/k8s-up-monitoring.ps1` los aplica **en cada ejecución**, directo contra la base
+ya levantada (`kubectl exec ... psql`), sin importar si el volumen es nuevo o uno que ya
+viene de semanas atrás.
+
+Existe porque `db/init/` no alcanza para corregir un volumen que ya fue inicializado antes
+(la regla de arriba): un permiso faltante sobre `especie` en volúmenes viejos no se
+resuelve agregando un archivo nuevo a `db/init/`, porque ese archivo nunca se ejecutaría
+ahí. Cada script en `db/migrations/` tiene que ser **idempotente** (se puede correr una y
+mil veces sin romper nada — `CREATE TABLE IF NOT EXISTS`, `ON CONFLICT DO NOTHING`,
+`GRANT` sin condición), precisamente porque se ejecuta en cada arranque, tanto para quien
+levanta un volumen nuevo como para quien ya tenía uno de antes.
+
 ## 6. Kubernetes: qué crea cada archivo
 
 Kubernetes recibe archivos YAML declarativos. Cada archivo dice **qué estado queremos** y Kubernetes intenta mantenerlo.
