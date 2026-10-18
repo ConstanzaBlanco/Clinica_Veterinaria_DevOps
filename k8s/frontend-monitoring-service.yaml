@@ -1,0 +1,21 @@
+apiVersion: v1
+
+# Crea una dirección estable para acceder al frontend de monitoreo
+kind: Service
+
+metadata:
+  name: frontend-monitoring
+  namespace: clinica-veterinaria
+
+spec:
+  # Permite abrirlo desde fuera del clúster, igual que "frontend" y "api-monitoring"
+  type: NodePort
+
+  selector:
+    app: clinica-frontend-monitoring
+
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: http

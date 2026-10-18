@@ -23,8 +23,13 @@ RUN npm run build
 # Inicia una  nueva etapa utilizando otra imagen, es una imagen preparada para ejcutarse sin permisos de admin.
 FROM nginxinc/nginx-unprivileged:alpine3.22 AS runner
 
+# Por defecto usa nginx.conf (apunta a "api", Blue/Green). El build de
+# monitoreo pasa --build-arg NGINX_CONF=nginx-monitoring.conf para apuntar
+# a "api-monitoring" en cambio — mismo Dockerfile, no se duplica nada.
+ARG NGINX_CONF=nginx.conf
+
 # Copia la configuración que va a utilizar Nginx
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY ${NGINX_CONF} /etc/nginx/nginx.conf
 
 # Copia el resultado de la etapa build a la carpeta pública de Nginx
 COPY --chown=nginx:nginx --from=build /app/dist /usr/share/nginx/html

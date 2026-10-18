@@ -383,9 +383,9 @@ Los archivos de `db/init/` permiten reconstruir la base inicial en un volumen nu
 
 ## Monitoreo con Prometheus y Grafana
 
-> Plan completo (qué se mide, por qué, y qué falta) en
-> [`ENTREGABLE_2_MONITOREO.md`](ENTREGABLE_2_MONITOREO.md). Esta sección es solo cómo
-> levantarlo y entrar.
+> Documento completo (qué se mide, por qué, arquitectura y cómo probar cada parte) en
+> [`ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md`](ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md).
+> Esta sección es solo cómo levantarlo y entrar.
 
 ### No depende de Blue/Green
 
@@ -437,13 +437,39 @@ Para probar la API de monitoreo directamente (Swagger, sin pasar por Grafana):
 minikube service api-monitoring --namespace=clinica-veterinaria --url
 ```
 
+### Generar actividad real para ver los paneles y las alertas moverse
+
+**Importante**: el frontend de Blue/Green (el de siempre, `localhost:8080`) habla con la
+API de Blue/Green, **no** con `api-monitoring`. Nada de lo que hagas ahí va a aparecer en
+Grafana. Para eso existe `frontend-monitoring`: la misma app, pero ya apuntada a
+`api-monitoring` — `scripts\k8s-up-monitoring.ps1` lo construye y lo despliega solo, no
+hace falta ningún paso manual. Para abrirlo:
+
+```powershell
+minikube service frontend-monitoring --namespace=clinica-veterinaria --url
+```
+
+Abrir la URL que muestra — es la app de siempre (entrar, reservar turnos, cancelar,
+registrar un cliente, fallar un login a propósito, etc.), pero esta copia sí está
+conectada a la API que Prometheus observa.
+
+Guía paso a paso completa (incluye cómo disparar cada alerta a propósito, qué esperar ver
+en cada panel, y qué hacer si algo muestra "No data") en
+[`ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md`](ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md).
+
 ### Qué hay hoy y qué falta
 
 Grafana ya arranca con el dashboard **"Pet-Core — Monitoreo"** armado (carpeta "Pet-Core"),
-con 5 paneles: turnos creados, logins fallidos, tasa de requests por endpoint, latencia p95
-por endpoint y errores 5xx — todo provisionado como código, sin clickear nada en la UI.
-**Lo único que falta es configurar las 2 reglas de alerta** (turnos > 10 en 5 min, logins
-fallidos > 3 en 1 min) — eso es lo próximo del checklist en `ENTREGABLE_2_MONITOREO.md`.
+con 10 paneles: turnos creados, logins fallidos, tasa de requests por endpoint, latencia
+p95 por endpoint, errores 5xx, turnos cancelados, clientes nuevos registrados, CPU y RAM
+del pod, y la correlación entre latencia del endpoint y duración de la query a Postgres —
+todo provisionado como código, sin clickear nada en la UI. **Las 2 reglas de alerta
+también están implementadas y verificadas llegando a `Firing` con datos reales**
+(turnos > 10 en 5 min, logins fallidos > 3 en 1 min).
+
+Lo único que queda pendiente es reunir capturas reales del dashboard y de una alerta en
+`Firing`, y cerrar el informe final — ver
+[`ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md`](ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md#qué-queda-pendiente).
 
 ## Datos de prueba
 
