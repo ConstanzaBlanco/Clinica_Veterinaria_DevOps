@@ -1,31 +1,38 @@
-FROM python:3.13-slim
-# Usamos Python 3.13 porque es la version requerida en pyproject.toml
+FROM python:3.13.18-slim-trixie
+# Mantiene Python 3.13 y fija una versión concreta.
 
 WORKDIR /app
-# Establece /app como carpets de trabajo adentro del contenedor
-# es el equivalente a ejecutar: cd /app
 
-# Instala uv dentro de la imagen
-# Se instala uv antes que FastAPI
-RUN pip install --no-cache-dir uv==0.12.5
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
+# Actualiza paquetes Debian con los parches disponibles.
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
 
+# Actualiza herramientas de instalación y uv.
+RUN python -m pip install --no-cache-dir --upgrade \
+    pip setuptools "uv==0.13.6"
+
+# Copia la definición de dependencias y su lockfile.
 COPY pyproject.toml uv.lock ./
-# Copia esos 2 archivos a la imagen
 
-RUN uv sync --locked
-#Instala FastAPI y demás librerías dentro de la imagen
+# Instala las dependencias y elimina pip, que solo se necesita al construir.
+RUN uv sync --locked --no-dev --no-cache \
+    && python -m pip uninstall -y pip
 
-COPY app ./app
-# El primer app es la carpeta de windows, mientras que el segundo es el destino de la imagen
+# Crea un usuario y grupo sin privilegios.
+RUN groupadd --gid 10001 app \
+    && useradd --uid 10001 --gid 10001 --create-home app
+
+# Copia el código.
+COPY --chown=10001:10001 app ./app
+
+# Ejecuta la aplicación sin root.
+USER 10001:10001
 
 EXPOSE 8000
-# La app escucha en el puerto 8000
 
-
-CMD ["uv", "run", "fastapi", "run", "app/main.py", "--port", "8000"]
-# Inicia FastAPI cuando se ejecuta el contenedor
-# uv+run ejecuta el entorno de uv
-# fastapi run inicia FastAPI
-# app/main.py es donde está el código
-# --port 8000 hace que el servidor escuche en el puerto 8000
+# Usa directamente FastAPI desde el entorno instalado.
+CMD ["/app/.venv/bin/fastapi", "run", "app/main.py", "--port", "8000"]

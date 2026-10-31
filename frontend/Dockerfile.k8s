@@ -23,6 +23,13 @@ RUN npm run build
 # Inicia una  nueva etapa utilizando otra imagen, es una imagen preparada para ejcutarse sin permisos de admin.
 FROM nginxinc/nginx-unprivileged:alpine3.22 AS runner
 
+USER root
+
+# Instala las actualizaciones disponibles de Alpine.
+RUN apk update \
+    && apk upgrade --no-cache \
+    && rm -rf /var/cache/apk/*
+
 # Por defecto usa nginx.conf (apunta a "api", Blue/Green). El build de
 # monitoreo pasa --build-arg NGINX_CONF=nginx-monitoring.conf para apuntar
 # a "api-monitoring" en cambio — mismo Dockerfile, no se duplica nada.

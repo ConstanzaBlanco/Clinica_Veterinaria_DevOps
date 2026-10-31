@@ -1,0 +1,44 @@
+﻿Get:1 http://deb.debian.org/debian trixie InRelease [140 kB]
+Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9678 kB]
+Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [1108 B]
+Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [292 kB]
+Fetched 10.2 MB in 3s (3602 kB/s)
+Reading package lists...
+util-linux:
+  Installed: 2.41.5-0+deb13u1
+  Candidate: 2.41.5-0+deb13u1
+  Version table:
+ *** 2.41.5-0+deb13u1 500
+        500 http://deb.debian.org/debian trixie/main amd64 Packages
+        500 http://deb.debian.org/debian-security trixie-security/main amd64 Packages
+        100 /var/lib/dpkg/status
+libacl1:
+  Installed: 2.3.2-2+b1
+  Candidate: 2.3.2-2+b1
+  Version table:
+ *** 2.3.2-2+b1 500
+        500 http://deb.debian.org/debian trixie/main amd64 Packages
+        100 /var/lib/dpkg/status
+libncursesw6:
+  Installed: 6.5+20250216-2
+  Candidate: 6.5+20250216-2
+  Version table:
+ *** 6.5+20250216-2 500
+        500 http://deb.debian.org/debian trixie/main amd64 Packages
+        100 /var/lib/dpkg/status
+libsystemd0:
+  Installed: 257.13-1~deb13u1
+  Candidate: 257.13-1~deb13u1
+  Version table:
+ *** 257.13-1~deb13u1 500
+        500 http://deb.debian.org/debian trixie/main amd64 Packages
+        100 /var/lib/dpkg/status
+perl-base:
+  Installed: 5.40.1-6+deb13u1
+  Candidate: 5.40.1-6+deb13u1
+  Version table:
+ *** 5.40.1-6+deb13u1 500
+        500 http://deb.debian.org/debian trixie/main amd64 Packages
+        100 /var/lib/dpkg/status
