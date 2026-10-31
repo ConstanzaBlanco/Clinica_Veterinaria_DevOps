@@ -92,3 +92,69 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath)
 Trivy analiza las imágenes locales de Docker. `--output` guarda el reporte de vulnerabilidades en la carpeta `reports` del proyecto. El volumen `petcore-trivy-cache` conserva la caché de Trivy; es independiente de la caché utilizada al construir las imágenes.
 
 Estos comandos generan los **reportes finales**. Conservar los archivos iniciales con nombres distintos para mantener la comparación.
+
+# 5. Seguridad en tiempo de ejecución: Falco
+
+## Herramienta e instalación
+
+Falco detecta actividades sospechosas mientras los contenedores funcionan. A diferencia de Semgrep, npm audit y Trivy, que analizan código, dependencias o imágenes, observa eventos durante la ejecución. Genera alertas; por sí solo no bloquea acciones.
+
+La instalación se automatizó en `scripts/k8s-up-falco.ps1`, usando el driver `modern_ebpf` para observar eventos del kernel Linux de Minikube.
+
+Con Minikube iniciado, desde la raíz del proyecto se ejecuta:
+
+```powershell
+.\scripts\k8s-up-falco.ps1
+```
+
+También se puede iniciar todo mediante monitoring, que llama al script de Falco:
+
+```powershell
+.\scripts\k8s-up-monitoring.ps1
+```
+
+Internamente, el script comprueba que Helm esté instalado y ejecuta `helm repo add`, `helm repo update` y `helm upgrade --install`. Instala o actualiza Falco, aplica `k8s/falco-values.yaml`, habilita alertas JSON de prioridad Notice o superior y verifica los pods.
+
+**Para guardar las alertas en `reports/falco-event.log`, el script debe permanecer ejecutándose.** Guarda las alertas JSON sin duplicar líneas idénticas y muestra en pantalla las shells del backend. Si se cierra o se interrumpe, se detiene la copia al archivo del proyecto. Falco continúa detectando y sus logs quedan en el nodo de Minikube, como logs del contenedor consultables con `kubectl logs`, sujetos a rotación.
+
+
+## Verificación y prueba
+
+Para comprobar pods en `Running` y logs sin errores del driver:
+
+```powershell
+minikube kubectl -- get pods -n falco
+minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --tail=50
+```
+
+Se abrió una shell interactiva en el backend:
+
+```powershell
+minikube kubectl -- exec -it -n clinica-veterinaria deployment/api-monitoring -- /bin/sh
+```
+
+Dentro se ejecutaron `id`, `pwd` y `exit`.
+
+## Alerta e interpretación
+
+Extracto del mensaje real:
+
+```text
+20:11:45.433541418: Notice A shell was spawned in a container with an attached terminal
+```
+
+| Campo | Valor |
+| --- | --- |
+| Fecha UTC | 2026-10-31T20:11:45.433541418Z |
+| Regla / prioridad | Terminal shell in container / Notice |
+| Pod | api-monitoring-8f7c8d45d-26vtp |
+| Namespace | clinica-veterinaria |
+| Proceso / UID | sh / 10001 |
+
+Falco detectó la apertura de una shell con terminal dentro del contenedor. Fue una prueba intencional; en otro contexto puede requerir investigación.
+
+## Problemas y personalización
+
+Se corrigió la continuación de líneas de PowerShell para incluir `--values` dentro del comando Helm.
+PostgreSQL generaba alertas `Read sensitive file untrusted` cada diez segundos. El comando y la frecuencia coinciden con su chequeo de disponibilidad.
+Se definió en `k8s/falco-values.yaml` una excepción limitada al pod, namespace, imagen, comando, archivo, UID y ejecución sin terminal observados. 
