@@ -52,8 +52,9 @@ $requiredFiles = @(
     "db\init\01_schema.sql",
     "db\init\02_permisos.sql",
     "db\init\03_excepcion_disponibilidad.sql",
-    "db\init\04_datos_prueba.sql"
-    "db\migrations\01_catalogo_especies.sql"
+    "db\init\04_datos_prueba.sql",
+    "db\migrations\01_catalogo_especies.sql",
+    "scripts\k8s-up-falco.ps1"
 )
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
@@ -206,6 +207,8 @@ try {
     Write-Host ""
     Write-Host "Para probar la API de monitoreo directamente (Swagger), sin pasar por el frontend:"
     Write-Host "minikube service api-monitoring --namespace=clinica-veterinaria --url"
+    # Instala Falco y comienza el guardado automatico de alertas.
+    & (Join-Path $PSScriptRoot "k8s-up-falco.ps1")
 }
 finally {
     Pop-Location

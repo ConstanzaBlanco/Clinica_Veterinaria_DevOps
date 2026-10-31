@@ -1,0 +1,17 @@
+customRules:
+  postgres-healthcheck.yaml: |-
+    - rule: Read sensitive file untrusted
+      condition: >
+        and not (
+          k8s.ns.name = clinica-veterinaria and
+          k8s.pod.name = postgres-0 and
+          container.image.repository = postgres and
+          proc.name = pg_isready and
+          proc.exepath = /usr/bin/perl and
+          proc.cmdline = "pg_isready /usr/bin/pg_isready -U postgres -d postgres" and
+          fd.name = /etc/shadow and
+          proc.tty = 0 and
+          user.uid = 0
+        )
+      override:
+        condition: append
