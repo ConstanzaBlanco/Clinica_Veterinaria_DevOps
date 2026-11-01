@@ -25,6 +25,14 @@ spec:
       # Grafana no necesita hablarle a la API de Kubernetes
       automountServiceAccountToken: false
 
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
+        seccompProfile:
+          type: RuntimeDefault
+
       containers:
         - name: grafana
           image: grafana/grafana:13.2.4
@@ -33,6 +41,20 @@ spec:
           ports:
             - name: http
               containerPort: 3000
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
 
           # Usuario/contraseña por defecto de la imagen (admin/admin, pide
           # cambiarla en el primer login). Alcanza para uso local en Minikube;
