@@ -236,7 +236,7 @@ Tras aplicar el hardening, los pods de monitoreo (`api-monitoring`, `frontend-mo
 
 ### Instalación
 
-**Helm.** En Windows, sin `winget` ni `scoop` disponibles, se instaló descargando el binario oficial de Helm 3 (`helm.exe`) en una carpeta del usuario y agregándola al `PATH`:
+**Helm.** En Windows, se instaló descargando el binario oficial de Helm 3 (`helm.exe`) en una carpeta del usuario y agregándola al `PATH`:
 
 ```powershell
 $v = "v3.21.0"
