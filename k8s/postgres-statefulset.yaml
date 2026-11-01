@@ -40,6 +40,14 @@ spec:
 
       # PostgreSQL no necesita acceder a la API de Kubernetes
       automountServiceAccountToken: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       
       containers:
         - name: postgres
@@ -49,6 +57,20 @@ spec:
           ports:
             - name: postgres
               containerPort: 5432
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
 
           # Variables de entorno entregadas al contenedro
           env:
@@ -139,5 +161,3 @@ spec:
         resources:
           requests:
             storage: 1Gi
-
-          

@@ -24,10 +24,18 @@ spec:
     spec:
       serviceAccountName: prometheus
       automountServiceAccountToken: true
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
 
       containers:
         - name: prometheus
-          image: prom/prometheus:latest
+          image: prom/prometheus:v3.15.0
 
           # Imagen pública de Docker Hub, a diferencia de la API y el frontend
           # (que se construyen dentro de Minikube con imagePullPolicy: Never)
@@ -36,6 +44,20 @@ spec:
           ports:
             - name: http
               containerPort: 9090
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
 
           volumeMounts:
             # Pisa /etc/prometheus con el ConfigMap: ahí es donde Prometheus

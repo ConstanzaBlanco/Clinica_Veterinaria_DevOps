@@ -1,0 +1,20 @@
+﻿NAME                                   READY   STATUS    RESTARTS        AGE     IP            NODE       NOMINATED NODE   READINESS GATES
+api-blue-845854786d-jmhnt              1/1     Running   7 (169m ago)    55d     10.244.1.38   minikube   <none>           <none>
+api-green-74459fbcc-wmmrv              1/1     Running   4 (169m ago)    55d     10.244.1.46   minikube   <none>           <none>
+api-monitoring-6f7b54c656-mqnb7        1/1     Running   0               168m    10.244.1.52   minikube   <none>           <none>
+frontend-blue-79c7dc6d5d-gc89z         1/1     Running   3 (168m ago)    174m    10.244.1.27   minikube   <none>           <none>
+frontend-green-846667567c-lpj8m        1/1     Running   10 (168m ago)   55d     10.244.1.45   minikube   <none>           <none>
+frontend-monitoring-776d6dc597-8rqnc   1/1     Running   0               168m    10.244.1.55   minikube   <none>           <none>
+grafana-787498cc7-mn7fm                1/1     Running   0               168m    10.244.1.54   minikube   <none>           <none>
+postgres-0                             1/1     Running   1 (169m ago)    3h33m   10.244.1.28   minikube   <none>           <none>
+prometheus-6c55777786-88lm2            1/1     Running   0               168m    10.244.1.53   minikube   <none>           <none>
+=== deploy/prometheus ===
+uid=65534(nobody) gid=65534(nobody) groups=65534(nobody),65534(nobody)
+=== deploy/grafana ===
+uid=472(grafana) gid=472 groups=472,472
+=== deploy/frontend-monitoring ===
+uid=101(nginx) gid=101(nginx) groups=101(nginx)
+=== deploy/api-monitoring ===
+uid=10001(app) gid=10001(app) groups=10001(app)
+=== pod/postgres-0 ===
+uid=999(postgres) gid=999(postgres) groups=999(postgres)
