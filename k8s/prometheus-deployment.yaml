@@ -27,7 +27,7 @@ spec:
 
       containers:
         - name: prometheus
-          image: prom/prometheus:latest
+          image: prom/prometheus:v3.15.0
 
           # Imagen pública de Docker Hub, a diferencia de la API y el frontend
           # (que se construyen dentro de Minikube con imagePullPolicy: Never)
