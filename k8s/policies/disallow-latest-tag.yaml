@@ -1,0 +1,51 @@
+apiVersion: kyverno.io/v1
+
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag
+spec:
+  # Enforce: rechaza el recurso. Con Audit solo lo registraría.
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    # Regla 1: la imagen debe declarar un tag (sin tag, Docker usa latest)
+    - name: require-image-tag
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - falco
+      validate:
+        message: "Las imágenes deben declarar un tag explícito."
+        pattern:
+          spec:
+            containers:
+              - image: "*:*"
+
+    # Regla 2: el tag no puede ser latest
+    - name: validate-image-tag
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - falco
+      validate:
+        message: "No se permite el tag 'latest'."
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"

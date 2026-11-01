@@ -1,0 +1,90 @@
+﻿=== Antes fue definida la siguiente función para las distintas pruebas: ===
+PS C:\devops\Clinica_Veterinaria_DevOps> function Probar($titulo, $cmd) {
+>>   $log = "reports\kyverno-validacion.txt"
+>>   "`n=== $titulo ===" | Out-File $log -Append -Encoding utf8
+>>   "> $cmd" | Out-File $log -Append -Encoding utf8
+>>   $salida = cmd /c "$cmd 2>&1"
+>>   $salida | Out-File $log -Append -Encoding utf8
+>>   $salida
+>> }
+
+=== Pruebas ===
+=== 1. Pod no conforme (viola las 3 politicas) ===
+> minikube kubectl -- apply -f k8s\policies\test\pod-no-conforme.yaml
+Error from server: error when creating "k8s\\policies\\test\\pod-no-conforme.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/clinica-veterinaria/pod-no-conforme was blocked due to the following policies 
+
+disallow-latest-tag:
+  validate-image-tag: 'validation error: No se permite el tag ''latest''. rule validate-image-tag failed at path /spec/containers/0/image/'
+disallow-root:
+  require-run-as-non-root: 'validation error: No se permite ejecutar como root: runAsNonRoot debe ser true a nivel de Pod o en todos los contenedores. rule require-run-as-non-root[0] failed at path /spec/securityContext/runAsNonRoot/ rule require-run-as-non-root[1] failed at path /spec/containers/0/securityContext/'
+require-resources:
+  validate-resources: 'validation error: Todos los contenedores deben definir requests y limits de cpu y memoria. rule validate-resources failed at path /spec/containers/0/resources/limits/'
+
+=== 2. Solo tag latest ===
+> minikube kubectl -- apply -f k8s\policies\test\pod-solo-latest.yaml
+Error from server: error when creating "k8s\\policies\\test\\pod-solo-latest.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/clinica-veterinaria/pod-conforme was blocked due to the following policies 
+
+disallow-latest-tag:
+  validate-image-tag: 'validation error: No se permite el tag ''latest''. rule validate-image-tag failed at path /spec/containers/0/image/'
+
+=== 3. Solo sin resources ===
+> minikube kubectl -- apply -f k8s\policies\test\pod-solo-sin-resources.yaml
+Error from server: error when creating "k8s\\policies\\test\\pod-solo-sin-resources.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/clinica-veterinaria/pod-conforme was blocked due to the following policies 
+
+require-resources:
+  validate-resources: 'validation error: Todos los contenedores deben definir requests y limits de cpu y memoria. rule validate-resources failed at path /spec/containers/0/resources/limits/'
+
+=== 4. Solo root ===
+> minikube kubectl -- apply -f k8s\policies\test\pod-solo-root.yaml
+Error from server: error when creating "k8s\\policies\\test\\pod-solo-root.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/clinica-veterinaria/pod-conforme was blocked due to the following policies 
+
+disallow-root:
+  require-run-as-non-root: 'validation error: No se permite ejecutar como root: runAsNonRoot debe ser true a nivel de Pod o en todos los contenedores. rule require-run-as-non-root[0] failed at path /spec/securityContext/runAsNonRoot/ rule require-run-as-non-root[1] failed at path /spec/containers/0/securityContext/'
+
+=== 5. Pod conforme (debe pasar) ===
+> minikube kubectl -- apply -f k8s\policies\test\pod-conforme.yaml
+pod/pod-conforme created
+
+=== Dry-run real: api-blue-deployment.yaml ===
+> minikube kubectl -- apply --dry-run=server -f C:\devops\Clinica_Veterinaria_DevOps\k8s\api-blue-deployment.yaml
+deployment.apps/api-blue configured (server dry run)
+
+=== Dry-run real: api-green-deployment.yaml ===
+> minikube kubectl -- apply --dry-run=server -f C:\devops\Clinica_Veterinaria_DevOps\k8s\api-green-deployment.yaml
+deployment.apps/api-green configured (server dry run)
+
+=== Dry-run real: api-monitoring-deployment.yaml ===
+> minikube kubectl -- apply --dry-run=server -f C:\devops\Clinica_Veterinaria_DevOps\k8s\api-monitoring-deployment.yaml
+deployment.apps/api-monitoring unchanged (server dry run)
+
+=== Dry-run real: frontend-blue-deployment.yaml ===
+> minikube kubectl -- apply --dry-run=server -f C:\devops\Clinica_Veterinaria_DevOps\k8s\frontend-blue-deployment.yaml
+deployment.apps/frontend-blue unchanged (server dry run)
+
+=== Dry-run real: frontend-green-deployment.yaml ===
+> minikube kubectl -- apply --dry-run=server -f C:\devops\Clinica_Veterinaria_DevOps\k8s\frontend-green-deployment.yaml
+deployment.apps/frontend-green configured (server dry run)
+
+=== Dry-run real: frontend-monitoring-deployment.yaml ===
+> minikube kubectl -- apply --dry-run=server -f C:\devops\Clinica_Veterinaria_DevOps\k8s\frontend-monitoring-deployment.yaml
+deployment.apps/frontend-monitoring unchanged (server dry run)
+
+=== Dry-run real: grafana-deployment.yaml ===
+> minikube kubectl -- apply --dry-run=server -f C:\devops\Clinica_Veterinaria_DevOps\k8s\grafana-deployment.yaml
+deployment.apps/grafana unchanged (server dry run)
+
+=== Dry-run real: prometheus-deployment.yaml ===
+> minikube kubectl -- apply --dry-run=server -f C:\devops\Clinica_Veterinaria_DevOps\k8s\prometheus-deployment.yaml
+deployment.apps/prometheus unchanged (server dry run)
+
+=== Dry-run real: postgres-statefulset.yaml ===
+> minikube kubectl -- apply --dry-run=server -f C:\devops\Clinica_Veterinaria_DevOps\k8s\postgres-statefulset.yaml
+statefulset.apps/postgres configured (server dry run)
