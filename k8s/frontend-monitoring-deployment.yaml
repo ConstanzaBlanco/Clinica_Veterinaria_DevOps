@@ -27,6 +27,13 @@ spec:
       # El frontend no necesita acceder a la API interna de Kubernetes
       automountServiceAccountToken: false
 
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+
       containers:
         - name: frontend
           image: clinica-frontend:monitoring
@@ -37,6 +44,20 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
 
           readinessProbe:
             httpGet:
