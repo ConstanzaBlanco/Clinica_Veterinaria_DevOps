@@ -27,6 +27,13 @@ spec:
       # FastAPI no necesita acceder a la API interna de Kubernetes
       automountServiceAccountToken: false
 
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
       containers:
         - name: api
           image: clinica-veterinaria:monitoring
@@ -42,6 +49,12 @@ spec:
             limits:
               cpu: "1"
               memory: 512Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
 
           ports:
             - name: http
