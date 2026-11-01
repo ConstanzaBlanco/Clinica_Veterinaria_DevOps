@@ -31,6 +31,13 @@ spec:
       #FastAPI no necesita acceder a la API interna de Kubernetes
       automountServiceAccountToken: false
 
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
       # Contenedores que se ejecutan dentro del Pod
       containers:
         - name: api
@@ -38,6 +45,20 @@ spec:
 
           # Usamos unicamente la imagen constuida dentro de Minikube
           imagePullPolicy: Never
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
 
           # Puerto donde FastAPI escucha dentro del contenedor
           ports:
@@ -121,4 +142,3 @@ spec:
         - name: jwt-secret
           secret:
             secretName: jwt-secret
-

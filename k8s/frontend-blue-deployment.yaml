@@ -32,6 +32,13 @@ spec:
       # El frontend no necesita acceder a la API interna de Kubernetes
       automountServiceAccountToken: false
 
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+
       # Contenedores que se ejecutan dentro del Pod
       containers:
         - name: frontend
@@ -39,6 +46,20 @@ spec:
 
           # Vamos a utilizar solo la imagen construida dentro de Minikube
           imagePullPolicy: Never
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
 
           # Puerto donde Nginx  escucha dentro del contenedor
           ports:
