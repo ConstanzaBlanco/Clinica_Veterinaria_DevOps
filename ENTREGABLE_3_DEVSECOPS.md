@@ -97,7 +97,26 @@ Estos comandos generan los **reportes finales**. Conservar los archivos iniciale
 
 # 4. Seguridad en Kubernetes
 
+Esta sección cubre la seguridad de los manifiestos y del clúster. Primero se endurecieron los manifiestos de los despliegues (4.1) y luego se definieron políticas que impiden desplegar recursos que no cumplan esas reglas (4.2). El análisis con KubeLinter se documenta en la sección 4.3.
+
 ## 4.1 Hardening de manifiestos
+
+### Objetivo, herramientas y alcance
+
+Un manifiesto de Kubernetes sin ajustes explícitos ejecuta los contenedores con el usuario que defina la imagen (con frecuencia root), sin límites de CPU ni de memoria y con privilegios que casi ninguna aplicación necesita. El hardening consiste en declarar esas restricciones de forma explícita en cada manifiesto, para reducir el daño posible si un contenedor falla o es comprometido.
+
+Herramientas utilizadas:
+
+- **Minikube:** clúster de Kubernetes local donde se despliega y se prueba el proyecto, dentro del namespace `clinica-veterinaria`.
+- **kubectl**, ejecutado como `minikube kubectl --`: aplica los manifiestos (`apply`), espera a que terminen los despliegues (`rollout status`), lista los pods (`get pods`) y ejecuta comandos dentro de ellos (`exec`), por ejemplo `id` para comprobar con qué usuario corre realmente el proceso.
+- **Git:** cada manifiesto endurecido se guardó en un commit propio.
+- **`scripts/k8s-up-monitoring.ps1`:** levanta el entorno completo, y se usó para comprobar que todo arranca con los manifiestos nuevos.
+
+Estas herramientas ya formaban parte del entorno del proyecto, por lo que no requirieron instalación adicional.
+
+**Alcance.** Se endurecieron los nueve manifiestos que crean pods: ocho `Deployment` (`prometheus`, `grafana`, `frontend-monitoring`, `api-monitoring`, `api-blue`, `api-green`, `frontend-blue` y `frontend-green`) y el `StatefulSet` de PostgreSQL. No se modificaron los Services, los ConfigMaps, el namespace, los permisos de Prometheus (`prometheus-rbac.yaml`) ni `falco-values.yaml`, porque ninguno define pods.
+
+**Método.** Para cada manifiesto se repitió el mismo ciclo: agregar `resources` y `securityContext`, aplicar el cambio con `kubectl apply`, esperar el despliegue con `rollout status`, comprobar que el pod quedara en `Running` y con el usuario esperado, y guardar el cambio en un commit. Se avanzó de menor a mayor riesgo: Prometheus, Grafana, PostgreSQL, frontend y API.
 
 ### Tags de imagen fijos
 
@@ -147,7 +166,7 @@ El proceso corre con el usuario `grafana` (UID 472), el predeterminado de la ima
 
 No se activó `readOnlyRootFilesystem`: Grafana guarda su base de datos SQLite y sus plugins en `/var/lib/grafana`, dentro del sistema de archivos del contenedor.
 
-Luego de aplicado el cambio, el pod quedó en Running, corre con UID 472 y siguen cargando el dashboard y las dos reglas de alerta.
+Luego de aplicado el cambio, el pod quedó en `Running`, corre con UID 472 y siguen cargando el dashboard y las dos reglas de alerta.
 
 #### PostgreSQL
 
@@ -163,6 +182,8 @@ Se definió `requests` de 50m de CPU y 64Mi de memoria, y `limits` de 250m y 128
 
 La imagen se construye sobre `nginx-unprivileged`, que ya ejecuta el servicio con el usuario `nginx` y escucha en el puerto 8080, por lo que no necesita privilegios para abrir puertos. Como el `Dockerfile` declara el usuario por nombre y no por número, Kubernetes no puede comprobar que no sea root; por eso se fijó explícitamente `runAsUser: 101`, con lo que `runAsNonRoot` queda verificable. No se definió `fsGroup` porque el pod no monta volúmenes de datos.
 
+No se activó `readOnlyRootFilesystem`: Nginx escribe archivos temporales y su PID en `/tmp`, por lo que requeriría montar un volumen `emptyDir` en esa ruta y repetir las pruebas. Queda como mejora futura.
+
 Tras aplicar el cambio, el pod quedó en `Running`, el proceso corre con UID 101 y la aplicación siguió funcionando de punta a punta (inicio de sesión y listado de turnos a través de la API de monitoreo).
 
 #### API de monitoreo
@@ -171,13 +192,17 @@ El manifiesto ya definía `requests` de 100m de CPU y 128Mi de memoria, y `limit
 
 La imagen se construye con un usuario sin privilegios (`10001:10001`) y arranca directamente con él. Se fijó el mismo UID de forma explícita en el pod con `runAsUser: 10001` y `runAsNonRoot: true`, de modo que Kubernetes lo exija y lo verifique. Además se agregaron `seccompProfile: RuntimeDefault`, `allowPrivilegeEscalation: false` y la eliminación de todas las capacidades de Linux. No se definió `fsGroup` porque los únicos volúmenes son Secrets montados en solo lectura.
 
+No se activó `readOnlyRootFilesystem`: no se probó la aplicación con el sistema de archivos en solo lectura, y requeriría al menos un volumen `emptyDir` en `/tmp`. Queda como mejora futura.
+
 Tras aplicar el cambio, el pod quedó en `Running` sin reinicios, Prometheus siguió recolectando sus métricas y la aplicación funcionó de punta a punta (inicio de sesión y listado de turnos).
 
 #### Despliegues Blue/Green
 
-Los cuatro Deployments de las versiones Blue y Green (`api-blue`, `api-green`, `frontend-blue` y `frontend-green`) pertenecen al Entregable 1 y no se despliegan en la rama principal con el script de monitoreo, pero se endurecieron con los mismos criterios que los demás, para que cualquier despliegue posterior cumpla las políticas.
+Los cuatro Deployments de las versiones Blue y Green (`api-blue`, `api-green`, `frontend-blue` y `frontend-green`) pertenecen al Entregable 1 y el script de monitoreo no los despliega, pero se endurecieron con los mismos criterios que los demás para que cualquier despliegue posterior cumpla las políticas de la sección 4.2.
 
 Las APIs usan los mismos recursos que la API de monitoreo (requests de 100m y 128Mi, limits de 1 CPU y 512Mi) y el UID 10001; los frontends usan los mismos valores que el frontend de monitoring (requests de 50m y 64Mi, limits de 250m y 128Mi) y el UID 101. Todos agregan `runAsNonRoot`, `seccompProfile: RuntimeDefault`, `allowPrivilegeEscalation: false` y `drop: ALL`. Las etiquetas `v1` y `v2` de las imágenes ya eran explícitas.
+
+**Estado de cada uno.** `frontend-blue` se aplicó en el clúster y quedó en `Running`. `api-blue`, `api-green` y `frontend-green` se validaron con `kubectl apply --dry-run=server` y Kyverno los aceptó (sección 4.2), pero no se aplicaron: siguen corriendo con los manifiestos anteriores. Tampoco se comprobó que las imágenes `clinica-veterinaria:v1` y `v2` arranquen con el UID 10001, porque se construyeron antes de que el `Dockerfile` creara ese usuario sin privilegios (sección 3). Antes de aplicar esos manifiestos conviene verificarlo con `kubectl exec ... -- id`. Esto queda registrado como limitación.
 
 ### Resumen por manifiesto
 
@@ -186,12 +211,185 @@ Las APIs usan los mismos recursos que la API de monitoreo (requests de 100m y 12
 | `prometheus-deployment.yaml` | `latest` → `v3.15.0` | requests 100m/256Mi, limits 500m/512Mi | UID/GID 65534, `runAsNonRoot`, `fsGroup`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | `readOnlyRootFilesystem` no aplicado: escribe la base TSDB en `/prometheus` |
 | `grafana-deployment.yaml` | `latest` → `13.2.4` | requests 100m/128Mi, limits 500m/512Mi | UID/GID 472, `runAsNonRoot`, `fsGroup`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | `readOnlyRootFilesystem` no aplicado: escribe SQLite y plugins en `/var/lib/grafana`. Ya tenía el token del ServiceAccount deshabilitado |
 | `postgres-statefulset.yaml` | `postgres:18` (ya tenía tag fijo) | requests 100m/256Mi, limits 500m/512Mi | UID/GID 999, `runAsNonRoot`, `fsGroup`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | `readOnlyRootFilesystem` no aplicado: escribe en `/var/run/postgresql`. Verificada la persistencia de datos tras el cambio |
-| `frontend-monitoring-deployment.yaml` | `clinica-frontend:monitoring` (ya tenía tag explícito) | requests 50m/64Mi, limits 250m/128Mi | UID/GID 101, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: no monta volúmenes.|
-| `api-monitoring-deployment.yaml` | `clinica-veterinaria:monitoring` (ya tenía tag explícito) | requests 100m/128Mi, limits 1/512Mi (ya definidos, sin cambios) | UID/GID 10001, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: solo monta Secrets de solo lectura. |
-| `api-blue-deployment.yaml` / `api-green-deployment.yaml` | `clinica-veterinaria:v1` / `v2` (ya eran explícitos) | requests 100m/128Mi, limits 1/512Mi | UID/GID 10001, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: solo Secrets de solo lectura.|
-| `frontend-blue-deployment.yaml` / `frontend-green-deployment.yaml` | `clinica-frontend:v1` / `v2` (ya eran explícitos) | requests 50m/64Mi, limits 250m/128Mi | UID/GID 101, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: no monta volúmenes.|
+| `frontend-monitoring-deployment.yaml` | `clinica-frontend:monitoring` (ya tenía tag explícito) | requests 50m/64Mi, limits 250m/128Mi | UID/GID 101, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: no monta volúmenes. `readOnlyRootFilesystem` no aplicado: Nginx necesitaría un `emptyDir` en `/tmp`; mejora futura |
+| `api-monitoring-deployment.yaml` | `clinica-veterinaria:monitoring` (ya tenía tag explícito) | requests 100m/128Mi, limits 1/512Mi (ya definidos, sin cambios) | UID/GID 10001, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: solo monta Secrets de solo lectura. `readOnlyRootFilesystem` no aplicado: no se probó la aplicación en solo lectura; mejora futura |
+| `api-blue-deployment.yaml` / `api-green-deployment.yaml` | `clinica-veterinaria:v1` / `v2` (ya eran explícitos) | requests 100m/128Mi, limits 1/512Mi | UID/GID 10001, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: solo Secrets de solo lectura. Validados con dry-run del servidor, no aplicados en el clúster. Falta comprobar que las imágenes `v1`/`v2` arranquen con UID 10001. `readOnlyRootFilesystem` no aplicado |
+| `frontend-blue-deployment.yaml` / `frontend-green-deployment.yaml` | `clinica-frontend:v1` / `v2` (ya eran explícitos) | requests 50m/64Mi, limits 250m/128Mi | UID/GID 101, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: no monta volúmenes. `frontend-blue` aplicado y en `Running`; `frontend-green` solo validado con dry-run. `readOnlyRootFilesystem` no aplicado |
 
-## 4.2. Políticas con Kyverno
+### Verificación final
+
+Tras aplicar el hardening, los pods de monitoreo (`api-monitoring`, `frontend-monitoring`, `grafana`, `prometheus` y `postgres-0`) quedaron en `Running` con `READY 1/1`; `api-monitoring`, `frontend-monitoring`, `grafana` y `prometheus` con 0 reinicios. Los manifiestos también fueron aceptados por las políticas de Kyverno de la sección 4.2.
+
+### Limitaciones del hardening
+
+- **`readOnlyRootFilesystem` no se aplicó en ningún manifiesto.** Cada aplicación escribe en alguna ruta de su sistema de archivos; habilitarlo requiere montar volúmenes `emptyDir` en esas rutas y repetir las pruebas. Queda como mejora futura.
+- **Los valores de CPU y memoria son valores de partida** para un entorno de pruebas y no se calibraron con pruebas de carga.
+- **Blue/Green:** tres de los cuatro manifiestos endurecidos no se aplicaron en el clúster, y falta comprobar que las imágenes `v1` y `v2` arranquen con un usuario sin privilegios.
+
+## 4.2 Políticas con Kyverno
+
+### Herramientas
+
+**Kyverno** es un motor de políticas para Kubernetes. Las políticas se escriben como recursos de Kubernetes en YAML, sin aprender un lenguaje adicional, y Kyverno las aplica como controlador de admisión: intercepta cada solicitud que llega a la API antes de que el objeto se guarde y la valida contra las políticas definidas. Con la acción `Enforce`, una solicitud que incumple una política se rechaza y el recurso no se crea. Kyverno se compone de varios controladores (admisión, segundo plano, informes y limpieza) que se despliegan en su propio namespace.
+
+**Helm** es el gestor de paquetes de Kubernetes. Instala aplicaciones completas a partir de *charts* (conjuntos de manifiestos parametrizables) con un solo comando y permite fijar la versión instalada. Se usó para instalar Kyverno y también se usa para Falco (sección 5).
+
+### Instalación
+
+**Helm.** En Windows, se instaló descargando el binario oficial de Helm 3 (`helm.exe`) en una carpeta del usuario y agregándola al `PATH`:
+
+```powershell
+$v = "v3.21.0"
+$dest = "$env:USERPROFILE\tools\helm"
+New-Item -ItemType Directory -Force -Path $dest | Out-Null
+Invoke-WebRequest -Uri "https://get.helm.sh/helm-$v-windows-amd64.zip" -OutFile "$env:TEMP\helm.zip"
+Expand-Archive -Path "$env:TEMP\helm.zip" -DestinationPath "$env:TEMP\helm-extract" -Force
+Copy-Item "$env:TEMP\helm-extract\windows-amd64\helm.exe" -Destination $dest -Force
+[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path","User") + ";$dest", "User")
+$env:Path += ";$dest"
+helm version
+```
+
+**Kyverno.** Se instaló con Helm en el namespace `kyverno`, fijando la versión del chart:
+
+```powershell
+helm repo add kyverno https://kyverno.github.io/kyverno/
+helm repo update
+helm search repo kyverno/kyverno --versions | Select-Object -First 12
+helm install kyverno kyverno/kyverno -n kyverno --create-namespace --version 3.9.2
+```
+
+`helm search` lista los charts disponibles junto con la versión de Kyverno que trae cada uno. Se eligió el chart `3.9.2`, que corresponde a Kyverno `v1.19.2`, el último parche de la serie 1.19 al momento de la instalación. La versión se fijó porque `ClusterPolicy`, el tipo de recurso usado en las políticas, está marcado como deprecado desde Kyverno 1.17; la 1.19 es la última versión con soporte completo y su eliminación está prevista para la 1.20. Sin fijar la versión, una instalación futura podría no aceptar las políticas.
+
+Para comprobar la instalación:
+
+```powershell
+helm list -n kyverno
+minikube kubectl -- get pods -n kyverno
+minikube kubectl -- get crd | Select-String "clusterpolicies"
+```
+
+`helm list` muestra el chart `kyverno-3.9.2` con versión de aplicación `v1.19.2`, los pods del namespace `kyverno` quedaron en `Running` y existe la definición de recurso `clusterpolicies.kyverno.io`.
+
+### Políticas definidas
+
+Las tres políticas están en `k8s/policies/` como `ClusterPolicy`:
+
+| Política | Archivo | Qué exige |
+|---|---|---|
+| `disallow-latest-tag` | `disallow-latest-tag.yaml` | Dos reglas: la imagen debe declarar un tag (patrón `*:*`) y ese tag no puede ser `latest` (patrón `!*:latest`). |
+| `require-resources` | `require-resources.yaml` | Cada contenedor debe definir `requests` y `limits` de CPU y de memoria. |
+| `disallow-root` | `disallow-root.yaml` | `runAsNonRoot` debe ser `true` a nivel de Pod o en todos los contenedores (`anyPattern` con las dos opciones). |
+
+Configuración común a las tres:
+
+- **`validationFailureAction: Enforce`:** el recurso incumplidor se rechaza, no solo se registra.
+- **`match` sobre `Pod`:** Kyverno genera automáticamente las reglas equivalentes para Deployments y StatefulSets, que crean los Pods.
+- **`exclude` de los namespaces `kube-system`, `kyverno` y `falco`:** son los pods del sistema, el propio Kyverno y Falco, que necesita privilegios para su driver y no cumpliría la política de root.
+- **`background: true`:** además de validar las solicitudes nuevas, evalúa los recursos ya existentes y lo informa.
+
+Tras aplicarlas con `kubectl apply`, las tres quedaron en estado `Ready`:
+
+```text
+NAME                  ADMISSION   BACKGROUND   READY   AGE   MESSAGE
+disallow-latest-tag   true        true         True    8s    Ready
+disallow-root         true        true         True    7s    Ready
+require-resources     true        true         True    8s    Ready
+```
+
+Cada comando que usa `ClusterPolicy` muestra además el aviso `kyverno.io/v1 ClusterPolicy is deprecated and will be removed in a future release`. No es un error: las políticas se crean y funcionan con la versión fijada.
+
+### Validación con manifiestos no conformes
+
+Se probaron cinco manifiestos de Pod en `k8s/policies/test/`. El de referencia (`pod-conforme.yaml`) cumple las tres políticas; los demás se obtuvieron quitándole una cosa a la vez, excepto `pod-no-conforme.yaml`, que incumple las tres juntas.
+
+| # | Manifiesto | Qué incumple | Resultado |
+|---|---|---|---|
+| 1 | `pod-no-conforme.yaml` | Las tres políticas (`nginx:latest`, sin recursos, sin `securityContext`) | Rechazado por las tres políticas |
+| 2 | `pod-solo-latest.yaml` | Solo el tag `latest` | Rechazado únicamente por `disallow-latest-tag` |
+| 3 | `pod-solo-sin-resources.yaml` | Solo la falta de `requests` y `limits` | Rechazado únicamente por `require-resources` |
+| 4 | `pod-solo-root.yaml` | Solo la falta de `runAsNonRoot` | Rechazado únicamente por `disallow-root` |
+| 5 | `pod-conforme.yaml` | Nada | Creado y en `Running`; luego eliminado |
+
+Mensaje real del rechazo del manifiesto no conforme:
+
+```text
+Error from server: error when creating "k8s\\policies\\test\\pod-no-conforme.yaml": admission webhook "validate.kyverno.svc-fail" denied the request:
+
+resource Pod/clinica-veterinaria/pod-no-conforme was blocked due to the following policies
+
+disallow-latest-tag:
+  validate-image-tag: 'validation error: No se permite el tag ''latest''. rule validate-image-tag failed at path /spec/containers/0/image/'
+disallow-root:
+  require-run-as-non-root: 'validation error: No se permite ejecutar como root: runAsNonRoot debe ser true a nivel de Pod o en todos los contenedores. rule require-run-as-non-root[0] failed at path /spec/securityContext/runAsNonRoot/ rule require-run-as-non-root[1] failed at path /spec/containers/0/securityContext/'
+require-resources:
+  validate-resources: 'validation error: Todos los contenedores deben definir requests y limits de cpu y memoria. rule validate-resources failed at path /spec/containers/0/resources/limits/'
+```
+
+Kyverno enumera cada política violada con el mensaje definido y la ruta del campo que falló. En `disallow-root` fallan las dos opciones del `anyPattern` (la del Pod y la de los contenedores), y en `require-resources` la ruta indica el primer campo faltante.
+
+Para mostrar que las políticas actúan de forma independiente, este es el rechazo del manifiesto que solo usa el tag `latest` (prueba 2), donde aparece únicamente `disallow-latest-tag`:
+
+```text
+Error from server: error when creating "k8s\\policies\\test\\pod-solo-latest.yaml": admission webhook "validate.kyverno.svc-fail" denied the request:
+
+resource Pod/clinica-veterinaria/pod-solo-latest was blocked due to the following policies
+
+disallow-latest-tag:
+  validate-image-tag: 'validation error: No se permite el tag ''latest''. rule validate-image-tag failed at path /spec/containers/0/image/'
+```
+
+### Manifiestos del proyecto
+
+Se verificó que los manifiestos reales del proyecto cumplen las políticas, enviándolos a la validación de Kyverno sin crear nada:
+
+```powershell
+minikube kubectl -- apply --dry-run=server -f k8s/<manifiesto>.yaml
+```
+
+Los nueve (`api-blue`, `api-green`, `api-monitoring`, `frontend-blue`, `frontend-green`, `frontend-monitoring`, `grafana`, `prometheus` y `postgres`) fueron aceptados; ninguno fue rechazado. El resultado de cada comando fue `configured` o `unchanged` (server dry run), según si el manifiesto difiere o no del recurso desplegado. Esto confirma que el hardening de la sección 4.1 alcanza para cumplir las tres políticas. Los pods ya en ejecución no fueron afectados por la instalación de las políticas.
+
+### Cómo reproducir las pruebas
+
+Con Kyverno instalado y desde la raíz del repositorio:
+
+```powershell
+minikube kubectl -- apply -f k8s/policies/disallow-latest-tag.yaml
+minikube kubectl -- apply -f k8s/policies/require-resources.yaml
+minikube kubectl -- apply -f k8s/policies/disallow-root.yaml
+minikube kubectl -- get clusterpolicy
+
+minikube kubectl -- apply -f k8s/policies/test/pod-no-conforme.yaml        # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-solo-latest.yaml        # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-solo-sin-resources.yaml # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-solo-root.yaml          # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-conforme.yaml           # debe crearse
+minikube kubectl -- delete pod pod-conforme -n clinica-veterinaria
+```
+
+Para guardar cada salida en `reports/kyverno-validacion.txt` con texto limpio, se usó esta función de PowerShell, que ejecuta el comando, muestra el resultado y lo agrega al archivo en UTF-8:
+
+```powershell
+function Probar($titulo, $cmd) {
+  $log = "reports\kyverno-validacion.txt"
+  "`n=== $titulo ===" | Out-File $log -Append -Encoding utf8
+  "> $cmd" | Out-File $log -Append -Encoding utf8
+  $salida = cmd /c "$cmd 2>&1"
+  $salida | Out-File $log -Append -Encoding utf8
+  $salida
+}
+```
+
+Por ejemplo: `Probar "1. Pod no conforme" "minikube kubectl -- apply -f k8s\policies\test\pod-no-conforme.yaml"`.
+
+Para quitar las políticas y Kyverno: `minikube kubectl -- delete clusterpolicy --all` y `helm uninstall kyverno -n kyverno`.
+
+### Limitaciones
+
+- **`ClusterPolicy` está deprecado** desde Kyverno 1.17, y su eliminación está prevista para la 1.20. Las políticas funcionan con la versión fijada (1.19.2); la migración a `ValidatingPolicy` (`policies.kyverno.io`, basada en CEL) queda como trabajo futuro.
+- **Las políticas validan que los campos estén declarados, no su valor.** No evalúan, por ejemplo, si los límites de memoria son razonables.
+- **Las reglas de tag y de recursos revisan solo `containers`,** no `initContainers`, que este proyecto no utiliza.
+- **Las políticas actúan al crear o actualizar un recurso:** no eliminan los pods que ya estaban corriendo cuando se instalaron.
 
 ## 4.3. KubeLinter
 

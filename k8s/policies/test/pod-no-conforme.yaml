@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-no-conforme
+  namespace: clinica-veterinaria
+spec:
+  containers:
+    - name: app
+      image: nginx:latest

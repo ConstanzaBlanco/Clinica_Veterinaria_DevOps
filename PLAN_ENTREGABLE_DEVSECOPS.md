@@ -13,16 +13,16 @@ Fuente: `Entregable 3 DevSecOps.docx`. Cubre 4 áreas: código, imagen, Kubernet
 
 ## Estado actual del proyecto (qué hay que arreglar)
 
-| Aspecto | Estado hoy | Impacto |
+| Aspecto | Estado hoy | Impacto | Solucionado - fecha |
 |---|---|---|
-| Namespace | `clinica-veterinaria` | Las políticas se aplican acá; hay que excluir `kube-system`, `kyverno` y `falco`. |
-| Backend | `Dockerfile` raíz, `python:3.13-slim`, **sin `USER`** (corre como root) | Trivy lo marca; viola política 3. |
-| Frontend | `frontend/Dockerfile.k8s`, `nginx-unprivileged`, `USER nginx` | Ya es no root. `npm audit` va en `frontend/`. |
-| Imágenes `latest` | `grafana/grafana:latest`, `prom/prometheus:latest` | Violan política 1. |
-| `resources` | Solo `api-monitoring-deployment`. En postgres solo existe `storage`, no hay requests/limits de cpu y memoria. | Violan política 2 en: api-blue, api-green, frontend-blue, frontend-green, postgres, grafana, prometheus. |
-| `securityContext` | No hay en ningún manifiesto | Viola política 3 en todos. |
+| Namespace | `clinica-veterinaria` | Las políticas se aplican acá; hay que excluir `kube-system`, `kyverno` y `falco`. | |
+| Backend | `Dockerfile` raíz, `python:3.13-slim`, **sin `USER`** (corre como root) | Trivy lo marca; viola política 3. | |
+| Frontend | `frontend/Dockerfile.k8s`, `nginx-unprivileged`, `USER nginx` | Ya es no root. `npm audit` va en `frontend/`. | |
+| Imágenes `latest` | `grafana/grafana:latest`, `prom/prometheus:latest` | Violan política 1. | Solucionados desde P3 - 1/11/2026 |
+| `resources` | Solo `api-monitoring-deployment`. En postgres solo existe `storage`, no hay requests/limits de cpu y memoria. | Violan política 2 en: api-blue, api-green, frontend-blue, frontend-green, postgres, grafana, prometheus. | Solucionados desde P3 - 1/11/2026 |
+| `securityContext` | No hay en ningún manifiesto | Viola política 3 en todos. |Solucionados desde P3 - 1/11/2026 |
 | Despliegue | `scripts/k8s-up.ps1` (solo rama `blue`), `k8s-up-green.ps1` (green) y `k8s-up-monitoring.ps1` (**sin restricción de rama**, levanta postgres, api-monitoring, Prometheus y Grafana, sin frontend) | Para `main` se usa `k8s-up-monitoring.ps1`. Los scripts de blue y green **no se tocan**. |
-| Carpeta `reports/` | No existe | Crearla. |
+| Carpeta `reports/` | No existe | Crearla. | Ya creada y con reportes listos |
 
 Herramientas a instalar: Semgrep, Trivy, KubeLinter, Helm, Kyverno CLI opcional y Falco (por Helm). `kubectl` y Docker ya están.
 
@@ -113,7 +113,7 @@ Rama: `devsecops/imagenes`. Documenta en su sección de `ENTREGABLE_3_DEVSECOPS.
 
 ## Etapa 3: Seguridad en Kubernetes (P3 y P4)
 
-### 3a. Hardening de manifiestos (P3)
+### 3a. Hardening de manifiestos (P3) - Listo (01/11/2026)
 
 Rama: `devsecops/k8s`. Documenta en su sección de `ENTREGABLE_3_DEVSECOPS.md`.
 
@@ -137,7 +137,7 @@ Aplicar a: `api-blue`, `api-green`, `api-monitoring`, `frontend-blue`, `frontend
 4. **Despliegue de prueba en Minikube** (todo debe quedar `Running`), antes de pasar a Kyverno. Se despliega con `scripts/k8s-up-monitoring.ps1`, que funciona desde `main`.
 5. Documentar cada cambio y por qué (sección 4.1 del informe).
 
-### 3b. Kyverno (P3)
+### 3b. Kyverno (P3) - Listo (01/11/2026)
 
 1. Instalar:
    - `helm repo add kyverno https://kyverno.github.io/kyverno/`
@@ -174,8 +174,8 @@ Rama: `devsecops/falco` (o una propia). Documenta en su sección de `ENTREGABLE_
 **Entregables:** `k8s/policies/*.yaml`, `k8s/policies/test/*.yaml`, manifiestos endurecidos, `reports/kubelinter.txt`, `reports/kyverno-validacion.txt` y las secciones 4.1, 4.2 y 4.3 del informe.
 
 **Para el informe (secciones 4.1, 4.2 y 4.3):**
-- *4.1 Hardening (P3):* explicación de cada concepto aplicado (tag fijo, requests y limits, `runAsNonRoot`, `allowPrivilegeEscalation`, `capabilities`, `readOnlyRootFilesystem`, `fsGroup`). Tabla por manifiesto con qué se cambió y por qué. Versiones fijadas de Grafana y Prometheus.
-- *4.2 Kyverno (P3):* qué es Kyverno y cómo actúa (admission controller). Cómo se instaló. Explicación de cada una de las tres políticas (qué regla, qué valida, `Enforce`, namespaces excluidos). Procedimiento de validación con el manifiesto no conforme, con el mensaje de rechazo pegado, la prueba de cada política por separado, y el manifiesto conforme que sí pasa. Confirmación de que los manifiestos reales del proyecto pasan.
+- *4.1 Hardening (P3):* explicación de cada concepto aplicado (tag fijo, requests y limits, `runAsNonRoot`, `allowPrivilegeEscalation`, `capabilities`, `readOnlyRootFilesystem`, `fsGroup`). Tabla por manifiesto con qué se cambió y por qué. Versiones fijadas de Grafana y Prometheus. --> Listo
+- *4.2 Kyverno (P3):* qué es Kyverno y cómo actúa (admission controller). Cómo se instaló. Explicación de cada una de las tres políticas (qué regla, qué valida, `Enforce`, namespaces excluidos). Procedimiento de validación con el manifiesto no conforme, con el mensaje de rechazo pegado, la prueba de cada política por separado, y el manifiesto conforme que sí pasa. Confirmación de que los manifiestos reales del proyecto pasan. --> Listo
 - *4.3 KubeLinter (P4):* qué es y qué chequea. Comando usado. Hallazgos iniciales vs. finales. Lista de hallazgos corregidos y de los mantenidos con su justificación. Si se usó `.kube-linter.yaml`, el motivo de cada exclusión.
 
 ---

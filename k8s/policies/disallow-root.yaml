@@ -1,0 +1,44 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-root
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - falco
+      validate:
+        message: >-
+          No se permite ejecutar como root: runAsNonRoot debe ser true a nivel
+          de Pod o en todos los contenedores.
+        anyPattern:
+          # Opción A: definido a nivel de Pod
+          - spec:
+              securityContext:
+                runAsNonRoot: "true"
+              =(initContainers):
+                - =(securityContext):
+                    =(runAsNonRoot): "true"
+              containers:
+                - =(securityContext):
+                    =(runAsNonRoot): "true"
+          # Opción B: definido en cada contenedor
+          - spec:
+              =(initContainers):
+                - securityContext:
+                    runAsNonRoot: "true"
+              containers:
+                - securityContext:
+                    runAsNonRoot: "true"
