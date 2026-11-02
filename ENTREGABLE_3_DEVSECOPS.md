@@ -1,3 +1,19 @@
+# 1. Resumen y herramientas
+
+Este entregable cubre seguridad en 4 capas del ciclo de vida de la aplicación: código, imagen, Kubernetes y tiempo de ejecución. En cada capa se usó una herramienta distinta, apropiada al momento en que actúa (antes de construir, al construir la imagen, al desplegar, o ya desplegado):
+
+| # | Capa | Herramienta(s) | Qué hace | Bloquea o solo informa |
+|---|---|---|---|---|
+| 2 | Código | npm audit | Revisa las dependencias de terceros del frontend contra vulnerabilidades conocidas. | Informa |
+| 2 | Código | Semgrep | Analiza el código fuente propio (backend y frontend) buscando patrones de código inseguro. | Informa |
+| 3 | Imagen | Trivy | Escanea la imagen Docker final (sistema operativo base + dependencias) buscando CVEs conocidos. | Informa |
+| 4.1 | Kubernetes | Hardening manual de manifiestos | Declara explícitamente `resources` y `securityContext` en cada Deployment/StatefulSet. | — (es la corrección, no una herramienta de análisis) |
+| 4.2 | Kubernetes | Kyverno | Admission controller: valida cada manifiesto contra 3 políticas (sin `latest`, resources obligatorios, no root) en el momento de desplegar. | **Bloquea** (`Enforce`) |
+| 4.3 | Kubernetes | KubeLinter | Analiza los manifiestos YAML de forma estática, sin cluster, contra buenas prácticas. | Informa |
+| 5 | Tiempo de ejecución | Falco | Observa el comportamiento de los contenedores ya corriendo y genera alertas ante actividad sospechosa (por ejemplo, una shell interactiva). | Informa (alerta, no bloquea) |
+
+**Resultado general:** de las herramientas que informan vulnerabilidades reales (no de proceso), se corrigió lo que tenía una solución disponible y sin romper la aplicación (dependencias del frontend, un `UPDATE` SQL dinámico sin lista blanca, versiones base de las imágenes Docker) y se documentó con justificación lo que se decidió mantener (ver sección 6). Las políticas de Kyverno y el hardening de Kubernetes se verificaron activamente: se probó que rechazan manifiestos no conformes y que los manifiestos reales del proyecto los cumplen. Falco se verificó generando una alerta real a partir de una acción sospechosa intencional.
+
 # 2. Seguridad en el código
 
 **Reportes:** [`npm-audit-inicial.txt`](reports/npm-audit-inicial.txt), [`npm-audit.txt`](reports/npm-audit.txt), [`semgrep-inicial.txt`](reports/semgrep-inicial.txt), [`semgrep.txt`](reports/semgrep.txt).
@@ -454,6 +470,27 @@ Para quitar las políticas y Kyverno: `minikube kubectl -- delete clusterpolicy 
 
 ## 4.3. KubeLinter
 
+**Herramienta:** KubeLinter analiza archivos YAML de Kubernetes de forma estática (sin necesidad de un cluster) y los compara contra un set de buenas prácticas. A diferencia de Kyverno, no bloquea nada: solo genera un reporte de lectura.
+
+**Instalación:** binario oficial para Windows descargado desde los releases de GitHub.
+
+**Comando ejecutado** (versión 0.8.3), sobre los manifiestos de `k8s/` (excluyendo `k8s/policies/`, que son las políticas de Kyverno, no manifiestos de despliegue):
+
+~~~powershell
+kube-linter lint k8s\*.yaml > reports\kubelinter.txt
+~~~
+
+**Resultado:** 12 hallazgos, de solo 2 tipos de chequeo.
+
+| Check | Apariciones | Dónde | Decisión |
+|---|---|---|---|
+| `env-var-secret` | 3 | `api-blue`, `api-green`, `api-monitoring` | **Falso positivo.** La variable `JWT_SECRET_KEY_FILE` contiene la palabra "SECRET" en el nombre, pero su valor es solo la ruta a un archivo montado desde un Secret de Kubernetes (`/run/jwt-secret/jwt-secret`), no la clave en texto plano. |
+| `no-read-only-root-fs` | 9 | los 9 Deployments/StatefulSet (api, frontend, grafana, prometheus, postgres en sus variantes) | **Mantenido.** Ya documentado como limitación en la sección 4.1: cada servicio escribe en su propio filesystem (datos, caché, archivos temporales) y activar `readOnlyRootFilesystem` requeriría montar volúmenes `emptyDir` en esas rutas puntuales. Queda como mejora futura. |
+
+No se corrigió ningún hallazgo porque ninguno representa un riesgo real sin justificación: uno es un falso positivo de la herramienta y el otro ya era una decisión conocida del hardening.
+
+Evidencia completa en [`reports/kubelinter.txt`](reports/kubelinter.txt).
+
 # 5. Seguridad en tiempo de ejecución: Falco
 
 ## Herramienta e instalación
@@ -519,4 +556,96 @@ Falco detectó la apertura de una shell con terminal dentro del contenedor. Fue 
 Se corrigió la continuación de líneas de PowerShell para incluir `--values` dentro del comando Helm.
 PostgreSQL generaba alertas `Read sensitive file untrusted` cada diez segundos. El comando y la frecuencia coinciden con su chequeo de disponibilidad.
 Se definió en `k8s/falco-values.yaml` una excepción limitada al pod, namespace, imagen, comando, archivo, UID y ejecución sin terminal observados. 
+
+# 6. Hallazgos mantenidos y justificación
+
+Esta sección consolida todo lo que se decidió **no corregir** en las 4 capas, con su justificación. Nada de lo listado acá quedó sin revisar: cada fila fue mirada en el código o en el reporte correspondiente antes de decidir mantenerlo.
+
+| Capa | Herramienta | Hallazgo | Cantidad | Justificación |
+|---|---|---|---|---|
+| Código | Semgrep | `avoid-sqlalchemy-text` (SQL armado con f-string dentro de `text()`) en `app/historial/repository.py` (2), `app/pacientes/repository.py`, `app/turnos/repository.py` | 4 | Lo que se interpola en cada caso es un fragmento fijo del código (literal o armado desde un diccionario de claves fijas validadas con `Literal` en el controller), nunca un valor que llegue directo del usuario. Los valores de usuario siempre viajan como parámetros (`:nombre`, `:id_mascota`, etc.), no interpolados. Ver detalle en sección 2.3. |
+| Imagen | Trivy | 44 hallazgos HIGH en paquetes del sistema base de Debian (`util-linux`, `ncurses`, `libacl`, librerías de systemd, `perl-base`) | 44 (8 CVE distintos) | El reporte de Trivy no indica una `Fixed Version` para estos paquetes, y se confirmó con `apt-cache policy` (`reports/debian-versiones.txt`) que `Candidate` coincide con `Installed`: no hay una versión más nueva disponible en los repositorios configurados, incluido `trixie-security`. Quedan como riesgo residual documentado, a reevaluar cuando haya parches. Ver sección 3.4. |
+| Kubernetes | KubeLinter | `env-var-secret` en `api-blue`, `api-green`, `api-monitoring` | 3 | Falso positivo: la variable `JWT_SECRET_KEY_FILE` contiene la palabra "SECRET" en el nombre, pero su valor es la ruta a un archivo montado desde un Secret de Kubernetes, no la clave en texto plano. Ver sección 4.3. |
+| Kubernetes | KubeLinter | `no-read-only-root-fs` en los 9 Deployments/StatefulSet | 9 | Cada servicio necesita escribir en su propio filesystem (datos, caché de plugins, archivos temporales). Activar `readOnlyRootFilesystem` requeriría montar un volumen `emptyDir` en la ruta puntual de escritura de cada app y volver a probar que todo arranque. Ya estaba identificado como limitación del hardening (sección 4.1) antes de correr KubeLinter. Queda como mejora futura. |
+| Kubernetes | Hardening manual | Valores de CPU/memoria sin calibrar con carga real | — | Son valores de partida razonables para un entorno de pruebas, no se ajustaron con `kubectl top pod` bajo carga. Ver sección 4.1. |
+| Kubernetes | Hardening manual | 3 de 4 manifiestos Blue/Green endurecidos no aplicados en el clúster; no se verificó que las imágenes `v1`/`v2` arranquen con el UID sin privilegios | — | Blue/Green no se despliegan desde `main` con el script de monitoreo; se validaron con `kubectl apply --dry-run=server` (Kyverno los aceptó) pero no se aplicaron de verdad. Ver sección 4.1. |
+
+**Nota sobre Kyverno:** no aparece en esta tabla porque no tiene hallazgos "mantenidos" — es una política de bloqueo (`Enforce`), no de reporte: lo que no cumple se rechaza, no se documenta como riesgo aceptado.
+
+# 7. Cómo reproducir todo
+
+Todos los comandos se ejecutan en **PowerShell, desde la raíz del repositorio**, salvo que se indique lo contrario. Requiere Docker Desktop, Minikube, Helm y `kubectl` ya configurados.
+
+## 7.1 Seguridad en el código
+
+```powershell
+cd frontend
+cmd /c "npm audit > ..\reports\npm-audit.txt"
+cd ..
+
+docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/semgrep.txt /src/app /src/frontend/src
+```
+
+## 7.2 Seguridad en la imagen
+
+```powershell
+New-Item -ItemType Directory -Force -Path .\reports | Out-Null
+$reportsPath = (Resolve-Path .\reports).Path
+
+docker build --pull --no-cache -t clinica-veterinaria:test .
+docker build --pull --no-cache -f .\frontend\Dockerfile.k8s --build-arg NGINX_CONF=nginx-monitoring.conf -t clinica-frontend:test .\frontend
+
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-backend.txt clinica-veterinaria:test
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-frontend.txt clinica-frontend:test
+```
+
+## 7.3 Seguridad en Kubernetes
+
+**Desplegar con el hardening ya aplicado:**
+
+```powershell
+.\scripts\k8s-up-monitoring.ps1
+```
+
+**Instalar y aplicar Kyverno:**
+
+```powershell
+helm repo add kyverno https://kyverno.github.io/kyverno/
+helm repo update
+helm install kyverno kyverno/kyverno -n kyverno --create-namespace --version 3.9.2
+
+minikube kubectl -- apply -f k8s/policies/disallow-latest-tag.yaml
+minikube kubectl -- apply -f k8s/policies/require-resources.yaml
+minikube kubectl -- apply -f k8s/policies/disallow-root.yaml
+minikube kubectl -- get clusterpolicy
+```
+
+**Validar con manifiestos de prueba:**
+
+```powershell
+minikube kubectl -- apply -f k8s/policies/test/pod-no-conforme.yaml        # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-solo-latest.yaml        # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-solo-sin-resources.yaml # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-solo-root.yaml          # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-conforme.yaml           # debe crearse
+minikube kubectl -- delete pod pod-conforme -n clinica-veterinaria
+```
+
+**KubeLinter:**
+
+```powershell
+kube-linter lint k8s\*.yaml > reports\kubelinter.txt
+```
+
+## 7.4 Seguridad en tiempo de ejecución (Falco)
+
+```powershell
+.\scripts\k8s-up-falco.ps1
+
+minikube kubectl -- get pods -n falco
+minikube kubectl -- exec -it -n clinica-veterinaria deployment/api-monitoring -- /bin/sh
+# dentro de la shell: id, pwd, exit
+
+minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --tail=50
+```
 
