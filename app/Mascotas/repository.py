@@ -11,6 +11,13 @@ class MascotaRepository:
     Administra las consultas de mascotas en la base de datos.
     """
 
+    # Unicas columnas que `actualizar` permite modificar. Los nombres se
+    # interpolan en el SQL (no se pueden pasar como parametros), asi que se
+    # validan contra esta lista blanca. Debe coincidir con MascotaUpdate.
+    COLUMNAS_EDITABLES = frozenset(
+        {"nombre", "raza", "fecha_nacimiento", "sexo", "observaciones", "estado"}
+    )
+
     def __init__(self, session: Session) -> None:
         """
         Inicializa el repositorio.
@@ -167,13 +174,22 @@ class MascotaRepository:
 
         Return:
             Datos actualizados de la mascota, o None si no existe o no es del cliente.
+
+        Raises:
+            ValueError: Si `datos` incluye una columna que no es editable.
         """
         if not datos:
             return self.obtener_mascota_por_id(id_mascota, id_cliente)
 
+        no_permitidas = set(datos) - self.COLUMNAS_EDITABLES
+        if no_permitidas:
+            raise ValueError(f"Columnas no editables: {sorted(no_permitidas)}")
+
         columnas = ", ".join(f"{campo} = :{campo}" for campo in datos)
         parametros = {**datos, "id_mascota": id_mascota, "id_cliente": id_cliente}
 
+        # {columnas} sale de COLUMNAS_EDITABLES (validado arriba); los valores van como parametros.
+        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
         consulta = text(
             f"""
             UPDATE mascota SET {columnas}

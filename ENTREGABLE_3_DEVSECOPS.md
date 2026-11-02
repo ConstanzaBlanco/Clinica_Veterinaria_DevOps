@@ -1,5 +1,66 @@
 # 2. Seguridad en el código
 
+**Reportes:** [`npm-audit-inicial.txt`](reports/npm-audit-inicial.txt), [`npm-audit.txt`](reports/npm-audit.txt), [`semgrep-inicial.txt`](reports/semgrep-inicial.txt), [`semgrep.txt`](reports/semgrep.txt).
+
+## 2.1 Herramientas utilizadas
+
+| Herramienta | Qué analiza |
+|---|---|
+| **npm audit** | Las dependencias del frontend (`frontend/package.json` y `package-lock.json`) contra la base de vulnerabilidades conocidas de npm. |
+| **Semgrep** | El código fuente propio (análisis estático) mediante reglas que buscan patrones inseguros. |
+
+Versiones: Node 20.19.5, npm 10.8.2 y npm 11.21.1, Semgrep 1.182.1 (imagen oficial `semgrep/semgrep`). Semgrep se ejecutó con `--config auto` sobre 124 archivos (`app/` y `frontend/src/`) con 442 reglas.
+
+## 2.2 npm audit
+
+Se ejecutó `npm audit` en `frontend/` y se guardó el resultado:
+```powershell
+cd frontend
+cmd /c "npm audit > ..\reports\npm-audit-inicial.txt"
+```
+
+Resultado inicial: 2 vulnerabilidades de severidad HIGH.
+
+| Paquete | Versión afectada | Problema |
+|---|---|---|
+| `source-map-js` | 1.0.0 – 1.2.1 | Denegación de servicio por offsets de source-map indexados (GHSA-68fv-2mgg-jv7q). |
+| `vite` | 8.2.0 – 8.2.2 | Seis advisories: ejecución de scripts entre orígenes, lectura de archivos fuera de `server.fs.allow`, exposición de los primeros 4 bytes de archivos, y tres de `launch-editor`. |
+
+Se actualizó `vite` de 8.2.2 a 8.3.5 (`package.json`: `"vite": "^8.3.5"`), lo que también actualizó `source-map-js` de 1.2.1 a 1.2.2 en `package-lock.json`:
+```powershell
+npx -y npm@11 install vite@^8.3.5
+cmd /c "npx -y npm@11 audit > ..\reports\npm-audit.txt"
+```
+
+Resultado final: `found 0 vulnerabilities`. El build (`npm run build`) y el lint (`npm run lint`, 0 errores) se ejecutaron con la versión nueva.
+
+## 2.3 Semgrep
+
+Se ejecutó Semgrep con Docker sobre el backend y el frontend:
+```powershell
+docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/semgrep.txt /src/app /src/frontend/src
+```
+
+Resultado inicial: 5 hallazgos, todos de la regla `python.sqlalchemy.security.audit.avoid-sqlalchemy-text` (consultas SQL armadas con f-strings dentro de `text()`). El frontend, `Auth`, `config.py` y el middleware no tuvieron hallazgos.
+
+Se revisó cada hallazgo en el código:
+
+| # | Archivo | Se interpola | Decisión |
+|---|---|---|---|
+| 1 | `app/Mascotas/repository.py` (`actualizar`) | Nombres de columna del `UPDATE` | **Corregido** con una lista blanca de columnas. |
+| 2 | `app/historial/repository.py:94` | `condicion_tipo` | Mantenido: es un literal fijo del código y `tipo` viaja como parámetro. |
+| 3 | `app/historial/repository.py:113` | `condicion_tipo` | Mantenido: igual que el anterior. |
+| 4 | `app/pacientes/repository.py:47` | `where_extra` | Mantenido: se arma con fragmentos fijos; `q` y `especie` viajan como parámetros. |
+| 5 | `app/turnos/repository.py:130` | `condicion_periodo` | Mantenido: sale de un diccionario de 3 claves fijas validadas con `Literal` en el controller. |
+
+Corrección en `app/Mascotas/repository.py` (método `actualizar`):
+- Se agregó `MascotaRepository.COLUMNAS_EDITABLES` con las columnas `nombre`, `raza`, `fecha_nacimiento`, `sexo`, `observaciones` y `estado`.
+- `actualizar` lanza `ValueError` si recibe una columna que no está en la lista.
+- La consulta lleva el comentario `# nosemgrep` con el motivo.
+- Se agregaron 4 tests en `tests/test_mascotas_actualizar.py`: columna no editable, intento de inyección en el nombre de columna, columnas válidas, y coincidencia de la lista con los campos de `MascotaUpdate`.
+
+Resultado final: 4 hallazgos, en `app/historial/repository.py` (2), `app/pacientes/repository.py` y `app/turnos/repository.py`.
+
 # 3. Seguridad de las imágenes
 
 ## 3.1. Análisis con Trivy: antes y después
