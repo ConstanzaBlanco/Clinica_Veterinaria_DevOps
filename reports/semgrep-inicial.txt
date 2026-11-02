@@ -1,0 +1,97 @@
+                   
+                   
+┌─────────────────┐
+│ 5 Code Findings │
+└─────────────────┘
+                                   
+    /src/app/Mascotas/repository.py
+   ❯❯❱ python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+          ❰❰ Blocking ❱❱
+          sqlalchemy.text passes the constructed SQL statement to the database mostly unchanged. This means  
+          that the usual SQL injection protections are not applied and this function is vulnerable to SQL    
+          injection if user input can reach here. Use normal SQLAlchemy operators (such as `or_()`, `and_()`,
+          etc.) to construct SQL.                                                                            
+          Details: https://sg.run/yP1O                                                                       
+                                                                                                             
+          177┆ consulta = text(
+          178┆     f"""
+          179┆     UPDATE mascota SET {columnas}
+          180┆     WHERE id_mascota = :id_mascota AND id_cliente = :id_cliente
+          181┆     RETURNING id_mascota, nombre, especie, raza, fecha_nacimiento, sexo, observaciones,
+               estado                                                                                 
+          182┆     """
+          183┆ )
+                                    
+    /src/app/historial/repository.py
+   ❯❯❱ python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+          ❰❰ Blocking ❱❱
+          sqlalchemy.text passes the constructed SQL statement to the database mostly unchanged. This means  
+          that the usual SQL injection protections are not applied and this function is vulnerable to SQL    
+          injection if user input can reach here. Use normal SQLAlchemy operators (such as `or_()`, `and_()`,
+          etc.) to construct SQL.                                                                            
+          Details: https://sg.run/yP1O                                                                       
+                                                                                                             
+           94┆ consulta = text(
+           95┆     f"""
+           96┆     SELECT cc.id_consulta
+           97┆     FROM consulta_clinica cc
+           98┆     JOIN turno t ON t.id_turno = cc.id_turno
+           99┆     JOIN tipo_atencion ta ON ta.id_tipo_atencion = t.id_tipo_atencion
+          100┆     WHERE cc.id_mascota = :id_mascota AND cc.id_consulta_original IS NULL
+          101┆     {condicion_tipo}
+          102┆     """
+          103┆ )
+            ⋮┆----------------------------------------
+          113┆ consulta = text(
+          114┆     f"""
+          115┆     SELECT
+          116┆         cc.id_consulta, cc.fecha_registro::date AS fecha,
+          117┆         to_char(cc.fecha_registro, 'HH24:MI') AS hora,
+          118┆         ta.nombre AS tipo,
+          119┆         u.nombre || ' ' || u.apellido AS veterinario,
+          120┆         cc.motivo, cc.observaciones, cc.diagnostico,
+          121┆         cc.tratamiento, cc.recomendaciones,
+          122┆         cc.fecha_modificacion AS modificada_el,
+             [hid 10 additional lines, adjust with --max-lines-per-finding] 
+                                    
+    /src/app/pacientes/repository.py
+   ❯❯❱ python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+          ❰❰ Blocking ❱❱
+          sqlalchemy.text passes the constructed SQL statement to the database mostly unchanged. This means  
+          that the usual SQL injection protections are not applied and this function is vulnerable to SQL    
+          injection if user input can reach here. Use normal SQLAlchemy operators (such as `or_()`, `and_()`,
+          etc.) to construct SQL.                                                                            
+          Details: https://sg.run/yP1O                                                                       
+                                                                                                             
+           47┆ consulta = text(
+           48┆     f"""
+           49┆     SELECT
+           50┆         m.id_mascota AS id, m.nombre, m.especie, m.raza, m.estado,
+           51┆         date_part('year', age(m.fecha_nacimiento))::int AS edad_anios,
+           52┆         u.nombre || ' ' || u.apellido AS propietario_nombre,
+           53┆         u.telefono AS propietario_telefono,
+           54┆
+           55┆         (SELECT COUNT(*) FROM consulta_clinica c
+           56┆          WHERE c.id_mascota = m.id_mascota
+             [hid 48 additional lines, adjust with --max-lines-per-finding] 
+                                 
+    /src/app/turnos/repository.py
+   ❯❯❱ python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+          ❰❰ Blocking ❱❱
+          sqlalchemy.text passes the constructed SQL statement to the database mostly unchanged. This means  
+          that the usual SQL injection protections are not applied and this function is vulnerable to SQL    
+          injection if user input can reach here. Use normal SQLAlchemy operators (such as `or_()`, `and_()`,
+          etc.) to construct SQL.                                                                            
+          Details: https://sg.run/yP1O                                                                       
+                                                                                                             
+          130┆ consulta = text(
+          131┆     f"""
+          132┆     SELECT
+          133┆         t.id_turno, t.fecha_hora_inicio, t.duracion_minutos,
+          134┆         t.estado, t.canal_origen,
+          135┆         ta.nombre AS tipo,
+          136┆         m.id_mascota, m.nombre AS mascota_nombre,
+          137┆         m.especie, m.estado AS mascota_estado,
+          138┆         u.nombre || ' ' || u.apellido AS veterinario
+          139┆     FROM turno t
+             [hid 8 additional lines, adjust with --max-lines-per-finding] 
