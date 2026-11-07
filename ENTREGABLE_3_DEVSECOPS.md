@@ -1,46 +1,164 @@
-# 1. Resumen y herramientas
+# Entregable 3 DevSecOps
 
-Este entregable cubre seguridad en 4 capas del ciclo de vida de la aplicación: código, imagen, Kubernetes y tiempo de ejecución. En cada capa se usó una herramienta distinta, apropiada al momento en que actúa (antes de construir, al construir la imagen, al desplegar, o ya desplegado):
+## Índice
 
-| # | Capa | Herramienta(s) | Qué hace | Bloquea o solo informa |
-|---|---|---|---|---|
-| 2 | Código | npm audit | Revisa las dependencias de terceros del frontend contra vulnerabilidades conocidas. | Informa |
-| 2 | Código | Semgrep | Analiza el código fuente propio (backend y frontend) buscando patrones de código inseguro. | Informa |
-| 3 | Imagen | Trivy | Escanea la imagen Docker final (sistema operativo base + dependencias) buscando CVEs conocidos. | Informa |
-| 4.1 | Kubernetes | Hardening manual de manifiestos | Declara explícitamente `resources` y `securityContext` en cada Deployment/StatefulSet. | — (es la corrección, no una herramienta de análisis) |
-| 4.2 | Kubernetes | Kyverno | Admission controller: valida cada manifiesto contra 3 políticas (sin `latest`, resources obligatorios, no root) en el momento de desplegar. | **Bloquea** (`Enforce`) |
-| 4.3 | Kubernetes | KubeLinter | Analiza los manifiestos YAML de forma estática, sin cluster, contra buenas prácticas. | Informa |
-| 5 | Tiempo de ejecución | Falco | Observa el comportamiento de los contenedores ya corriendo y genera alertas ante actividad sospechosa (por ejemplo, una shell interactiva). | Informa (alerta, no bloquea) |
+- [1. Qué se hizo y cómo se organizó el trabajo](#1-qué-se-hizo-y-cómo-se-organizó-el-trabajo)
+  - [El orden de trabajo](#el-orden-de-trabajo)
+  - [Herramientas utilizadas](#herramientas-utilizadas)
+  - [Cómo quedó la arquitectura](#cómo-quedó-la-arquitectura)
+  - [En qué momento actúa cada control](#en-qué-momento-actúa-cada-control)
+  - [Resultado general](#resultado-general)
+- [2. Seguridad en el código](#2-seguridad-en-el-código)
+  - [2.1 Qué se revisó primero](#21-qué-se-revisó-primero)
+  - [2.2 Paso 1 Revisar las dependencias con npm audit](#22-paso-1-revisar-las-dependencias-con-npm-audit)
+  - [2.3 Paso 2 Revisar el código con Semgrep](#23-paso-2-revisar-el-código-con-semgrep)
+- [3. Seguridad de las imágenes](#3-seguridad-de-las-imágenes)
+  - [3.1 Paso 1 Escanear las imágenes antes de corregir](#31-paso-1-escanear-las-imágenes-antes-de-corregir)
+  - [3.2 Paso 2 Actualizar la imagen del backend](#32-paso-2-actualizar-la-imagen-del-backend)
+  - [3.3 Paso 3 Actualizar la imagen del frontend](#33-paso-3-actualizar-la-imagen-del-frontend)
+  - [3.4 Paso 4 Revisar lo que sigue apareciendo](#34-paso-4-revisar-lo-que-sigue-apareciendo)
+  - [3.5 Comandos utilizados para construir y analizar las imágenes](#35-comandos-utilizados-para-construir-y-analizar-las-imágenes)
+- [4. Seguridad en Kubernetes](#4-seguridad-en-kubernetes)
+  - [4.1 Paso 1 Ajustar la seguridad de los manifiestos](#41-paso-1-ajustar-la-seguridad-de-los-manifiestos)
+  - [4.2 Paso 2 Hacer obligatorias las reglas con Kyverno](#42-paso-2-hacer-obligatorias-las-reglas-con-kyverno)
+  - [4.3 Paso 3 Revisar los YAML con KubeLinter](#43-paso-3-revisar-los-yaml-con-kubelinter)
+- [5. Seguridad en tiempo de ejecución: Falco](#5-seguridad-en-tiempo-de-ejecución-falco)
+  - [5.1 Paso 1 Instalar Falco y dejar la captura activa](#51-paso-1-instalar-falco-y-dejar-la-captura-activa)
+  - [5.2 Paso 2 Generar una actividad de prueba](#52-paso-2-generar-una-actividad-de-prueba)
+  - [5.3 Paso 3 Comprobar qué detectó](#53-paso-3-comprobar-qué-detectó)
+  - [5.4 Ajustes que hicieron falta durante la prueba](#54-ajustes-que-hicieron-falta-durante-la-prueba)
+- [6. Hallazgos mantenidos y justificación](#6-hallazgos-mantenidos-y-justificación)
+- [7. Dónde consultar la evidencia](#7-dónde-consultar-la-evidencia)
+- [8. Conclusión](#8-conclusión)
 
-**Resultado general:** de las herramientas que informan vulnerabilidades reales (no de proceso), se corrigió lo que tenía una solución disponible y sin romper la aplicación (dependencias del frontend, un `UPDATE` SQL dinámico sin lista blanca, versiones base de las imágenes Docker) y se documentó con justificación lo que se decidió mantener (ver sección 6). Las políticas de Kyverno y el hardening de Kubernetes se verificaron activamente: se probó que rechazan manifiestos no conformes y que los manifiestos reales del proyecto los cumplen. Falco se verificó generando una alerta real a partir de una acción sospechosa intencional.
+## 1. Qué se hizo y cómo se organizó el trabajo
 
-# 2. Seguridad en el código
+En este entregable se trabajó sobre la seguridad de la aplicación que ya estaba funcionando. Se revisaron el código, las imágenes de Docker, la configuración de Kubernetes y lo que pasa dentro de los contenedores mientras están en ejecución.
+
+La idea fue seguir el recorrido de la aplicación: primero revisar lo que se va a construir, después analizar la imagen y, por último, comprobar cómo se despliega y cómo se comporta. En cada paso se guardó el resultado en `reports/`, se corrigió lo que correspondía y se dejó explicado por qué algunas alertas se mantienen.
+
+### El orden de trabajo
+
+Los pasos que se describen a continuación corresponden a los cambios realizados y a las pruebas registradas en el proyecto.
+
+| Paso | Qué se hizo | Para qué |
+|---|---|---|
+| 1. Revisar el código | Se ejecutaron npm audit y Semgrep, se revisaron sus alertas y se aplicaron las correcciones. | Encontrar dependencias vulnerables y partes del código que necesitaban una revisión. |
+| 2. Revisar las imágenes | Se escanearon backend y frontend con Trivy, se actualizaron paquetes y se repitió el escaneo. | Revisar también lo que llega dentro del contenedor, además del código propio. |
+| 3. Ajustar los manifiestos | Se definieron usuarios sin root, recursos y restricciones de seguridad. | Preparar los servicios para ejecutarse con permisos y consumo más controlados. |
+| 4. Validar los despliegues | Se aplicaron las tres políticas de Kyverno y se revisaron los YAML con KubeLinter. | Comprobar las reglas y evitar que se acepten despliegues que las incumplan. |
+| 5. Observar la ejecución | Se instaló Falco y se abrió una shell de prueba dentro de la API. | Comprobar que una actividad sospechosa genere una alerta real. |
+
+Primero se ajustaron los manifiestos y después se activaron las políticas de bloqueo. Esto importa porque, si se activan antes, Kubernetes puede rechazar la recreación de un pod que todavía no cumple las reglas.
+
+### Herramientas utilizadas
+
+La letra pide npm audit, Semgrep, Trivy, Kyverno, KubeLinter y Falco. Cada una revisa una parte distinta; por eso sus resultados se complementan.
+
+| Herramienta | Qué revisa en este proyecto | Qué pasa si encuentra un problema |
+|---|---|---|
+| npm audit | Las dependencias instaladas del frontend. | Genera un reporte para revisar y actualizar paquetes. |
+| Semgrep | El código del backend y del frontend, sin ejecutarlo. | Señala patrones que necesitan revisión. |
+| Trivy | Los paquetes y las dependencias de las imágenes construidas. | Informa las vulnerabilidades conocidas que encuentra. |
+| KubeLinter | Los manifiestos YAML, sin necesitar el clúster. | Informa configuraciones que conviene revisar. |
+| Kyverno | Los recursos que se intentan crear o actualizar en Kubernetes. | Rechaza los que incumplen las políticas configuradas en `Enforce`. |
+| Falco | La actividad de los contenedores mientras están funcionando. | Genera una alerta; no detiene la acción por sí solo. |
+
+Para ejecutar y comprobar todo se usaron Docker Desktop, Minikube y `kubectl`. Minikube permite probar Kubernetes localmente y `kubectl` permite aplicar los YAML, consultar los pods y ejecutar las verificaciones. También se usó Helm para instalar Kyverno y Falco sin tener que preparar a mano todos sus archivos de configuración.
+
+### Cómo quedó la arquitectura
+
+El entorno de prueba usa `frontend-monitoring`, `api-monitoring`, PostgreSQL, Prometheus y Grafana. Sobre ese entorno se agregaron las políticas de Kyverno y la detección de Falco. Se conserva la separación de monitoring que ya tenía el proyecto.
+
+```mermaid
+flowchart TB
+    U["Usuario desde el navegador"]
+    O["Aplicación de manifiestos con kubectl"]
+    subgraph M["Clúster local Minikube"]
+        K["Kyverno · namespace kyverno<br/>Valida las solicitudes de despliegue"]
+        subgraph C["Namespace clinica-veterinaria"]
+            F["Service y Deployment frontend-monitoring<br/>React servido por Nginx · puerto 8080"]
+            A["Service y Deployment api-monitoring<br/>FastAPI · puerto 8000"]
+            D[("Service db<br/>PostgreSQL · StatefulSet")]
+            V[("Volumen persistente de PostgreSQL")]
+            S["Secrets montados como archivos<br/>Contraseña de BD y clave JWT"]
+            P["Prometheus<br/>Recolecta métricas cada 15 segundos"]
+            G["Grafana<br/>Dashboard y reglas de alerta"]
+        end
+        N["API de Kubernetes / cAdvisor<br/>Métricas de CPU y memoria"]
+        E["Eventos del kernel Linux<br/>Actividad de los contenedores"]
+        FAL["Falco · namespace falco<br/>Driver modern_ebpf"]
+    end
+    R["reports/falco-event.log<br/>Copia local mientras el script está abierto"]
+    U --> F
+    U --> G
+    F -->|"Solicitudes /api mediante Nginx"| A
+    A --> D
+    D --> V
+    S -.-> A
+    S -.-> D
+    P -->|"GET /metrics"| A
+    P -->|"Consulta mediante ServiceAccount"| N
+    G -->|"Consultas PromQL"| P
+    O --> K
+    K -.->|"Acepta o rechaza antes de guardar el recurso"| C
+    E --> FAL
+    FAL -->|"Logs JSON leídos por el script"| R
+```
+
+El usuario entra al frontend y Nginx deriva las llamadas de `/api` a FastAPI. La API consulta la base por el Service `db`; los datos de PostgreSQL se guardan en un volumen persistente. Prometheus consulta las métricas de la API y de cAdvisor, y Grafana usa esos datos para sus paneles y alertas.
+
+Kyverno interviene al crear o actualizar recursos de Kubernetes. Falco observa la actividad durante la ejecución. Ninguno está en el recorrido de las solicitudes del navegador hacia la API.
+
+### En qué momento actúa cada control
+
+```mermaid
+flowchart LR
+    C["Código y dependencias<br/>npm audit + Semgrep"] --> I["Imagen construida<br/>Trivy"]
+    I --> Y["Manifiestos YAML<br/>Ajustes de seguridad + KubeLinter"]
+    Y --> K{"Kyverno<br/>¿Cumple las políticas?"}
+    K -->|"No"| R["Rechazo del despliegue<br/>Revisar el manifiesto"]
+    R --> Y
+    K -->|"Sí"| P["Pods en ejecución<br/>Falco observa y genera alertas"]
+```
+
+Este diagrama resume el recorrido de las revisiones. Los análisis se ejecutaron con los comandos documentados abajo; no representa un pipeline automatizado de CI/CD.
+
+### Resultado general
+
+Se actualizaron las dependencias vulnerables del frontend, se agregó una lista de columnas permitidas al actualizar mascotas y se actualizaron las imágenes. También se ajustaron los manifiestos y se comprobó que Kyverno rechaza los casos de prueba que incumplen las políticas. Con Falco se registró la apertura intencional de una shell dentro del backend.
+
+Quedaron alertas revisadas y riesgos documentados, con sus motivos en la sección 6. Los resultados corresponden a los reportes guardados: al repetir un análisis pueden cambiar por nuevas versiones o nuevas vulnerabilidades publicadas.
+
+## 2. Seguridad en el código
 
 **Reportes:** [`npm-audit-inicial.txt`](reports/npm-audit-inicial.txt), [`npm-audit.txt`](reports/npm-audit.txt), [`semgrep-inicial.txt`](reports/semgrep-inicial.txt), [`semgrep.txt`](reports/semgrep.txt).
 
-## 2.1 Herramientas utilizadas
+### 2.1 Qué se revisó primero
+
+La revisión del código tiene dos partes: las bibliotecas que utiliza la aplicación y el código escrito en el proyecto. Se revisan por separado porque una dependencia puede tener una vulnerabilidad conocida, mientras que un error propio puede estar en la forma de construir una consulta o procesar un dato.
 
 | Herramienta | Qué analiza |
 |---|---|
 | **npm audit** | Las dependencias del frontend (`frontend/package.json` y `package-lock.json`) contra la base de vulnerabilidades conocidas de npm. |
 | **Semgrep** | El código fuente propio (análisis estático) mediante reglas que buscan patrones inseguros. |
 
-Versiones: Node 20.19.5, npm 10.8.2 y npm 11.21.1, Semgrep 1.182.1 (imagen oficial `semgrep/semgrep`). Semgrep se ejecutó con `--config auto` sobre 124 archivos (`app/` y `frontend/src/`) con 442 reglas.
+Semgrep se ejecutó con su configuración automática sobre las carpetas `app/` y `frontend/src/`, para revisar tanto el backend como el frontend.
 
-## 2.2 npm audit
+### 2.2 Paso 1 Revisar las dependencias con npm audit
 
-Se ejecutó `npm audit` en `frontend/` y se guardó el resultado:
+Se empezó por las dependencias del frontend. Aunque el código propio esté bien, una biblioteca utilizada por el proyecto puede tener una vulnerabilidad conocida. Se ejecutó `npm audit` dentro de `frontend/` y se guardó una primera salida para poder comparar después. El objetivo fue identificar qué paquetes necesitaban actualizarse y comprobar que el frontend pudiera seguir construyéndose después del cambio:
 ```powershell
 cd frontend
 cmd /c "npm audit > ..\reports\npm-audit-inicial.txt"
 ```
 
-Resultado inicial: 2 vulnerabilidades de severidad HIGH.
+El primer análisis encontró 2 vulnerabilidades HIGH (severidad alta):
 
 | Paquete | Versión afectada | Problema |
 |---|---|---|
-| `source-map-js` | 1.0.0 – 1.2.1 | Denegación de servicio por offsets de source-map indexados (GHSA-68fv-2mgg-jv7q). |
-| `vite` | 8.2.0 – 8.2.2 | Seis advisories: ejecución de scripts entre orígenes, lectura de archivos fuera de `server.fs.allow`, exposición de los primeros 4 bytes de archivos, y tres de `launch-editor`. |
+| `source-map-js` | 1.0.0 – 1.2.1 | Un archivo de mapas de código especialmente preparado podía provocar un consumo excesivo de recursos e interrumpir el procesamiento. |
+| `vite` | 8.2.0 – 8.2.2 | Avisos de seguridad relacionados con la ejecución de scripts y el acceso indebido a archivos desde el servidor de desarrollo. |
 
 Se actualizó `vite` de 8.2.2 a 8.3.5 (`package.json`: `"vite": "^8.3.5"`), lo que también actualizó `source-map-js` de 1.2.1 a 1.2.2 en `package-lock.json`:
 ```powershell
@@ -48,40 +166,40 @@ npx -y npm@11 install vite@^8.3.5
 cmd /c "npx -y npm@11 audit > ..\reports\npm-audit.txt"
 ```
 
-Resultado final: `found 0 vulnerabilities`. El build (`npm run build`) y el lint (`npm run lint`, 0 errores) se ejecutaron con la versión nueva.
+Después de actualizar, se repitió el análisis y el reporte quedó en `found 0 vulnerabilities`. También se ejecutaron `npm run build` y `npm run lint` con la versión nueva, sin errores de lint. Así se comprobó que la actualización permitía seguir construyendo el frontend.
 
-## 2.3 Semgrep
+### 2.3 Paso 2 Revisar el código con Semgrep
 
-Se ejecutó Semgrep con Docker sobre el backend y el frontend:
+Después se revisó el código con Semgrep. Se ejecutó con Docker para usar la herramienta desde su imagen, sin depender de una instalación local en Windows. El análisis se hizo sobre el backend y el frontend. El objetivo fue localizar patrones potencialmente inseguros y revisar el código señalado antes de decidir si se corregía o se mantenía con una justificación:
 ```powershell
 docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/semgrep.txt /src/app /src/frontend/src
 ```
 
-Resultado inicial: 5 hallazgos, todos de la regla `python.sqlalchemy.security.audit.avoid-sqlalchemy-text` (consultas SQL armadas con f-strings dentro de `text()`). El frontend, `Auth`, `config.py` y el middleware no tuvieron hallazgos.
+El análisis inicial encontró 5 hallazgos relacionados con la construcción de consultas SQL. No se detectaron hallazgos en el frontend, la autenticación, la configuración ni el middleware.
 
-Se revisó cada hallazgo en el código:
+Las cinco alertas apuntaban a consultas SQL construidas con f-strings. Para decidir qué hacer, se revisó qué se inserta en cada consulta: un dato recibido del usuario requiere un tratamiento distinto de un fragmento fijo escrito en el código. Las decisiones fueron estas:
 
-| # | Archivo | Se interpola | Decisión |
+| # | Archivo | Qué se inserta en la consulta | Decisión |
 |---|---|---|---|
-| 1 | `app/Mascotas/repository.py` (`actualizar`) | Nombres de columna del `UPDATE` | **Corregido** con una lista blanca de columnas. |
-| 2 | `app/historial/repository.py:94` | `condicion_tipo` | Mantenido: es un literal fijo del código y `tipo` viaja como parámetro. |
+| 1 | `app/Mascotas/repository.py` (`actualizar`) | Nombres de columna del `UPDATE` | **Corregido** con una lista de columnas permitidas. |
+| 2 | `app/historial/repository.py:94` | `condicion_tipo` | Mantenido: la parte insertada está definida en el código y el valor de `tipo` se envía por separado como parámetro. |
 | 3 | `app/historial/repository.py:113` | `condicion_tipo` | Mantenido: igual que el anterior. |
 | 4 | `app/pacientes/repository.py:47` | `where_extra` | Mantenido: se arma con fragmentos fijos; `q` y `especie` viajan como parámetros. |
-| 5 | `app/turnos/repository.py:130` | `condicion_periodo` | Mantenido: sale de un diccionario de 3 claves fijas validadas con `Literal` en el controller. |
+| 5 | `app/turnos/repository.py:130` | `condicion_periodo` | Mantenido: solo permite elegir entre tres períodos definidos en el código; la entrada se valida antes de consultar. |
 
-Corrección en `app/Mascotas/repository.py` (método `actualizar`):
+En la actualización de mascotas se agregó una lista de columnas permitidas. Los valores ya viajaban como parámetros, pero también hacía falta controlar los nombres de las columnas que se incorporan al `UPDATE`. El cambio en `app/Mascotas/repository.py`, método `actualizar`, quedó así:
 - Se agregó `MascotaRepository.COLUMNAS_EDITABLES` con las columnas `nombre`, `raza`, `fecha_nacimiento`, `sexo`, `observaciones` y `estado`.
-- `actualizar` lanza `ValueError` si recibe una columna que no está en la lista.
-- La consulta lleva el comentario `# nosemgrep` con el motivo.
-- Se agregaron 4 tests en `tests/test_mascotas_actualizar.py`: columna no editable, intento de inyección en el nombre de columna, columnas válidas, y coincidencia de la lista con los campos de `MascotaUpdate`.
+- La actualización se rechaza si recibe una columna que no está permitida.
+- Se dejó un comentario en el código para registrar la revisión de esa alerta.
+- Se agregaron cuatro pruebas en `tests/test_mascotas_actualizar.py` para comprobar que se aceptan los campos permitidos y se rechazan los nombres de columna no válidos.
 
-Resultado final: 4 hallazgos, en `app/historial/repository.py` (2), `app/pacientes/repository.py` y `app/turnos/repository.py`.
+Al repetir Semgrep quedaron 4 hallazgos: dos en historial, uno en pacientes y uno en turnos. Se mantuvieron con la justificación de la tabla: los fragmentos interpolados (las partes que se insertan dentro de la consulta SQL) salen del código y los datos del usuario se pasan por separado como parámetros. El comentario `nosemgrep` de mascotas deja registrada la revisión; el control que se agregó es la validación de columnas.
 
-# 3. Seguridad de las imágenes
+## 3. Seguridad de las imágenes
 
-## 3.1. Análisis con Trivy: antes y después
+### 3.1 Paso 1 Escanear las imágenes antes de corregir
 
-Se utilizó **Trivy** para analizar los paquetes del sistema operativo y las dependencias incluidas en `clinica-veterinaria:test` y `clinica-frontend:test`, considerando las severidades **HIGH y CRITICAL**.
+Con el código revisado, se pasó a las imágenes. Una imagen incluye también paquetes del sistema operativo y bibliotecas de terceros. Por eso se usó **Trivy** sobre las imágenes construidas `clinica-veterinaria:test` y `clinica-frontend:test`, filtrando las severidades **HIGH y CRITICAL** (alta y crítica). Se guardó el análisis inicial, se aplicaron los cambios y se repitió el escaneo para comparar:
 
 | Imagen | HIGH iniciales | CRITICAL iniciales | HIGH finales | CRITICAL finales |
 |---|---:|---:|---:|---:|
@@ -89,7 +207,7 @@ Se utilizó **Trivy** para analizar los paquetes del sistema operativo y las dep
 | Frontend | 52 | 2 | 0 | 0 |
 | **Total** | **110** | **5** | **44** | **0** |
 
-Se pasó de **115 a 44 hallazgos**: se eliminaron 71, incluidas las 5 apariciones críticas. Son hallazgos por paquete; no representan necesariamente CVE distintos.
+Se pasó de **115 a 44 hallazgos**: se eliminaron 71, incluidas las 5 apariciones críticas. Una misma vulnerabilidad puede aparecer en varios paquetes; por eso, los 44 hallazgos restantes corresponden a **8 vulnerabilidades distintas**, identificadas mediante códigos CVE (identificadores que se asignan a vulnerabilidades de seguridad conocidas).
 
 Los archivos permiten consultar el antes y el después:
 
@@ -98,15 +216,19 @@ Los archivos permiten consultar el antes y el después:
 | Backend | `reports/trivy-backend-inicial.txt` | `reports/trivy-backend.txt` |
 | Frontend | `reports/trivy-frontend-inicial.txt` | `reports/trivy-frontend.txt` |
 
-## 3.2. Cambios realizados en el backend
+### 3.2 Paso 2 Actualizar la imagen del backend
 
-- **`Dockerfile`:** se fijó la base en `python:3.13.18-slim-trixie` y se agregó `apt-get update` seguido de `apt-get upgrade` para instalar las actualizaciones disponibles de Debian. Se actualizó uv de `0.12.5` a `0.13.6`, se actualizaron las herramientas de instalación y se eliminó pip después de instalar las dependencias. También se configuró el usuario sin privilegios `10001:10001` y el inicio directo de FastAPI desde `.venv`.
+En este paso se buscó reducir las vulnerabilidades de la imagen de la API y dejar su ejecución sin permisos de administrador. Se actualizaron la base y las dependencias afectadas, se definió el usuario que inicia FastAPI y se reconstruyó la imagen para comprobar con Trivy qué hallazgos dejaron de aparecer.
+
+- **`Dockerfile`:** se indicó una versión concreta de la imagen de Python, se instalaron las actualizaciones disponibles de Debian y se actualizaron las herramientas de instalación. También se configuró un usuario sin permisos de administrador para iniciar FastAPI y se quitó pip de la imagen final, porque ya no se necesita después de instalar las dependencias.
 - **`pyproject.toml`:** se actualizaron los requisitos de PyJWT y se establecieron mínimos de seguridad para certifi, dnspython y urllib3.
-- **`uv.lock`:** se regeneró con **uv** a partir del TOML para registrar las versiones resueltas: PyJWT `2.15.1`, certifi `2026.10.23`, dnspython `2.9.1` y urllib3 `2.8.0`.
+- **`uv.lock`:** se actualizó para dejar registradas las versiones de las dependencias utilizadas en la construcción.
 
-Después de reconstruir y reescanear, desaparecieron los **17 hallazgos de Python: 14 HIGH y 3 CRITICAL**.
+Después de reconstruir la imagen y repetir Trivy, dejaron de aparecer los **17 hallazgos de Python: 14 HIGH y 3 CRITICAL**. El usuario `10001:10001` se usa para que FastAPI arranque sin permisos de root. Más adelante se exige ese mismo usuario desde Kubernetes, de modo que la imagen y el manifiesto tengan una configuración coherente.
 
-## 3.3. Cambios realizados en el frontend
+### 3.3 Paso 3 Actualizar la imagen del frontend
+
+La revisión del frontend también incluye el servidor que entrega la página, no solo las dependencias de React. En Kubernetes ese servidor es Nginx sobre Alpine. Se actualizaron los paquetes de esa imagen final para comprobar si se resolvían los hallazgos, conservando la ejecución con el usuario sin privilegios.
 
 Se modificó **`frontend/Dockerfile.k8s`**, utilizado para construir la imagen del frontend de monitoring. En la etapa final de Nginx sobre Alpine se agregó la actualización de paquetes mediante `apk update` y `apk upgrade --no-cache`, usando root durante esa operación y conservando **`USER nginx`** para ejecutar el servicio.
 
@@ -117,28 +239,32 @@ Se reconstruyó la imagen con `--pull --no-cache` y se verificaron estas actuali
 | curl | 8.14.1-r2 | 8.14.1-r4 |
 | libcrypto3 / libssl3 | 3.5.4-r0 | 3.5.9-r0 |
 
-El nuevo análisis pasó de **52 HIGH y 2 CRITICAL a 0**. Este resultado corresponde a la imagen construida con `Dockerfile.k8s`; el Dockerfile de desarrollo con Vite requiere su propia comprobación si también se utiliza.
+El nuevo análisis pasó de **52 HIGH y 2 CRITICAL a 0**. El resultado corresponde a la imagen de Kubernetes construida con `Dockerfile.k8s`.
 
-## 3.4. Por qué quedan 44 hallazgos de Debian
+### 3.4 Paso 4 Revisar lo que sigue apareciendo
+
+Después de actualizar, se revisaron las alertas que seguían presentes para identificar los paquetes afectados y consultar si había una versión corregida disponible. Así se distinguió lo que pudo resolverse de lo que quedó como riesgo documentado.
 
 Los **44 HIGH restantes corresponden a 8 CVE distintos**, repetidos en paquetes como util-linux, ncurses, libacl, bibliotecas de systemd y perl-base. El reporte no indica una versión corregida en `Fixed Version`.
 
-El archivo **`debian-versiones.txt`** compara `Installed` y `Candidate` de cinco paquetes representativos, tras actualizar los índices de los repositorios configurados, incluido `trixie-security`. Ambas versiones coinciden en esos cinco casos: al consultar, APT no ofrecía una versión más nueva para ellos.
+En **`reports/debian-versiones.txt`** se guardó la consulta de cinco paquetes representativos. Se comparó la versión instalada con la disponible en los repositorios de Debian: coincidían en los cinco casos, por lo que no había una actualización disponible para esos paquetes al momento de la consulta.
 
-Se mantienen **documentados como riesgo residual**. Esto no significa que sean seguros ni que no exista una corrección en otra distribución o versión: deberán reevaluarse cuando haya parches disponibles para la base utilizada. Ejecutar sin root reduce ciertos riesgos, pero no elimina estos CVE.
+Estos hallazgos quedan **documentados como riesgo residual**, ya que al momento del análisis no había una versión corregida disponible en los repositorios consultados. Ejecutar sin root reduce ciertos riesgos, pero no elimina estas vulnerabilidades.
 
-## 3.5. Comandos de construcción y escaneo
+### 3.5 Comandos utilizados para construir y analizar las imágenes
 
-Ejecutar en **PowerShell, desde la raíz del repositorio**, con Docker Desktop iniciado y configurado para contenedores Linux.
+Para comprobar los cambios, se reconstruyeron las imágenes del backend y del frontend y se analizaron nuevamente con Trivy. A continuación se muestran los comandos utilizados para guardar los reportes y comparar los resultados con el análisis inicial.
 
-### Preparar la carpeta de reportes
+Los comandos se ejecutaron en **PowerShell, desde la raíz del repositorio**, con Docker Desktop iniciado y configurado para contenedores Linux.
+
+#### Preparación de la carpeta de reportes
 
 ~~~powershell
 New-Item -ItemType Directory -Force -Path .\reports | Out-Null
 $reportsPath = (Resolve-Path .\reports).Path
 ~~~
 
-### Construir las imágenes
+#### Construcción de las imágenes
 
 **Backend**, usando el `Dockerfile` de la raíz:
 
@@ -154,7 +280,7 @@ docker build --pull --no-cache -f .\frontend\Dockerfile.k8s --build-arg NGINX_CO
 
 `--pull` consulta las imágenes base y `--no-cache` reconstruye las capas sin reutilizar la caché de construcción.
 
-### Escanear y guardar los reportes
+#### Escaneo y guardado de los reportes
 
 **Backend:**
 
@@ -168,36 +294,38 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath)
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-frontend.txt clinica-frontend:test
 ~~~
 
-Trivy analiza las imágenes locales de Docker. `--output` guarda el reporte de vulnerabilidades en la carpeta `reports` del proyecto. El volumen `petcore-trivy-cache` conserva la caché de Trivy; es independiente de la caché utilizada al construir las imágenes.
+Trivy analizó las imágenes locales de Docker y guardó los resultados en `reports/` mediante la opción `--output`.
 
-Estos comandos generan los **reportes finales**. Conservar los archivos iniciales con nombres distintos para mantener la comparación.
+Con estos comandos se generaron los **reportes finales**. Los archivos iniciales se conservaron con nombres distintos para mantener la comparación.
 
-# 4. Seguridad en Kubernetes
+## 4. Seguridad en Kubernetes
 
-Esta sección cubre la seguridad de los manifiestos y del clúster. Primero se endurecieron los manifiestos de los despliegues (4.1) y luego se definieron políticas que impiden desplegar recursos que no cumplan esas reglas (4.2). El análisis con KubeLinter se documenta en la sección 4.3.
+Con las imágenes preparadas, se revisó cómo se ejecutan dentro de Kubernetes. Primero se ajustaron los manifiestos, después se activaron las políticas de Kyverno y, por último, se revisaron los YAML con KubeLinter. Son controles complementarios: uno cambia la configuración, otro la hace obligatoria al desplegar y otro deja un reporte para revisar.
 
-## 4.1 Hardening de manifiestos
+### 4.1 Paso 1 Ajustar la seguridad de los manifiestos
 
-### Objetivo, herramientas y alcance
+#### Objetivo, herramientas y alcance
 
-Un manifiesto de Kubernetes sin ajustes explícitos ejecuta los contenedores con el usuario que defina la imagen (con frecuencia root), sin límites de CPU ni de memoria y con privilegios que casi ninguna aplicación necesita. El hardening consiste en declarar esas restricciones de forma explícita en cada manifiesto, para reducir el daño posible si un contenedor falla o es comprometido.
+A estos ajustes se les suele llamar *hardening*. En este proyecto consistió en dejar explícito con qué usuario corre cada servicio, qué recursos solicita, cuánto puede consumir y qué privilegios se le quitan. Por ejemplo, la API necesita atender solicitudes y consultar PostgreSQL; no necesita ejecutarse como root ni acceder a la API interna de Kubernetes.
 
 Herramientas utilizadas:
 
 - **Minikube:** clúster de Kubernetes local donde se despliega y se prueba el proyecto, dentro del namespace `clinica-veterinaria`.
 - **kubectl**, ejecutado como `minikube kubectl --`: aplica los manifiestos (`apply`), espera a que terminen los despliegues (`rollout status`), lista los pods (`get pods`) y ejecuta comandos dentro de ellos (`exec`), por ejemplo `id` para comprobar con qué usuario corre realmente el proceso.
-- **Git:** cada manifiesto endurecido se guardó en un commit propio.
+- **Git:** se utilizó para guardar los cambios en los manifiestos.
 - **`scripts/k8s-up-monitoring.ps1`:** levanta el entorno completo, y se usó para comprobar que todo arranca con los manifiestos nuevos.
 
 Estas herramientas ya formaban parte del entorno del proyecto, por lo que no requirieron instalación adicional.
 
-**Alcance.** Se endurecieron los nueve manifiestos que crean pods: ocho `Deployment` (`prometheus`, `grafana`, `frontend-monitoring`, `api-monitoring`, `api-blue`, `api-green`, `frontend-blue` y `frontend-green`) y el `StatefulSet` de PostgreSQL. No se modificaron los Services, los ConfigMaps, el namespace, los permisos de Prometheus (`prometheus-rbac.yaml`) ni `falco-values.yaml`, porque ninguno define pods.
+**Alcance.** Se endurecieron los nueve manifiestos que crean pods: ocho `Deployment` (`prometheus`, `grafana`, `frontend-monitoring`, `api-monitoring`, `api-blue`, `api-green`, `frontend-blue` y `frontend-green`) y el `StatefulSet` de PostgreSQL. Los cambios de este paso se concentraron en las plantillas que crean pods; los Services, ConfigMaps y permisos de Prometheus quedaron fuera de este ajuste. La configuración de Falco se explica en la sección 5.
 
-**Método.** Para cada manifiesto se repitió el mismo ciclo: agregar `resources` y `securityContext`, aplicar el cambio con `kubectl apply`, esperar el despliegue con `rollout status`, comprobar que el pod quedara en `Running` y con el usuario esperado, y guardar el cambio en un commit. Se avanzó de menor a mayor riesgo: Prometheus, Grafana, PostgreSQL, frontend y API.
+**Método.** Se ajustaron los recursos y permisos en los manifiestos. En el entorno de monitoreo se aplicaron los cambios con `kubectl apply`, se esperó a que los servicios terminaran de desplegarse y se comprobó su estado y usuario. El alcance de las verificaciones de los manifiestos adicionales se indica al final de este apartado.
 
-### Tags de imagen fijos
+#### Elegir versiones explícitas para las imágenes
 
-Los manifiestos de Grafana y Prometheus usaban la etiqueta `latest`, que no identifica una versión concreta: el contenido de la imagen puede cambiar entre despliegues y el resultado no es reproducible. Se reemplazó por la versión exacta que ya estaba corriendo en el clúster, de modo que el comportamiento no cambia.
+Antes de aplicar las políticas se revisaron las etiquetas de las imágenes para identificar la versión de cada servicio y evitar el uso de latest. Se consultaron las versiones que estaban funcionando y se dejaron indicadas en los YAML.
+
+Grafana y Prometheus usaban `latest`. Esa etiqueta no dice qué versión se va a ejecutar, así que se consultaron las versiones que estaban corriendo y se indicaron en sus manifiestos. Esto permite identificar mejor qué se está desplegando y cumplir la política que prohíbe `latest`.
 
 Para no adivinar la versión, se consultó directamente a los pods en ejecución:
 
@@ -211,123 +339,139 @@ minikube kubectl -- exec deploy/prometheus -n clinica-veterinaria -- prometheus 
 | `k8s/grafana-deployment.yaml` | `grafana/grafana:latest` | `grafana/grafana:13.2.4` |
 | `k8s/prometheus-deployment.yaml` | `prom/prometheus:latest` | `prom/prometheus:v3.15.0` |
 
-Se fijó el número de versión de la imagen oficial, y no un tag propio con la fecha, porque esos registries no publican tags por fecha y un tag propio sobre una imagen de terceros no garantiza qué contenido tiene.
+Se usaron los números de versión publicados por las imágenes oficiales. Las imágenes propias conservan sus etiquetas explícitas, como `monitoring`, `v1` y `v2`.
 
-Tras aplicar los cambios con `kubectl apply`, se comprobó con `rollout status` que ambos Deployments se actualizaron y que los pods quedaron en estado `Running`.
+Tras aplicar los cambios con `kubectl apply`, se comprobó con `rollout status` que los Deployments de Grafana y Prometheus se actualizaron y que sus pods quedaron en estado `Running`.
 
-### Límites de recursos y contexto de seguridad
+#### Límites de recursos y contexto de seguridad
 
-A cada contenedor se le agregaron límites de recursos y un `securityContext`. Estos son los conceptos aplicados:
+Se definieron los recursos y permisos de cada servicio para reducir el impacto de un consumo excesivo o de un proceso comprometido. Se mantuvieron los accesos de escritura que las aplicaciones utilizan para funcionar.
 
-- **`resources.requests` y `resources.limits`:** los *requests* son la CPU y la memoria que el planificador reserva para el pod; los *limits* son el máximo que puede consumir. Sin ellos, un pod con un error puede agotar los recursos del nodo y afectar a los demás.
-- **`runAsNonRoot`, `runAsUser` y `runAsGroup`:** obligan a que el proceso corra con un usuario sin privilegios, con un UID explícito que Kubernetes puede verificar.
-- **`fsGroup`:** asigna un grupo propietario a los volúmenes montados, para que un proceso sin root pueda leerlos y escribirlos.
-- **`seccompProfile: RuntimeDefault`:** restringe las llamadas al sistema que el contenedor puede hacer al conjunto estándar del runtime.
-- **`allowPrivilegeEscalation: false`:** impide que un proceso obtenga más privilegios que los de su proceso padre.
-- **`capabilities.drop: ALL`:** quita al contenedor todas las capacidades especiales de Linux, que ninguno de estos servicios necesita.
-- **`readOnlyRootFilesystem`:** hace de solo lectura el sistema de archivos del contenedor. Solo se aplica donde la aplicación no necesita escribir en él.
+Se configuraron los siguientes controles:
 
-#### Prometheus
+- **Recursos de CPU y memoria (`requests` y `limits`):** indican lo que cada servicio solicita y los topes de consumo, para reducir el impacto sobre los demás servicios.
+- **Usuario sin root (`runAsNonRoot` y `runAsUser`):** indican con qué usuario se ejecuta el contenedor y exigen que no sea el administrador.
+- **Acceso a archivos montados (`fsGroup`):** permite ajustar el grupo que utiliza los archivos compartidos con el contenedor.
+- **Restricciones de permisos:** se impidió que los procesos aumenten sus privilegios, se quitaron capacidades especiales innecesarias y se aplicó el perfil de seguridad predeterminado del entorno.
+- **Sistema de archivos (`readOnlyRootFilesystem`):** controla si el contenedor puede escribir en su propio sistema de archivos. En este proyecto se mantuvo la escritura, con los motivos indicados en cada servicio.
 
-Se definió `requests` de 100m de CPU y 256Mi de memoria, y `limits` de 500m y 512Mi. El proceso corre con el usuario `nobody` (UID y GID 65534), que es el predeterminado de la imagen, con `fsGroup` igual para que pueda leer el token del ServiceAccount y el ConfigMap montados.
+##### Prometheus
+
+En el manifiesto de Prometheus se configuraron los recursos de CPU y memoria y se indicó que debía ejecutarse con un usuario sin permisos de administrador. También se ajustó el grupo de acceso a los archivos montados. Estos valores se aplicaron al desplegar el manifiesto con `kubectl apply`.
 
 No se activó `readOnlyRootFilesystem`: Prometheus escribe su base de datos de series temporales en `/prometheus`, dentro del sistema de archivos del contenedor, y hacerlo de solo lectura impediría que funcione.
 
-Tras aplicar el cambio, el pod quedó en `Running` sin reinicios, el proceso se ejecuta con UID 65534 y Prometheus siguió recolectando métricas de todos sus targets, incluido cAdvisor, que depende del token del ServiceAccount.
+Tras aplicar el cambio, el pod quedó en `Running` sin reinicios. Para comprobar con qué usuario se estaba ejecutando Prometheus, se ejecutó el siguiente comando dentro del contenedor:
 
-#### Grafana
+```powershell
+minikube kubectl -- exec deploy/prometheus -n clinica-veterinaria -- id
+```
 
-Se definió `requests` de 100m de CPU y 128Mi de memoria, y `limits` de 500m y 512Mi. El límite de memoria es más holgado que en los demás servicios porque Grafana tiene un consumo mayor durante el arranque, cuando migra su base interna y carga plugins y el contenido provisionado.
+La salida mostró `uid=65534(nobody)`. De ahí sale el número 65534: es el identificador del usuario `nobody` dentro del contenedor y confirma que el proceso se ejecuta sin permisos de administrador. El resultado quedó guardado en `reports/hardening-verificacion.txt`. También se comprobó que Prometheus siguió recolectando las métricas de sus fuentes, incluido cAdvisor, para el que utiliza el token del ServiceAccount.
 
-El proceso corre con el usuario `grafana` (UID 472), el predeterminado de la imagen oficial, con `fsGroup` igual para que pueda leer los ConfigMaps montados con el datasource, el dashboard y las reglas de alerta. Ya tenía deshabilitado el montaje automático del token del ServiceAccount, porque Grafana no necesita acceder a la API de Kubernetes.
+##### Grafana
+
+En el manifiesto de Grafana se configuraron los recursos de CPU y memoria. Se dejó un margen de memoria para el arranque, cuando carga los plugins, los paneles y las alertas configuradas. Estos valores se aplicaron al desplegar el manifiesto con `kubectl apply`.
+
+Para comprobar que Grafana se ejecutaba sin permisos de administrador y que la configuración se había aplicado correctamente, se consultó el usuario del proceso dentro del contenedor:
+
+```powershell
+minikube kubectl -- exec deploy/grafana -n clinica-veterinaria -- id
+```
+
+La salida mostró `uid=472(grafana)`. El UID es el número que identifica al usuario dentro del contenedor: en este caso, 472 corresponde al usuario `grafana` de la imagen oficial. Como el usuario administrador (`root`) tiene el UID 0, este resultado permite comprobar que el proceso se ejecuta con otro usuario, sin permisos de administrador. La evidencia quedó guardada en `reports/hardening-verificacion.txt`.
+
+También se configuró el grupo de acceso a los archivos montados para que Grafana pudiera leer la conexión a Prometheus, el dashboard y las reglas de alerta. El montaje automático del token del ServiceAccount ya estaba deshabilitado: Grafana no necesita esa credencial porque no consulta la API interna de Kubernetes.
 
 No se activó `readOnlyRootFilesystem`: Grafana guarda su base de datos SQLite y sus plugins en `/var/lib/grafana`, dentro del sistema de archivos del contenedor.
 
 Luego de aplicado el cambio, el pod quedó en `Running`, corre con UID 472 y siguen cargando el dashboard y las dos reglas de alerta.
 
-#### PostgreSQL
+##### PostgreSQL
 
-Se definió `requests` de 100m de CPU y 256Mi de memoria, y `limits` de 500m y 512Mi. El servidor corre con el usuario `postgres` (UID y GID 999) de la imagen oficial, con `fsGroup` igual para acceder al volumen de datos. Al iniciar ya con ese usuario, el script de arranque de la imagen omite el paso que requiere root (cambiar el dueño de los archivos y bajar privilegios con `gosu`), por lo que el contenedor nunca se ejecuta como root.
+En el manifiesto de PostgreSQL se configuraron los recursos de CPU y memoria y se indicó que debía ejecutarse con el usuario `postgres`, sin permisos de administrador del sistema operativo. También se ajustó el grupo de acceso al volumen donde se guardan los datos. Estos valores se aplicaron al desplegar el manifiesto con `kubectl apply`.
 
-Como el cambio recrea el pod, se verificó que los datos persistentes se conservaran: la cantidad de filas de la tabla `usuario` fue la misma antes y después de aplicar el manifiesto, y el volumen persistente no se modificó.
+Para comprobar que la configuración del usuario se había aplicado, se ejecutó el siguiente comando dentro del contenedor:
 
-No se activó `readOnlyRootFilesystem`: además del directorio de datos, PostgreSQL escribe el socket y los archivos de bloqueo en `/var/run/postgresql`, dentro del sistema de archivos del contenedor.
+```powershell
+minikube kubectl -- exec postgres-0 -n clinica-veterinaria -- id
+```
 
-#### Frontend (monitoring)
+La salida mostró `uid=999(postgres) gid=999(postgres)`. Estos números identifican al usuario y a su grupo dentro del contenedor. El UID 999 corresponde al usuario `postgres`; como es distinto de 0, que identifica a `root`, se comprobó que el comando se ejecutó con un usuario sin permisos de administrador del sistema operativo. Esto verifica el usuario configurado para la ejecución del contenedor; no describe los permisos que tienen las cuentas dentro de la base de datos. La evidencia quedó guardada en `reports/hardening-verificacion.txt`.
 
-Se definió `requests` de 50m de CPU y 64Mi de memoria, y `limits` de 250m y 128Mi, suficientes para un servidor Nginx que solo entrega archivos estáticos.
+PostgreSQL tiene configurado un volumen persistente para conservar los datos cuando se reemplaza el pod. El reporte guardado confirma su estado y usuario; no incluye una comparación de la cantidad de registros antes y después del cambio.
 
-La imagen se construye sobre `nginx-unprivileged`, que ya ejecuta el servicio con el usuario `nginx` y escucha en el puerto 8080, por lo que no necesita privilegios para abrir puertos. Como el `Dockerfile` declara el usuario por nombre y no por número, Kubernetes no puede comprobar que no sea root; por eso se fijó explícitamente `runAsUser: 101`, con lo que `runAsNonRoot` queda verificable. No se definió `fsGroup` porque el pod no monta volúmenes de datos.
+No se activó `readOnlyRootFilesystem`: PostgreSQL necesita escribir tanto sus datos como archivos de funcionamiento dentro del contenedor.
 
-No se activó `readOnlyRootFilesystem`: Nginx escribe archivos temporales y su PID en `/tmp`, por lo que requeriría montar un volumen `emptyDir` en esa ruta y repetir las pruebas. Queda como mejora futura.
+##### Frontend (monitoring)
+
+En el manifiesto de `frontend-monitoring` se configuraron los recursos de CPU y memoria para el servidor Nginx, que entrega los archivos de la página web. Se usaron valores de partida para el entorno de pruebas y se aplicaron al desplegar el manifiesto con `kubectl apply`.
+
+La imagen utilizada, `nginx-unprivileged`, ya incluye un usuario llamado `nginx`, identificado dentro de esa imagen con el número 101. Ese número no se eligió para el proyecto: corresponde al usuario que trae la imagen y se comprobó con el comando `id` que se muestra a continuación. En el manifiesto se escribió `runAsUser: 101` para indicarle a Kubernetes que ejecute el contenedor con ese usuario. Junto con `runAsNonRoot: true`, esta configuración exige que se ejecute sin el usuario administrador (`root`, cuyo número es 0). Nginx escucha en el puerto 8080, que puede utilizar sin esos permisos. No hizo falta configurar un grupo de acceso a volúmenes de datos porque este pod no los monta.
+
+Para verificar que se estaba usando el usuario configurado, se ejecutó el siguiente comando dentro del contenedor:
+
+```powershell
+minikube kubectl -- exec deploy/frontend-monitoring -n clinica-veterinaria -- id
+```
+
+La salida mostró `uid=101(nginx) gid=101(nginx)`. El UID identifica al usuario y el GID a su grupo dentro del contenedor. En este caso ambos corresponden a `nginx`; el UID 101 es distinto de 0, que identifica al administrador (`root`). El resultado permite comprobar que el usuario configurado se aplicó y que la ejecución se realiza sin root. La evidencia quedó guardada en `reports/hardening-verificacion.txt`.
+
+No se activó `readOnlyRootFilesystem`: se mantuvo la escritura en el sistema de archivos del contenedor, que Nginx utiliza para sus archivos temporales y su PID en `/tmp`.
 
 Tras aplicar el cambio, el pod quedó en `Running`, el proceso corre con UID 101 y la aplicación siguió funcionando de punta a punta (inicio de sesión y listado de turnos a través de la API de monitoreo).
 
-#### API de monitoreo
+##### API de monitoreo
 
-El manifiesto ya definía `requests` de 100m de CPU y 128Mi de memoria, y `limits` de 1 CPU y 512Mi. Se mantuvieron sin cambios porque los indicadores de CPU y RAM del dashboard calculan el porcentaje de uso respecto de esos límites.
+El manifiesto de la API de monitoreo ya tenía configurados los recursos de CPU y memoria. Se conservaron esos valores, que también se utilizan como referencia para mostrar los porcentajes de consumo en el dashboard. Los cambios de seguridad se aplicaron al desplegar el manifiesto con `kubectl apply`.
 
-La imagen se construye con un usuario sin privilegios (`10001:10001`) y arranca directamente con él. Se fijó el mismo UID de forma explícita en el pod con `runAsUser: 10001` y `runAsNonRoot: true`, de modo que Kubernetes lo exija y lo verifique. Además se agregaron `seccompProfile: RuntimeDefault`, `allowPrivilegeEscalation: false` y la eliminación de todas las capacidades de Linux. No se definió `fsGroup` porque los únicos volúmenes son Secrets montados en solo lectura.
+En el Dockerfile del backend se creó el usuario `app` con el número de identificación 10001 y se configuró la imagen para iniciar con él. En este caso el número se definió al construir la imagen. Se indicó el mismo valor en el manifiesto, mediante `runAsUser: 10001`, junto con `runAsNonRoot: true`, para que Kubernetes ejecute el contenedor con ese usuario y exija que no sea root.
 
-No se activó `readOnlyRootFilesystem`: no se probó la aplicación con el sistema de archivos en solo lectura, y requeriría al menos un volumen `emptyDir` en `/tmp`. Queda como mejora futura.
+Para comprobar que esa configuración se había aplicado, se consultó el usuario dentro del contenedor:
+
+```powershell
+minikube kubectl -- exec deploy/api-monitoring -n clinica-veterinaria -- id
+```
+
+La salida mostró `uid=10001(app) gid=10001(app)`. El UID identifica al usuario y el GID a su grupo dentro del contenedor. El resultado coincide con el usuario `app` creado en el Dockerfile y con el número indicado en el manifiesto. Al ser distinto de 0, que identifica a `root`, permite comprobar que la ejecución se realiza con el usuario configurado sin permisos de administrador. La evidencia quedó guardada en `reports/hardening-verificacion.txt`.
+
+También se agregaron restricciones para impedir que los procesos obtengan más privilegios y para quitar capacidades especiales de Linux que la API no necesita. No hizo falta configurar un grupo de acceso adicional para los volúmenes, porque solo se montan archivos de Secrets en modo de lectura.
+
+No se activó `readOnlyRootFilesystem` en la API. Se conservó el sistema de archivos con escritura; el funcionamiento de la aplicación en modo de solo lectura no formó parte de las pruebas realizadas.
 
 Tras aplicar el cambio, el pod quedó en `Running` sin reinicios, Prometheus siguió recolectando sus métricas y la aplicación funcionó de punta a punta (inicio de sesión y listado de turnos).
 
-#### Despliegues Blue/Green
+##### Alcance de los manifiestos adicionales
 
-Los cuatro Deployments de las versiones Blue y Green (`api-blue`, `api-green`, `frontend-blue` y `frontend-green`) pertenecen al Entregable 1 y el script de monitoreo no los despliega, pero se endurecieron con los mismos criterios que los demás para que cualquier despliegue posterior cumpla las políticas de la sección 4.2.
+Los ajustes también se incorporaron a los YAML `api-blue`, `api-green`, `frontend-blue` y `frontend-green`, porque forman parte de los manifiestos que revisan las herramientas. Se mantuvieron las etiquetas `v1` y `v2` y los scripts de despliegue existentes.
 
-Las APIs usan los mismos recursos que la API de monitoreo (requests de 100m y 128Mi, limits de 1 CPU y 512Mi) y el UID 10001; los frontends usan los mismos valores que el frontend de monitoring (requests de 50m y 64Mi, limits de 250m y 128Mi) y el UID 101. Todos agregan `runAsNonRoot`, `seccompProfile: RuntimeDefault`, `allowPrivilegeEscalation: false` y `drop: ALL`. Las etiquetas `v1` y `v2` de las imágenes ya eran explícitas.
+En la evidencia de esta etapa, `frontend-blue` se aplicó y quedó en `Running`; los otros tres se validaron con `--dry-run=server`. Esa validación comprueba que Kyverno acepta el manifiesto, pero no prueba el arranque de la imagen con el usuario configurado. El alcance de la prueba se deja registrado sin cambiar el funcionamiento previsto para esos despliegues.
 
-**Estado de cada uno.** `frontend-blue` se aplicó en el clúster y quedó en `Running`. `api-blue`, `api-green` y `frontend-green` se validaron con `kubectl apply --dry-run=server` y Kyverno los aceptó (sección 4.2), pero no se aplicaron: siguen corriendo con los manifiestos anteriores. Tampoco se comprobó que las imágenes `clinica-veterinaria:v1` y `v2` arranquen con el UID 10001, porque se construyeron antes de que el `Dockerfile` creara ese usuario sin privilegios (sección 3). Antes de aplicar esos manifiestos conviene verificarlo con `kubectl exec ... -- id`. Esto queda registrado como limitación.
-
-### Resumen por manifiesto
-
-| Manifiesto | Tag | Resources | securityContext | Notas |
-|---|---|---|---|---|
-| `prometheus-deployment.yaml` | `latest` → `v3.15.0` | requests 100m/256Mi, limits 500m/512Mi | UID/GID 65534, `runAsNonRoot`, `fsGroup`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | `readOnlyRootFilesystem` no aplicado: escribe la base TSDB en `/prometheus` |
-| `grafana-deployment.yaml` | `latest` → `13.2.4` | requests 100m/128Mi, limits 500m/512Mi | UID/GID 472, `runAsNonRoot`, `fsGroup`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | `readOnlyRootFilesystem` no aplicado: escribe SQLite y plugins en `/var/lib/grafana`. Ya tenía el token del ServiceAccount deshabilitado |
-| `postgres-statefulset.yaml` | `postgres:18` (ya tenía tag fijo) | requests 100m/256Mi, limits 500m/512Mi | UID/GID 999, `runAsNonRoot`, `fsGroup`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | `readOnlyRootFilesystem` no aplicado: escribe en `/var/run/postgresql`. Verificada la persistencia de datos tras el cambio |
-| `frontend-monitoring-deployment.yaml` | `clinica-frontend:monitoring` (ya tenía tag explícito) | requests 50m/64Mi, limits 250m/128Mi | UID/GID 101, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: no monta volúmenes. `readOnlyRootFilesystem` no aplicado: Nginx necesitaría un `emptyDir` en `/tmp`; mejora futura |
-| `api-monitoring-deployment.yaml` | `clinica-veterinaria:monitoring` (ya tenía tag explícito) | requests 100m/128Mi, limits 1/512Mi (ya definidos, sin cambios) | UID/GID 10001, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: solo monta Secrets de solo lectura. `readOnlyRootFilesystem` no aplicado: no se probó la aplicación en solo lectura; mejora futura |
-| `api-blue-deployment.yaml` / `api-green-deployment.yaml` | `clinica-veterinaria:v1` / `v2` (ya eran explícitos) | requests 100m/128Mi, limits 1/512Mi | UID/GID 10001, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: solo Secrets de solo lectura. Validados con dry-run del servidor, no aplicados en el clúster. Falta comprobar que las imágenes `v1`/`v2` arranquen con UID 10001. `readOnlyRootFilesystem` no aplicado |
-| `frontend-blue-deployment.yaml` / `frontend-green-deployment.yaml` | `clinica-frontend:v1` / `v2` (ya eran explícitos) | requests 50m/64Mi, limits 250m/128Mi | UID/GID 101, `runAsNonRoot`, seccomp `RuntimeDefault`, sin escalada, `drop: ALL` | Sin `fsGroup`: no monta volúmenes. `frontend-blue` aplicado y en `Running`; `frontend-green` solo validado con dry-run. `readOnlyRootFilesystem` no aplicado |
-
-### Verificación final
+#### Verificación final
 
 Tras aplicar el hardening, los pods de monitoreo (`api-monitoring`, `frontend-monitoring`, `grafana`, `prometheus` y `postgres-0`) quedaron en `Running` con `READY 1/1`; `api-monitoring`, `frontend-monitoring`, `grafana` y `prometheus` con 0 reinicios. Los manifiestos también fueron aceptados por las políticas de Kyverno de la sección 4.2.
 
-### Limitaciones del hardening
+#### Limitaciones del hardening
 
-- **`readOnlyRootFilesystem` no se aplicó en ningún manifiesto.** Cada aplicación escribe en alguna ruta de su sistema de archivos; habilitarlo requiere montar volúmenes `emptyDir` en esas rutas y repetir las pruebas. Queda como mejora futura.
+- **`readOnlyRootFilesystem` no se aplicó en ningún manifiesto.** Se mantuvo el sistema de archivos con escritura. Esta decisión queda reflejada en los hallazgos de KubeLinter y en las justificaciones de cada servicio.
 - **Los valores de CPU y memoria son valores de partida** para un entorno de pruebas y no se calibraron con pruebas de carga.
-- **Blue/Green:** tres de los cuatro manifiestos endurecidos no se aplicaron en el clúster, y falta comprobar que las imágenes `v1` y `v2` arranquen con un usuario sin privilegios.
+- **Alcance de la comprobación:** tres manifiestos adicionales se validaron con dry-run del servidor. Esa prueba confirma que pasan las políticas, pero no permite afirmar que se probó el arranque de sus imágenes.
 
-## 4.2 Políticas con Kyverno
+### 4.2 Paso 2 Hacer obligatorias las reglas con Kyverno
 
-### Herramientas
+Una vez ajustados los manifiestos, se instalaron y activaron las tres políticas pedidas: no usar latest, declarar recursos y ejecutar sin root. El objetivo fue hacer obligatorias esas condiciones al desplegar. Para comprobarlo, se intentó crear casos que incumplían las reglas y otro que sí las cumplía.
 
-**Kyverno** es un motor de políticas para Kubernetes. Las políticas se escriben como recursos de Kubernetes en YAML, sin aprender un lenguaje adicional, y Kyverno las aplica como controlador de admisión: intercepta cada solicitud que llega a la API antes de que el objeto se guarde y la valida contra las políticas definidas. Con la acción `Enforce`, una solicitud que incumple una política se rechaza y el recurso no se crea. Kyverno se compone de varios controladores (admisión, segundo plano, informes y limpieza) que se despliegan en su propio namespace.
+#### Herramientas
 
-**Helm** es el gestor de paquetes de Kubernetes. Instala aplicaciones completas a partir de *charts* (conjuntos de manifiestos parametrizables) con un solo comando y permite fijar la versión instalada. Se usó para instalar Kyverno y también se usa para Falco (sección 5).
+**Kyverno** comprueba las reglas cuando se intenta crear o actualizar un recurso. Es lo que Kubernetes llama un *controlador de admisión*: revisa la solicitud antes de que se guarde. En este caso se configuró en `Enforce`, por lo que un manifiesto que incumple las políticas se rechaza. Así, los ajustes del paso anterior también quedan como una condición para los próximos despliegues.
 
-### Instalación
+**Helm** permite instalar herramientas en Kubernetes a partir de paquetes de configuración preparados. Se utilizó para instalar Kyverno y Falco.
 
-**Helm.** En Windows, se instaló descargando el binario oficial de Helm 3 (`helm.exe`) en una carpeta del usuario y agregándola al `PATH`:
+#### Instalación
 
-```powershell
-$v = "v3.21.0"
-$dest = "$env:USERPROFILE\tools\helm"
-New-Item -ItemType Directory -Force -Path $dest | Out-Null
-Invoke-WebRequest -Uri "https://get.helm.sh/helm-$v-windows-amd64.zip" -OutFile "$env:TEMP\helm.zip"
-Expand-Archive -Path "$env:TEMP\helm.zip" -DestinationPath "$env:TEMP\helm-extract" -Force
-Copy-Item "$env:TEMP\helm-extract\windows-amd64\helm.exe" -Destination $dest -Force
-[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path","User") + ";$dest", "User")
-$env:Path += ";$dest"
-helm version
-```
+Se instaló Kyverno con Helm, indicando una versión concreta para mantener la misma configuración utilizada durante las pruebas.
 
-**Kyverno.** Se instaló con Helm en el namespace `kyverno`, fijando la versión del chart:
+Los comandos utilizados fueron:
 
 ```powershell
 helm repo add kyverno https://kyverno.github.io/kyverno/
@@ -336,9 +480,7 @@ helm search repo kyverno/kyverno --versions | Select-Object -First 12
 helm install kyverno kyverno/kyverno -n kyverno --create-namespace --version 3.9.2
 ```
 
-`helm search` lista los charts disponibles junto con la versión de Kyverno que trae cada uno. Se eligió el chart `3.9.2`, que corresponde a Kyverno `v1.19.2`, el último parche de la serie 1.19 al momento de la instalación. La versión se fijó porque `ClusterPolicy`, el tipo de recurso usado en las políticas, está marcado como deprecado desde Kyverno 1.17; la 1.19 es la última versión con soporte completo y su eliminación está prevista para la 1.20. Sin fijar la versión, una instalación futura podría no aceptar las políticas.
-
-Para comprobar la instalación:
+Para comprobar la instalación, se ejecutaron estas consultas:
 
 ```powershell
 helm list -n kyverno
@@ -346,24 +488,24 @@ minikube kubectl -- get pods -n kyverno
 minikube kubectl -- get crd | Select-String "clusterpolicies"
 ```
 
-`helm list` muestra el chart `kyverno-3.9.2` con versión de aplicación `v1.19.2`, los pods del namespace `kyverno` quedaron en `Running` y existe la definición de recurso `clusterpolicies.kyverno.io`.
+La consulta confirmó la instalación de Kyverno, sus pods quedaron en `Running` y Kubernetes reconoció el tipo de recurso utilizado para definir las políticas.
 
-### Políticas definidas
+#### Políticas definidas
 
-Las tres políticas están en `k8s/policies/` como `ClusterPolicy`:
+Las tres políticas quedaron guardadas en `k8s/policies/`:
 
 | Política | Archivo | Qué exige |
 |---|---|---|
-| `disallow-latest-tag` | `disallow-latest-tag.yaml` | Dos reglas: la imagen debe declarar un tag (patrón `*:*`) y ese tag no puede ser `latest` (patrón `!*:latest`). |
+| `disallow-latest-tag` | `disallow-latest-tag.yaml` | La imagen debe tener una etiqueta explícita y no puede usar `latest`. |
 | `require-resources` | `require-resources.yaml` | Cada contenedor debe definir `requests` y `limits` de CPU y de memoria. |
-| `disallow-root` | `disallow-root.yaml` | `runAsNonRoot` debe ser `true` a nivel de Pod o en todos los contenedores (`anyPattern` con las dos opciones). |
+| `disallow-root` | `disallow-root.yaml` | Se debe declarar que los contenedores se ejecutan sin el usuario administrador (`root`). |
 
 Configuración común a las tres:
 
 - **`validationFailureAction: Enforce`:** el recurso incumplidor se rechaza, no solo se registra.
-- **`match` sobre `Pod`:** Kyverno genera automáticamente las reglas equivalentes para Deployments y StatefulSets, que crean los Pods.
-- **`exclude` de los namespaces `kube-system`, `kyverno` y `falco`:** son los pods del sistema, el propio Kyverno y Falco, que necesita privilegios para su driver y no cumpliría la política de root.
-- **`background: true`:** además de validar las solicitudes nuevas, evalúa los recursos ya existentes y lo informa.
+- Las reglas revisan los pods y las plantillas de los recursos que los crean, como los Deployments y StatefulSets.
+- Se excluyeron `kube-system`, `kyverno` y `falco`: contienen componentes del sistema y herramientas con necesidades de permisos distintas de las de la aplicación.
+- También se habilitó la revisión de los recursos existentes, sin eliminarlos ni modificarlos.
 
 Tras aplicarlas con `kubectl apply`, las tres quedaron en estado `Ready`:
 
@@ -374,9 +516,9 @@ disallow-root         true        true         True    7s    Ready
 require-resources     true        true         True    8s    Ready
 ```
 
-Cada comando que usa `ClusterPolicy` muestra además el aviso `kyverno.io/v1 ClusterPolicy is deprecated and will be removed in a future release`. No es un error: las políticas se crean y funcionan con la versión fijada.
+#### Validación con manifiestos no conformes
 
-### Validación con manifiestos no conformes
+Para comprobar el bloqueo, se enviaron manifiestos preparados para incumplir las políticas. Se probó cada regla por separado y también un caso válido, para distinguir los rechazos esperados de un fallo general que impidiera desplegar cualquier recurso.
 
 Se probaron cinco manifiestos de Pod en `k8s/policies/test/`. El de referencia (`pod-conforme.yaml`) cumple las tres políticas; los demás se obtuvieron quitándole una cosa a la vez, excepto `pod-no-conforme.yaml`, que incumple las tres juntas.
 
@@ -403,20 +545,13 @@ require-resources:
   validate-resources: 'validation error: Todos los contenedores deben definir requests y limits de cpu y memoria. rule validate-resources failed at path /spec/containers/0/resources/limits/'
 ```
 
-Kyverno enumera cada política violada con el mensaje definido y la ruta del campo que falló. En `disallow-root` fallan las dos opciones del `anyPattern` (la del Pod y la de los contenedores), y en `require-resources` la ruta indica el primer campo faltante.
+El mensaje muestra que el recurso fue rechazado por las tres condiciones esperadas: usa latest, no declara la ejecución sin root y no define los recursos necesarios. Esto confirma que las políticas bloquearon el manifiesto de prueba.
 
-Para mostrar que las políticas actúan de forma independiente, este es el rechazo del manifiesto que solo usa el tag `latest` (prueba 2), donde aparece únicamente `disallow-latest-tag`:
+Las pruebas individuales también fueron rechazadas únicamente por la política que incumplían, como se resume en la tabla. Las salidas completas quedaron en `reports/kyverno-validacion.txt`.
 
-```text
-Error from server: error when creating "k8s\\policies\\test\\pod-solo-latest.yaml": admission webhook "validate.kyverno.svc-fail" denied the request:
+#### Manifiestos del proyecto
 
-resource Pod/clinica-veterinaria/pod-solo-latest was blocked due to the following policies
-
-disallow-latest-tag:
-  validate-image-tag: 'validation error: No se permite el tag ''latest''. rule validate-image-tag failed at path /spec/containers/0/image/'
-```
-
-### Manifiestos del proyecto
+Después de probar los ejemplos, se validaron los manifiestos reales del proyecto sin guardar cambios ni reemplazar los recursos del entorno. Esta prueba permitió comprobar que Kyverno aceptaba los YAML; no equivale a una prueba de arranque de sus imágenes.
 
 Se verificó que los manifiestos reales del proyecto cumplen las políticas, enviándolos a la validación de Kyverno sin crear nada:
 
@@ -424,53 +559,21 @@ Se verificó que los manifiestos reales del proyecto cumplen las políticas, env
 minikube kubectl -- apply --dry-run=server -f k8s/<manifiesto>.yaml
 ```
 
-Los nueve (`api-blue`, `api-green`, `api-monitoring`, `frontend-blue`, `frontend-green`, `frontend-monitoring`, `grafana`, `prometheus` y `postgres`) fueron aceptados; ninguno fue rechazado. El resultado de cada comando fue `configured` o `unchanged` (server dry run), según si el manifiesto difiere o no del recurso desplegado. Esto confirma que el hardening de la sección 4.1 alcanza para cumplir las tres políticas. Los pods ya en ejecución no fueron afectados por la instalación de las políticas.
+Los nueve manifiestos fueron aceptados por Kyverno. Esto confirma que los ajustes de la sección 4.1 cumplen las tres políticas. La opción `--dry-run=server` permitió hacer la comprobación sin guardar cambios ni reemplazar los pods.
 
-### Cómo reproducir las pruebas
+Las salidas de las pruebas se guardaron en `reports/kyverno-validacion.txt`, con el comando ejecutado y el resultado de cada caso. Los pasos para repetirlas se encuentran en la [guía DevSecOps del README](README.md#devsecops-y-reproducción-de-pruebas).
 
-Con Kyverno instalado y desde la raíz del repositorio:
+#### Limitaciones
 
-```powershell
-minikube kubectl -- apply -f k8s/policies/disallow-latest-tag.yaml
-minikube kubectl -- apply -f k8s/policies/require-resources.yaml
-minikube kubectl -- apply -f k8s/policies/disallow-root.yaml
-minikube kubectl -- get clusterpolicy
+- **Cada política comprueba una condición concreta:** etiqueta explícita y distinta de `latest`, recursos declarados y `runAsNonRoot: true`. No determina si la imagen tiene vulnerabilidades ni si los límites de memoria son adecuados para la carga.
 
-minikube kubectl -- apply -f k8s/policies/test/pod-no-conforme.yaml        # debe ser rechazado
-minikube kubectl -- apply -f k8s/policies/test/pod-solo-latest.yaml        # debe ser rechazado
-minikube kubectl -- apply -f k8s/policies/test/pod-solo-sin-resources.yaml # debe ser rechazado
-minikube kubectl -- apply -f k8s/policies/test/pod-solo-root.yaml          # debe ser rechazado
-minikube kubectl -- apply -f k8s/policies/test/pod-conforme.yaml           # debe crearse
-minikube kubectl -- delete pod pod-conforme -n clinica-veterinaria
-```
-
-Para guardar cada salida en `reports/kyverno-validacion.txt` con texto limpio, se usó esta función de PowerShell, que ejecuta el comando, muestra el resultado y lo agrega al archivo en UTF-8:
-
-```powershell
-function Probar($titulo, $cmd) {
-  $log = "reports\kyverno-validacion.txt"
-  "`n=== $titulo ===" | Out-File $log -Append -Encoding utf8
-  "> $cmd" | Out-File $log -Append -Encoding utf8
-  $salida = cmd /c "$cmd 2>&1"
-  $salida | Out-File $log -Append -Encoding utf8
-  $salida
-}
-```
-
-Por ejemplo: `Probar "1. Pod no conforme" "minikube kubectl -- apply -f k8s\policies\test\pod-no-conforme.yaml"`.
-
-Para quitar las políticas y Kyverno: `minikube kubectl -- delete clusterpolicy --all` y `helm uninstall kyverno -n kyverno`.
-
-### Limitaciones
-
-- **`ClusterPolicy` está deprecado** desde Kyverno 1.17, y su eliminación está prevista para la 1.20. Las políticas funcionan con la versión fijada (1.19.2); la migración a `ValidatingPolicy` (`policies.kyverno.io`, basada en CEL) queda como trabajo futuro.
-- **Las políticas validan que los campos estén declarados, no su valor.** No evalúan, por ejemplo, si los límites de memoria son razonables.
-- **Las reglas de tag y de recursos revisan solo `containers`,** no `initContainers`, que este proyecto no utiliza.
 - **Las políticas actúan al crear o actualizar un recurso:** no eliminan los pods que ya estaban corriendo cuando se instalaron.
 
-## 4.3. KubeLinter
+### 4.3 Paso 3 Revisar los YAML con KubeLinter
 
-**Herramienta:** KubeLinter analiza archivos YAML de Kubernetes de forma estática (sin necesidad de un cluster) y los compara contra un set de buenas prácticas. A diferencia de Kyverno, no bloquea nada: solo genera un reporte de lectura.
+Se revisaron los archivos de Kubernetes con KubeLinter para detectar configuraciones que requerían una corrección o justificación. Se guardó el reporte y se analizó cada hallazgo para decidir qué hacer con él.
+
+**KubeLinter** revisa los archivos de configuración sin ejecutarlos y genera un reporte. Sus alertas se analizan para decidir qué corregir o justificar; no bloquea los despliegues.
 
 **Instalación:** binario oficial para Windows descargado desde los releases de GitHub.
 
@@ -485,40 +588,37 @@ kube-linter lint k8s\*.yaml > reports\kubelinter.txt
 | Check | Apariciones | Dónde | Decisión |
 |---|---|---|---|
 | `env-var-secret` | 3 | `api-blue`, `api-green`, `api-monitoring` | **Falso positivo.** La variable `JWT_SECRET_KEY_FILE` contiene la palabra "SECRET" en el nombre, pero su valor es solo la ruta a un archivo montado desde un Secret de Kubernetes (`/run/jwt-secret/jwt-secret`), no la clave en texto plano. |
-| `no-read-only-root-fs` | 9 | los 9 Deployments/StatefulSet (api, frontend, grafana, prometheus, postgres en sus variantes) | **Mantenido.** Ya documentado como limitación en la sección 4.1: cada servicio escribe en su propio filesystem (datos, caché, archivos temporales) y activar `readOnlyRootFilesystem` requeriría montar volúmenes `emptyDir` en esas rutas puntuales. Queda como mejora futura. |
+| `no-read-only-root-fs` | 9 | los 9 Deployments/StatefulSet (api, frontend, grafana, prometheus, postgres en sus variantes) | **Mantenido.** Los manifiestos conservan el sistema de archivos con escritura. En los servicios se utilizan rutas para datos, caché o archivos temporales, y la aplicación no se probó en modo de solo lectura. La configuración aplicada se explica en la sección 4.1. |
 
-No se corrigió ningún hallazgo porque ninguno representa un riesgo real sin justificación: uno es un falso positivo de la herramienta y el otro ya era una decisión conocida del hardening.
+En esta pasada se mantuvieron los 12 hallazgos con los motivos de la tabla. Los tres relacionados con secretos señalan una ruta de archivo, no una clave en texto plano. Los otros nueve corresponden al sistema de archivos con escritura, que se mantuvo en los manifiestos. Esta configuración queda documentada como una limitación; su justificación no elimina el riesgo.
 
 Evidencia completa en [`reports/kubelinter.txt`](reports/kubelinter.txt).
 
-# 5. Seguridad en tiempo de ejecución: Falco
+## 5. Seguridad en tiempo de ejecución: Falco
 
-## Herramienta e instalación
+### 5.1 Paso 1 Instalar Falco y dejar la captura activa
+
+En esta etapa se instaló Falco para observar la actividad de los contenedores durante la ejecución. Se preparó la captura de sus alertas con el objetivo de registrar una acción sospechosa generada de forma intencional.
 
 Falco detecta actividades sospechosas mientras los contenedores funcionan. A diferencia de Semgrep, npm audit y Trivy, que analizan código, dependencias o imágenes, observa eventos durante la ejecución. Genera alertas; por sí solo no bloquea acciones.
 
-La instalación se automatizó en `scripts/k8s-up-falco.ps1`, usando el driver `modern_ebpf` para observar eventos del kernel Linux de Minikube.
+La instalación se automatizó en `scripts/k8s-up-falco.ps1`, usando Helm. Se configuró Falco para observar la actividad de los contenedores en Minikube y se comprobó su funcionamiento con la alerta generada al abrir la shell.
 
-Con Minikube iniciado, desde la raíz del proyecto se ejecuta:
+La instalación y la captura de alertas se iniciaron con el siguiente script:
 
 ```powershell
 .\scripts\k8s-up-falco.ps1
 ```
 
-También se puede iniciar todo mediante monitoring, que llama al script de Falco:
+El script comprueba que Helm esté disponible, instala o actualiza Falco y aplica la configuración de `k8s/falco-values.yaml`. También verifica los pods y deja preparada la captura de alertas.
 
-```powershell
-.\scripts\k8s-up-monitoring.ps1
-```
+La captura del script copia las alertas a `reports/falco-event.log` mientras permanece activa. También muestra en pantalla las alertas de shell del backend. Detener esa captura interrumpe la copia al archivo local, pero no la detección de Falco dentro del clúster.
 
-Internamente, el script comprueba que Helm esté instalado y ejecuta `helm repo add`, `helm repo update` y `helm upgrade --install`. Instala o actualiza Falco, aplica `k8s/falco-values.yaml`, habilita alertas JSON de prioridad Notice o superior y verifica los pods.
+### 5.2 Paso 2 Generar una actividad de prueba
 
-**Para guardar las alertas en `reports/falco-event.log`, el script debe permanecer ejecutándose.** Guarda las alertas JSON sin duplicar líneas idénticas y muestra en pantalla las shells del backend. Si se cierra o se interrumpe, se detiene la copia al archivo del proyecto. Falco continúa detectando y sus logs quedan en el nodo de Minikube, como logs del contenedor consultables con `kubectl logs`, sujetos a rotación.
+Para comprobar que Falco detectaba eventos, se abrió intencionalmente una shell interactiva dentro de la API. Se buscó generar una acción reconocible por sus reglas y verificar que la alerta identificara el contenedor donde ocurrió.
 
-
-## Verificación y prueba
-
-Para comprobar pods en `Running` y logs sin errores del driver:
+Se consultaron los pods y los logs de Falco para comprobar su estado y revisar si había errores:
 
 ```powershell
 minikube kubectl -- get pods -n falco
@@ -531,121 +631,73 @@ Se abrió una shell interactiva en el backend:
 minikube kubectl -- exec -it -n clinica-veterinaria deployment/api-monitoring -- /bin/sh
 ```
 
-Dentro se ejecutaron `id`, `pwd` y `exit`.
+Dentro se ejecutaron `id`, `pwd` y `exit`. El objetivo era abrir una terminal en un contenedor y comprobar que Falco la detectara; no hacía falta modificar archivos ni datos de la aplicación.
 
-## Alerta e interpretación
+### 5.3 Paso 3 Comprobar qué detectó
+
+El mensaje y los datos de la tabla se extrajeron de la primera alerta guardada en `reports/falco-event.log`, generada al abrir la shell dentro de la API de monitoreo. Se incluyen como evidencia para relacionar la alerta con esa prueba y comprobar que Falco detectó la acción en el contenedor correspondiente.
 
 Extracto del mensaje real:
 
 ```text
-20:11:45.433541418: Notice A shell was spawned in a container with an attached terminal
+20:36:42.603943896: Notice A shell was spawned in a container with an attached terminal
 ```
 
 | Campo | Valor |
 | --- | --- |
-| Fecha UTC | 2026-10-31T20:11:45.433541418Z |
+| Fecha UTC | 2026-10-31T20:36:42.603943896Z |
 | Regla / prioridad | Terminal shell in container / Notice |
 | Pod | api-monitoring-8f7c8d45d-26vtp |
 | Namespace | clinica-veterinaria |
 | Proceso / UID | sh / 10001 |
 
-Falco detectó la apertura de una shell con terminal dentro del contenedor. Fue una prueba intencional; en otro contexto puede requerir investigación.
+La apertura de la shell fue intencional y permitió comprobar que Falco detectaba y registraba esa actividad.
 
-## Problemas y personalización
+### 5.4 Ajustes que hicieron falta durante la prueba
+
+Durante la verificación se revisaron los errores de configuración y las alertas repetidas. Se ajustaron el comando de instalación y una excepción para el chequeo de PostgreSQL, sin desactivar los controles de forma general.
 
 Se corrigió la continuación de líneas de PowerShell para incluir `--values` dentro del comando Helm.
 PostgreSQL generaba alertas `Read sensitive file untrusted` cada diez segundos. El comando y la frecuencia coinciden con su chequeo de disponibilidad.
-Se definió en `k8s/falco-values.yaml` una excepción limitada al pod, namespace, imagen, comando, archivo, UID y ejecución sin terminal observados. 
+En `k8s/falco-values.yaml` se agregó una excepción para ese chequeo concreto de PostgreSQL. Así se filtró la alerta repetida sin desactivar la regla para el resto de las actividades.
 
-# 6. Hallazgos mantenidos y justificación
+## 6. Hallazgos mantenidos y justificación
 
-Esta sección consolida todo lo que se decidió **no corregir** en las 4 capas, con su justificación. Nada de lo listado acá quedó sin revisar: cada fila fue mirada en el código o en el reporte correspondiente antes de decidir mantenerlo.
+Después de las correcciones, quedaron los siguientes puntos. Se reúnen acá para distinguir las alertas que se revisaron y justificaron de los riesgos y limitaciones de la configuración aplicada. El detalle y la evidencia están en las secciones anteriores.
 
-| Capa | Herramienta | Hallazgo | Cantidad | Justificación |
+| Capa | Herramienta o revisión | Qué se encontró | Cantidad | Por qué se mantuvo |
 |---|---|---|---|---|
-| Código | Semgrep | `avoid-sqlalchemy-text` (SQL armado con f-string dentro de `text()`) en `app/historial/repository.py` (2), `app/pacientes/repository.py`, `app/turnos/repository.py` | 4 | Lo que se interpola en cada caso es un fragmento fijo del código (literal o armado desde un diccionario de claves fijas validadas con `Literal` en el controller), nunca un valor que llegue directo del usuario. Los valores de usuario siempre viajan como parámetros (`:nombre`, `:id_mascota`, etc.), no interpolados. Ver detalle en sección 2.3. |
-| Imagen | Trivy | 44 hallazgos HIGH en paquetes del sistema base de Debian (`util-linux`, `ncurses`, `libacl`, librerías de systemd, `perl-base`) | 44 (8 CVE distintos) | El reporte de Trivy no indica una `Fixed Version` para estos paquetes, y se confirmó con `apt-cache policy` (`reports/debian-versiones.txt`) que `Candidate` coincide con `Installed`: no hay una versión más nueva disponible en los repositorios configurados, incluido `trixie-security`. Quedan como riesgo residual documentado, a reevaluar cuando haya parches. Ver sección 3.4. |
-| Kubernetes | KubeLinter | `env-var-secret` en `api-blue`, `api-green`, `api-monitoring` | 3 | Falso positivo: la variable `JWT_SECRET_KEY_FILE` contiene la palabra "SECRET" en el nombre, pero su valor es la ruta a un archivo montado desde un Secret de Kubernetes, no la clave en texto plano. Ver sección 4.3. |
-| Kubernetes | KubeLinter | `no-read-only-root-fs` en los 9 Deployments/StatefulSet | 9 | Cada servicio necesita escribir en su propio filesystem (datos, caché de plugins, archivos temporales). Activar `readOnlyRootFilesystem` requeriría montar un volumen `emptyDir` en la ruta puntual de escritura de cada app y volver a probar que todo arranque. Ya estaba identificado como limitación del hardening (sección 4.1) antes de correr KubeLinter. Queda como mejora futura. |
-| Kubernetes | Hardening manual | Valores de CPU/memoria sin calibrar con carga real | — | Son valores de partida razonables para un entorno de pruebas, no se ajustaron con `kubectl top pod` bajo carga. Ver sección 4.1. |
-| Kubernetes | Hardening manual | 3 de 4 manifiestos Blue/Green endurecidos no aplicados en el clúster; no se verificó que las imágenes `v1`/`v2` arranquen con el UID sin privilegios | — | Blue/Green no se despliegan desde `main` con el script de monitoreo; se validaron con `kubectl apply --dry-run=server` (Kyverno los aceptó) pero no se aplicaron de verdad. Ver sección 4.1. |
+| Código | Semgrep | Alertas por la construcción de consultas SQL en historial, pacientes y turnos | 4 | Las partes que se insertan en las consultas están definidas en el código. Los datos del usuario se envían por separado como parámetros, sin incorporarlos directamente al texto de la consulta. Ver sección 2.3. |
+| Imagen | Trivy | Vulnerabilidades de severidad alta en paquetes del sistema operativo | 44 apariciones de 8 vulnerabilidades distintas | El reporte no indica una versión corregida. En los cinco paquetes consultados tampoco había actualizaciones disponibles. Los problemas quedan registrados como riesgos presentes al momento del análisis. Ver sección 3.4. |
+| Kubernetes | KubeLinter | Alertas por una posible clave escrita en la configuración de las tres APIs | 3 | La herramienta detectó la palabra SECRET en el nombre de una variable, pero su valor solo indica dónde está el archivo de la clave; no contiene la clave escrita directamente. Ver sección 4.3. |
+| Kubernetes | KubeLinter | Sistema de archivos con escritura habilitada | 9 | Se mantuvo la escritura para los datos, la caché y los archivos temporales de los servicios. La aplicación no se probó en modo de solo lectura. Esta decisión y su limitación se explican en la sección 4.1. |
+| Kubernetes | Ajustes de seguridad | Recursos de CPU y memoria configurados para el entorno de pruebas | — | Se utilizaron valores de partida; no se hicieron pruebas con una carga elevada para ajustarlos. Ver sección 4.1. |
+| Kubernetes | Validación de la configuración | Tres manifiestos se validaron sin desplegarlos | 3 | Kyverno los aceptó porque cumplían las políticas. Esta comprobación no demuestra que sus imágenes arranquen con el usuario configurado. Ver sección 4.1. |
 
-**Nota sobre Kyverno:** no aparece en esta tabla porque no tiene hallazgos "mantenidos" — es una política de bloqueo (`Enforce`), no de reporte: lo que no cumple se rechaza, no se documenta como riesgo aceptado.
+Kyverno rechazó los casos de prueba que incumplían las políticas. Esos rechazos fueron el resultado esperado y están explicados en la sección 4.2.
 
-# 7. Cómo reproducir todo
+## 7. Dónde consultar la evidencia
 
-Todos los comandos se ejecutan en **PowerShell, desde la raíz del repositorio**, salvo que se indique lo contrario. Requiere Docker Desktop, Minikube, Helm y `kubectl` ya configurados.
+| Qué se quiere comprobar | Archivo |
+|---|---|
+| Dependencias del frontend antes y después | [Inicial](reports/npm-audit-inicial.txt) y [final](reports/npm-audit.txt). |
+| Alertas del código antes y después | [Inicial](reports/semgrep-inicial.txt) y [final](reports/semgrep.txt). |
+| Vulnerabilidades de la imagen del backend | [Inicial](reports/trivy-backend-inicial.txt) y [final](reports/trivy-backend.txt). |
+| Vulnerabilidades de la imagen del frontend | [Inicial](reports/trivy-frontend-inicial.txt) y [final](reports/trivy-frontend.txt). |
+| Versiones de paquetes consultadas en Debian | [debian-versiones.txt](reports/debian-versiones.txt). |
+| Estado y usuarios de los pods comprobados | [hardening-verificacion.txt](reports/hardening-verificacion.txt). |
+| Rechazos y aceptación de las políticas | [kyverno-validacion.txt](reports/kyverno-validacion.txt). |
+| Alertas de los manifiestos | [kubelinter.txt](reports/kubelinter.txt). |
+| Actividad detectada durante la ejecución | [falco-event.log](reports/falco-event.log). |
 
-## 7.1 Seguridad en el código
+Los análisis de Trivy quedaron separados por imagen para poder consultar y comparar cada resultado. La letra pide el nombre `reports/trivyreport.txt`; en el repositorio la evidencia equivalente está en `trivy-backend.txt` y `trivy-frontend.txt`.
 
-```powershell
-cd frontend
-cmd /c "npm audit > ..\reports\npm-audit.txt"
-cd ..
+La preparación del entorno y las instrucciones para repetir las pruebas están en la [guía DevSecOps del README](README.md#devsecops-y-reproducción-de-pruebas).
 
-docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/semgrep.txt /src/app /src/frontend/src
-```
+## 8. Conclusión
 
-## 7.2 Seguridad en la imagen
+En este entregable se revisó la seguridad de la aplicación desde el código hasta su ejecución en Kubernetes. Se actualizaron dependencias y paquetes de las imágenes, se corrigió la validación de las columnas al actualizar mascotas y se ajustaron los recursos y permisos de los contenedores.
 
-```powershell
-New-Item -ItemType Directory -Force -Path .\reports | Out-Null
-$reportsPath = (Resolve-Path .\reports).Path
+Las pruebas permitieron comprobar que Kyverno rechazaba los manifiestos que incumplían las políticas y que Falco detectaba la apertura intencional de una shell dentro de la API. Los análisis de npm audit, Semgrep, Trivy y KubeLinter quedaron guardados junto con las decisiones tomadas sobre sus resultados.
 
-docker build --pull --no-cache -t clinica-veterinaria:test .
-docker build --pull --no-cache -f .\frontend\Dockerfile.k8s --build-arg NGINX_CONF=nginx-monitoring.conf -t clinica-frontend:test .\frontend
-
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-backend.txt clinica-veterinaria:test
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-frontend.txt clinica-frontend:test
-```
-
-## 7.3 Seguridad en Kubernetes
-
-**Desplegar con el hardening ya aplicado:**
-
-```powershell
-.\scripts\k8s-up-monitoring.ps1
-```
-
-**Instalar y aplicar Kyverno:**
-
-```powershell
-helm repo add kyverno https://kyverno.github.io/kyverno/
-helm repo update
-helm install kyverno kyverno/kyverno -n kyverno --create-namespace --version 3.9.2
-
-minikube kubectl -- apply -f k8s/policies/disallow-latest-tag.yaml
-minikube kubectl -- apply -f k8s/policies/require-resources.yaml
-minikube kubectl -- apply -f k8s/policies/disallow-root.yaml
-minikube kubectl -- get clusterpolicy
-```
-
-**Validar con manifiestos de prueba:**
-
-```powershell
-minikube kubectl -- apply -f k8s/policies/test/pod-no-conforme.yaml        # debe ser rechazado
-minikube kubectl -- apply -f k8s/policies/test/pod-solo-latest.yaml        # debe ser rechazado
-minikube kubectl -- apply -f k8s/policies/test/pod-solo-sin-resources.yaml # debe ser rechazado
-minikube kubectl -- apply -f k8s/policies/test/pod-solo-root.yaml          # debe ser rechazado
-minikube kubectl -- apply -f k8s/policies/test/pod-conforme.yaml           # debe crearse
-minikube kubectl -- delete pod pod-conforme -n clinica-veterinaria
-```
-
-**KubeLinter:**
-
-```powershell
-kube-linter lint k8s\*.yaml > reports\kubelinter.txt
-```
-
-## 7.4 Seguridad en tiempo de ejecución (Falco)
-
-```powershell
-.\scripts\k8s-up-falco.ps1
-
-minikube kubectl -- get pods -n falco
-minikube kubectl -- exec -it -n clinica-veterinaria deployment/api-monitoring -- /bin/sh
-# dentro de la shell: id, pwd, exit
-
-minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --tail=50
-```
-
+No todos los hallazgos desaparecieron. Los que se mantuvieron quedaron explicados en el informe, distinguiendo las alertas justificadas de los riesgos y las limitaciones de la configuración utilizada. De esta forma, la entrega deja registrado qué se cambió, qué se comprobó y cuál fue el resultado de cada revisión.
