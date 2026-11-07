@@ -1,7 +1,5 @@
 # Pet-Core
 
-> Si querés entender cómo está diseñado y armado el sistema (Docker, Docker Compose, Kubernetes, y cómo se relaciona todo), ver [`ARQUITECTURA_E_INFRAESTRUCTURA.md`](ARQUITECTURA_E_INFRAESTRUCTURA.md). Este README se enfoca en cómo ejecutar el proyecto paso a paso.
-
 ## Índice
 
 - [Requisitos](#requisitos)
@@ -23,6 +21,8 @@
   - [Paso 7: realizar rollback a Blue](#paso-7-realizar-rollback-a-blue)
   - [Base de datos compartida](#base-de-datos-compartida)
 - [Monitoreo con Prometheus y Grafana](#monitoreo-con-prometheus-y-grafana)
+- [DevSecOps y reproducción de pruebas](#devsecops-y-reproducción-de-pruebas)
+  - [Preparar el entorno para las pruebas DevSecOps](#preparar-el-entorno-para-las-pruebas-devsecops)
 - [Datos de prueba](#datos-de-prueba)
 - [Proteger endpoints con el middleware](#proteger-endpoints-con-el-middleware)
 
@@ -91,11 +91,16 @@ Get-ChildItem db
 
 ### Configurar la clave secreta JWT
 
-Crear una clave aleatoria para firmar los tokens JWT:
+Crear una clave aleatoria para firmar los tokens JWT. El comando conserva el archivo si ya existe y no requiere instalar Python ni uv:
 
 ```powershell
-$jwtSecret = uv run python -c "import secrets; print(secrets.token_hex(32))"
-Set-Content -Path db/jwt-secret.txt -Value $jwtSecret -NoNewline
+if (-not (Test-Path .\db\jwt-secret.txt)) {
+    $jwtBytes = New-Object byte[] 32
+    $jwtGenerator = [Security.Cryptography.RandomNumberGenerator]::Create()
+    try { $jwtGenerator.GetBytes($jwtBytes) } finally { $jwtGenerator.Dispose() }
+    $jwtSecret = [BitConverter]::ToString($jwtBytes).Replace('-', '').ToLowerInvariant()
+    [IO.File]::WriteAllText((Join-Path $PWD.Path 'db\jwt-secret.txt'), $jwtSecret, [Text.UTF8Encoding]::new($false))
+}
 ```
 
 El archivo `db/jwt-secret.txt` contiene información sensible y no debe guardarse en Git.
@@ -470,6 +475,237 @@ también están implementadas y verificadas llegando a `Firing` con datos reales
 Lo único que queda pendiente es reunir capturas reales del dashboard y de una alerta en
 `Firing`, y cerrar el informe final — ver
 [`ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md`](ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md#qué-queda-pendiente).
+
+## DevSecOps y reproducción de pruebas
+
+Esta guía permite repetir las pruebas documentadas en el [Entregable 3 DevSecOps](ENTREGABLE_3_DEVSECOPS.md). El informe contiene las explicaciones y los resultados obtenidos; aquí se reúnen las instrucciones de ejecución y los resultados esperados.
+
+El recorrido es: preparar las herramientas y claves locales, revisar el código, analizar las imágenes, desplegar el entorno de monitoreo, validar las políticas y comprobar Falco. Los enlaces de preparación remiten a los pasos generales del README sin repetirlos aquí.
+
+### Preparar el entorno para las pruebas DevSecOps
+
+Los pasos siguientes están pensados para Windows de 64 bits y PowerShell. Ejecutar los comandos desde la raíz del repositorio. Primero comprobar cada herramienta: si ya está instalada y funciona, no hace falta volver a instalarla. Después de una instalación, cerrar y volver a abrir PowerShell para que reconozca los nuevos comandos.
+
+#### 1. Usar el clúster local
+
+La instalación de Minikube ya está explicada en [Requisitos de Kubernetes](#requisitos-de-kubernetes), y su inicio y verificación en [Iniciar o comprobar Minikube](#iniciar-o-comprobar-minikube). Completar esos pasos si todavía no se hicieron. Para estas pruebas alcanza con tener el nodo en estado `Ready`; no hace falta desplegar Blue ni Green.
+
+Los comandos de esta guía usan `minikube kubectl --`, incluido con Minikube.
+
+Helm debe apuntar al mismo clúster. Comprobar el contexto y seleccionarlo si hace falta:
+
+```powershell
+minikube kubectl -- config current-context
+minikube kubectl -- config use-context minikube
+```
+
+El contexto utilizado para estas pruebas es `minikube`.
+
+#### 2. Helm
+
+Helm instala Kyverno y Falco dentro del clúster. Comprobar si ya está disponible:
+
+```powershell
+helm version
+```
+
+Para utilizar la misma versión de Helm 3 empleada en las pruebas, descargar el binario oficial para Windows y agregar su carpeta a la lista de ubicaciones donde Windows busca comandos (`PATH`):
+
+```powershell
+$helmFolder = Join-Path $env:USERPROFILE 'tools\helm'
+$helmArchive = Join-Path $env:TEMP 'petcore-helm-v3.21.0.zip'
+$helmExtract = Join-Path $env:TEMP 'petcore-helm-v3.21.0'
+New-Item -ItemType Directory -Force -Path $helmFolder | Out-Null
+Invoke-WebRequest -Uri 'https://get.helm.sh/helm-v3.21.0-windows-amd64.zip' -OutFile $helmArchive
+Expand-Archive -LiteralPath $helmArchive -DestinationPath $helmExtract -Force
+Copy-Item -LiteralPath (Join-Path $helmExtract 'windows-amd64\helm.exe') -Destination $helmFolder -Force
+[string]$userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+if (($userPath -split ';') -notcontains $helmFolder) {
+    [Environment]::SetEnvironmentVariable('Path', ($userPath.TrimEnd(';') + ';' + $helmFolder), 'User')
+}
+$env:Path = $helmFolder + ';' + $env:Path
+helm version
+```
+
+El resultado debe identificar Helm `v3.21.0`. Este procedimiento sigue la [instalación mediante binarios oficiales de Helm](https://helm.sh/docs/v3/intro/install/).
+
+#### 3. Node.js y npm
+
+Node.js y npm se utilizan para instalar las dependencias del frontend y ejecutar `npm audit`. Comprobar ambos:
+
+```powershell
+node --version
+npm --version
+```
+
+Si no están instalados, usar el instalador **LTS** de la [página oficial de Node.js](https://nodejs.org/en/download). npm viene incluido con esa instalación, como explica la [guía de npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/). También se puede instalar Node.js LTS con el paquete de Windows:
+
+```powershell
+winget install --id OpenJS.NodeJS.LTS -e
+```
+
+Después de abrir una terminal nueva, repetir los comandos de versión. Para las pruebas del frontend, instalar las dependencias registradas en el proyecto con `npm ci`, como se muestra en el apartado de seguridad del código.
+
+Si PowerShell bloquea `npm.ps1`, usar `npm.cmd` en su lugar, por ejemplo `npm.cmd --version` y `npm.cmd ci`. Esto permite ejecutar npm sin cambiar la configuración de seguridad de PowerShell.
+
+#### 4. KubeLinter
+
+KubeLinter revisa los archivos YAML de Kubernetes. Comprobar si está instalado:
+
+```powershell
+kube-linter version
+```
+
+Si falta, descargar el ejecutable oficial de la versión `0.8.3`, utilizada para el reporte del proyecto:
+
+```powershell
+$kubeLinterFolder = Join-Path $env:USERPROFILE 'tools\kube-linter'
+New-Item -ItemType Directory -Force -Path $kubeLinterFolder | Out-Null
+Invoke-WebRequest -Uri 'https://github.com/stackrox/kube-linter/releases/download/v0.8.3/kube-linter.exe' -OutFile (Join-Path $kubeLinterFolder 'kube-linter.exe')
+[string]$userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+if (($userPath -split ';') -notcontains $kubeLinterFolder) {
+    [Environment]::SetEnvironmentVariable('Path', ($userPath.TrimEnd(';') + ';' + $kubeLinterFolder), 'User')
+}
+$env:Path = $kubeLinterFolder + ';' + $env:Path
+kube-linter version
+```
+
+La salida debe mostrar la versión `0.8.3`. El ejecutable proviene de la [publicación oficial de KubeLinter](https://github.com/stackrox/kube-linter/releases/tag/v0.8.3), siguiendo su [guía de instalación](https://docs.kubelinter.io/).
+
+#### 5. Herramientas que no se instalan directamente en Windows
+
+| Herramienta o servicio | Cómo se prepara |
+|---|---|
+| Semgrep y Trivy | Los comandos de análisis descargan y ejecutan sus imágenes con Docker. |
+| Kyverno | Se instala con los comandos de Helm del apartado de seguridad en Kubernetes. |
+| Falco | Lo instala el script `scripts/k8s-up-falco.ps1`, también llamado por el script de monitoring. |
+| FastAPI, PostgreSQL, Nginx, Prometheus y Grafana | Se construyen o descargan como imágenes y se despliegan mediante `scripts/k8s-up-monitoring.ps1`. |
+
+No hace falta instalar Python o PostgreSQL directamente en Windows para este recorrido con Docker y Kubernetes. Para el desarrollo local con Python, la instalación de `uv` ya está explicada en [Instalar uv para desarrollo local](#instalar-uv-para-desarrollo-local).
+
+#### 6. Comprobar los archivos locales y preparar los reportes
+
+La creación de las claves está explicada en [Configurar la contraseña de PostgreSQL](#configurar-la-contraseña-de-postgresql) y [Configurar la clave secreta JWT](#configurar-la-clave-secreta-jwt). Si ya se crearon, conservar los archivos existentes; no hace falta generarlos otra vez.
+
+Comprobar que ambos están disponibles y preparar la carpeta de reportes:
+
+```powershell
+Test-Path .\db\password.txt
+Test-Path .\db\jwt-secret.txt
+New-Item -ItemType Directory -Force -Path .\reports | Out-Null
+```
+
+Los dos primeros comandos deben devolver `True`. Si alguno devuelve `False`, completar la sección de configuración correspondiente antes de continuar.
+
+La preparación está completa cuando el nodo de Minikube está `Ready`, Helm, Node/npm y KubeLinter muestran sus versiones y existen los dos archivos de claves. A continuación se pueden ejecutar las pruebas. Los comandos de análisis escriben los reportes finales en `reports/`; los archivos iniciales se conservan para comparar.
+
+### Revisar la seguridad del código
+
+Estos comandos repiten la revisión de las dependencias del frontend y del código propio. Las salidas se guardan como reportes finales; los archivos iniciales se conservan para mantener la comparación.
+
+```powershell
+cd frontend
+npm ci
+cmd /c "npm audit > ..\reports\npm-audit.txt"
+cd ..
+
+docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/semgrep.txt /src/app /src/frontend/src
+```
+
+### Analizar las imágenes
+
+Primero se reconstruyen las imágenes con los Dockerfile actuales y después se analizan con Trivy. Se busca que los reportes correspondan al contenido construido con los cambios, no a una imagen anterior.
+
+```powershell
+New-Item -ItemType Directory -Force -Path .\reports | Out-Null
+$reportsPath = (Resolve-Path .\reports).Path
+
+docker build --pull --no-cache -t clinica-veterinaria:test .
+docker build --pull --no-cache -f .\frontend\Dockerfile.k8s --build-arg NGINX_CONF=nginx-monitoring.conf -t clinica-frontend:test .\frontend
+
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-backend.txt clinica-veterinaria:test
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-frontend.txt clinica-frontend:test
+```
+
+### Validar la seguridad en Kubernetes
+
+La comprobación comienza levantando el entorno con los manifiestos ajustados. Después se instalan las políticas, se prueban los rechazos esperados y se genera el reporte de KubeLinter. Se busca verificar tanto la aplicación de las reglas como la configuración declarada en los YAML.
+
+**Desplegar con el hardening ya aplicado:**
+
+```powershell
+.\scripts\k8s-up-monitoring.ps1
+```
+
+**Instalar y aplicar Kyverno en otra terminal:** el script de monitoring queda capturando alertas de Falco, por lo que no devuelve el prompt mientras la captura está activa.
+
+```powershell
+helm repo add kyverno https://kyverno.github.io/kyverno/
+helm repo update
+helm upgrade --install kyverno kyverno/kyverno -n kyverno --create-namespace --version 3.9.2 --wait
+
+minikube kubectl -- apply -f k8s/policies/disallow-latest-tag.yaml
+minikube kubectl -- apply -f k8s/policies/require-resources.yaml
+minikube kubectl -- apply -f k8s/policies/disallow-root.yaml
+minikube kubectl -- get clusterpolicy
+```
+
+**Validar con manifiestos de prueba:**
+
+```powershell
+minikube kubectl -- apply -f k8s/policies/test/pod-no-conforme.yaml        # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-solo-latest.yaml        # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-solo-sin-resources.yaml # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-solo-root.yaml          # debe ser rechazado
+minikube kubectl -- apply -f k8s/policies/test/pod-conforme.yaml           # debe crearse
+minikube kubectl -- delete pod pod-conforme -n clinica-veterinaria
+```
+
+**KubeLinter:**
+
+```powershell
+kube-linter lint k8s\*.yaml > reports\kubelinter.txt
+```
+
+### Probar la detección de Falco
+
+La prueba se realiza con dos terminales: una mantiene activa la captura de alertas y la otra abre la shell dentro de la API. Se busca que la acción quede registrada en el log mientras ocurre.
+
+En una terminal, iniciar la captura y dejarla abierta. Si ya está activa desde el script de monitoring, no hace falta iniciarla otra vez:
+
+```powershell
+.\scripts\k8s-up-falco.ps1
+```
+
+En otra terminal, comprobar los pods y abrir la shell:
+
+```powershell
+minikube kubectl -- get pods -n falco
+minikube kubectl -- exec -it -n clinica-veterinaria deployment/api-monitoring -- /bin/sh
+# dentro de la shell: id, pwd, exit
+
+minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --tail=50
+```
+
+### Comprobar el estado y los usuarios de los servicios
+
+Consultar el estado de los pods:
+
+```powershell
+minikube kubectl -- get pods -n clinica-veterinaria
+```
+
+Los servicios deben estar en `Running` y listos para atender solicitudes. Para comprobar que se ejecutan con el usuario configurado, consultar su identificación:
+
+```powershell
+minikube kubectl -- exec deploy/prometheus -n clinica-veterinaria -- id
+minikube kubectl -- exec deploy/grafana -n clinica-veterinaria -- id
+minikube kubectl -- exec postgres-0 -n clinica-veterinaria -- id
+minikube kubectl -- exec deploy/frontend-monitoring -n clinica-veterinaria -- id
+minikube kubectl -- exec deploy/api-monitoring -n clinica-veterinaria -- id
+```
+
+Los usuarios esperados son `nobody` (65534), `grafana` (472), `postgres` (999), `nginx` (101) y `app` (10001), respectivamente. La explicación de cada resultado se encuentra en la sección 4.1 del [Entregable 3 DevSecOps](ENTREGABLE_3_DEVSECOPS.md).
 
 ## Datos de prueba
 

@@ -2,7 +2,7 @@
 
 Endpoints organizados por pantalla del diseño. Base: `/api/v1`
 
-Este documento es el que usa **todo el equipo**. Hay uno aparte con siete endpoints adicionales que necesita la materia Análisis y Diseño de Aplicaciones II; no hace falta leerlo para trabajar acá.
+Este documento es el que usa **todo el equipo**.
 
 > **Antes de arrancar, en criollo:** un endpoint es una URL a la que el frontend le pega para
 > pedir o mandar algo. `GET` = "dame esto" (no cambia nada, solo lee). `POST` = "creá esto
