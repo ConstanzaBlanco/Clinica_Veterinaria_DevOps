@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_session
-from app.historial.dto import HistorialClienteResponse, HistorialVeterinarioResponse
+from app.historial.dto import (
+    HistorialClienteResponse,
+    HistorialPesoResponse,
+    HistorialVeterinarioResponse,
+)
 from app.historial.repository import HistorialRepository
 from app.historial.service import HistorialService
 from app.Middleware.middleware import obtener_usuario_actual
@@ -53,6 +57,32 @@ def ver_historial(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Rol sin acceso a este recurso.",
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+
+
+@router.get(
+    "/mascotas/{id_mascota}/historial/peso",
+    response_model=HistorialPesoResponse,
+)
+def ver_historial_peso(
+    id_mascota: int,
+    usuario: dict[str, Any] = Depends(obtener_usuario_actual),
+    session: Session = Depends(get_session),
+):
+    """Historial completo de pesos de una mascota. Mismo criterio de acceso
+    que el resto de `historial/`: CLIENTE solo si la mascota es suya,
+    VETERINARIO sin restricción, cualquier otro rol (ADMINISTRADOR) sin acceso."""
+    if usuario["rol"] not in ("VETERINARIO", "CLIENTE"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Rol sin acceso a este recurso.",
+        )
+
+    try:
+        return crear_service(session).obtener_historial_peso(
+            id_mascota, usuario["id_usuario"], usuario["rol"]
         )
     except LookupError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error

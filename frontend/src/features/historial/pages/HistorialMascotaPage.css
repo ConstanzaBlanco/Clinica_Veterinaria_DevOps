@@ -97,6 +97,41 @@
   gap: 16px;
 }
 
+.historial-peso {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+}
+
+.historial-peso h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.historial-peso-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historial-peso-lista li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.historial-peso-lista strong {
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
 .historial-tarjeta {
   background: var(--white);
   border: 1px solid var(--border);

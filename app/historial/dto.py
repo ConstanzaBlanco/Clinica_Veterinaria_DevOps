@@ -3,6 +3,23 @@ from datetime import date, datetime
 from pydantic import BaseModel, ConfigDict
 
 
+# --- Peso (común a CLIENTE y VETERINARIO) ---
+
+class RegistroPesoItem(BaseModel):
+    """Un registro histórico de peso de la mascota."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    fecha_registro: datetime
+    peso: float
+
+
+class HistorialPesoResponse(BaseModel):
+    """Respuesta de GET /mascotas/{id}/historial/peso."""
+
+    registros: list[RegistroPesoItem]
+
+
 # --- Respuesta para CLIENTE ---
 
 class ConsultaClienteItem(BaseModel):

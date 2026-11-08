@@ -1,6 +1,6 @@
 from datetime import date, datetime, time
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class MascotaResumen(BaseModel):
@@ -46,6 +46,7 @@ class ConsultaCreate(BaseModel):
     observaciones: str | None = None
     tratamiento: str | None = None
     recomendaciones: str | None = None
+    peso: float | None = Field(default=None, gt=0)
 
 
 class ConsultaCreateResponse(BaseModel):

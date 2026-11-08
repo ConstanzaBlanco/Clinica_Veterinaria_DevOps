@@ -23,3 +23,7 @@ export function obtenerHistorial(
     signal,
   })
 }
+
+export function obtenerHistorialPeso(token, idMascota, signal = undefined) {
+  return apiFetch(`/mascotas/${idMascota}/historial/peso`, { token, signal })
+}

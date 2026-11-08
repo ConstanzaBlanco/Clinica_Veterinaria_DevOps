@@ -136,6 +136,7 @@ class TurnoService:
                 "tratamiento": datos.tratamiento,
                 "recomendaciones": datos.recomendaciones,
             },
+            peso=datos.peso,
         )
 
         if consulta is None:
