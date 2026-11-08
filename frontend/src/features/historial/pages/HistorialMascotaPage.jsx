@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../../app/AuthContext'
-import { obtenerHistorial, obtenerMascota } from '../../../api/historial'
+import { obtenerHistorial, obtenerHistorialPeso, obtenerMascota } from '../../../api/historial'
 import { listarTiposAtencion } from '../../../api/catalogos'
 import Boton from '../../../components/common/Boton'
 import Badge from '../../../components/common/Badge'
@@ -52,6 +52,26 @@ function EstadoBadges({ modificadaEl, edicionVencida }) {
   )
 }
 
+function EvolucionPeso({ registros }) {
+  if (!registros || registros.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="historial-peso">
+      <h3>Evolución de peso</h3>
+      <ul className="historial-peso-lista">
+        {registros.map((registro) => (
+          <li key={registro.fecha_registro}>
+            <span>{formatearFechaCorta(registro.fecha_registro.slice(0, 10))}</span>
+            <strong>{registro.peso} kg</strong>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 // --- Vista del cliente: solo lectura ---
 
 function ConsultaCliente({ consulta }) {
@@ -88,6 +108,7 @@ function ConsultaCliente({ consulta }) {
 function VistaCliente({ idMascota, token }) {
   const [mascota, setMascota] = useState(null)
   const [historial, setHistorial] = useState(null)
+  const [pesos, setPesos] = useState([])
   const [limite, setLimite] = useState(LIMITE_INICIAL)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
@@ -101,10 +122,12 @@ function VistaCliente({ idMascota, token }) {
     Promise.all([
       obtenerMascota(token, idMascota, controlador.signal),
       obtenerHistorial(token, idMascota, { limite, offset: 0 }, controlador.signal),
+      obtenerHistorialPeso(token, idMascota, controlador.signal),
     ])
-      .then(([mascotaInfo, historialInfo]) => {
+      .then(([mascotaInfo, historialInfo, historialPeso]) => {
         setMascota(mascotaInfo)
         setHistorial(historialInfo)
+        setPesos(historialPeso.registros)
       })
       .catch((errorPeticion) => {
         if (errorPeticion.name !== 'AbortError') {
@@ -162,6 +185,8 @@ function VistaCliente({ idMascota, token }) {
           cuenta. Ante dudas sobre un diagnóstico o tratamiento, consultá en la próxima visita.
         </p>
       </div>
+
+      <EvolucionPeso registros={pesos} />
 
       {consultas.length === 0 && (
         <div className="historial-mensaje">Todavía no hay consultas registradas.</div>
@@ -265,6 +290,7 @@ function ConsultaVeterinario({ consulta }) {
 
 function VistaVeterinario({ idMascota, token }) {
   const [historial, setHistorial] = useState(null)
+  const [pesos, setPesos] = useState([])
   const [tipo, setTipo] = useState('')
   const [tiposAtencion, setTiposAtencion] = useState([])
   const [cargando, setCargando] = useState(true)
@@ -276,6 +302,16 @@ function VistaVeterinario({ idMascota, token }) {
       .then(setTiposAtencion)
       .catch(() => {})
   }, [token])
+
+  useEffect(() => {
+    const controlador = new AbortController()
+
+    obtenerHistorialPeso(token, idMascota, controlador.signal)
+      .then((respuesta) => setPesos(respuesta.registros))
+      .catch(() => {})
+
+    return () => controlador.abort()
+  }, [idMascota, token, intento])
 
   useEffect(() => {
     const controlador = new AbortController()
@@ -379,6 +415,8 @@ function VistaVeterinario({ idMascota, token }) {
           </Boton>
         </div>
       </div>
+
+      <EvolucionPeso registros={pesos} />
 
       {consultas.length === 0 && (
         <div className="historial-mensaje">No hay consultas registradas para este filtro.</div>

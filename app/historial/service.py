@@ -9,6 +9,20 @@ class HistorialService:
     def __init__(self, repository: HistorialRepository) -> None:
         self.repository: HistorialRepository = repository
 
+    # --- Peso (común a cliente y veterinario) ---
+
+    def obtener_historial_peso(self, id_mascota: int, id_usuario: int, rol: str) -> dict:
+        """Historial completo de pesos de la mascota. El cliente solo puede
+        verlo si la mascota es suya; el veterinario tiene acceso abierto,
+        igual que en `obtener_historial_veterinario`."""
+        if rol == "CLIENTE" and not self.repository.mascota_pertenece_a_cliente(
+            id_mascota, id_usuario
+        ):
+            raise LookupError("Mascota no encontrada.")
+
+        registros = self.repository.listar_pesos(id_mascota)
+        return {"registros": [dict(r) for r in registros]}
+
     # --- Cliente ---
 
     def obtener_historial_cliente(

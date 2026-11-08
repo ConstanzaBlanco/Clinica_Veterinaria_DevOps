@@ -41,6 +41,17 @@ class HistorialRepository:
         ).first()
         return fila is not None
 
+    def listar_pesos(self, id_mascota: int) -> list:
+        """Historial completo de pesos registrados de la mascota, más reciente primero."""
+        consulta = text(
+            """
+            SELECT fecha_registro, peso FROM registro_peso
+            WHERE id_mascota = :id_mascota
+            ORDER BY fecha_registro DESC
+            """
+        )
+        return self.session.execute(consulta, {"id_mascota": id_mascota}).mappings().all()
+
     # --- Cliente ---
 
     def contar_consultas_cliente(self, id_mascota: int) -> int:

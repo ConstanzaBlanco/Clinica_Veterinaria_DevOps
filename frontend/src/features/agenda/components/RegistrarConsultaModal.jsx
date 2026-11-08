@@ -8,6 +8,7 @@ const CONSULTA_VACIA = {
   observaciones: '',
   tratamiento: '',
   recomendaciones: '',
+  peso: '',
 }
 
 function RegistrarConsultaModal({ turno, onGuardar, onCancelar }) {
@@ -42,6 +43,14 @@ function RegistrarConsultaModal({ turno, onGuardar, onCancelar }) {
       return
     }
 
+    const pesoTexto = consulta.peso.trim()
+    const peso = pesoTexto ? Number(pesoTexto) : null
+
+    if (pesoTexto && (Number.isNaN(peso) || peso <= 0)) {
+      setError('El peso debe ser un número mayor a 0.')
+      return
+    }
+
     setGuardando(true)
 
     try {
@@ -51,6 +60,7 @@ function RegistrarConsultaModal({ turno, onGuardar, onCancelar }) {
         observaciones: consulta.observaciones.trim() || null,
         tratamiento: consulta.tratamiento.trim() || null,
         recomendaciones: consulta.recomendaciones.trim() || null,
+        peso,
       })
     } catch (errorRegistro) {
       setError(errorRegistro.message || 'No se pudo registrar la consulta.')
@@ -122,6 +132,19 @@ function RegistrarConsultaModal({ turno, onGuardar, onCancelar }) {
               name="recomendaciones"
               rows={2}
               value={consulta.recomendaciones}
+              onChange={manejarCambio}
+            />
+          </div>
+
+          <div className="consulta-form-campo">
+            <label htmlFor="peso">Peso actual en kg (opcional)</label>
+            <input
+              id="peso"
+              name="peso"
+              type="number"
+              step="0.01"
+              min="0"
+              value={consulta.peso}
               onChange={manejarCambio}
             />
           </div>

@@ -210,6 +210,7 @@ class TurnoRepository:
         id_turno: int,
         id_veterinario: int,
         datos: dict,
+        peso: float | None = None,
     ) -> dict | None:
         """Inserta la consulta clínica y pasa el turno a ATENDIDO en una sola
         transacción, tras verificar que el turno sea del veterinario y esté
@@ -258,6 +259,15 @@ class TurnoRepository:
             "UPDATE turno SET estado = 'ATENDIDO' WHERE id_turno = :id_turno"
         )
         self.session.execute(actualizar_turno, {"id_turno": id_turno})
+
+        if peso is not None:
+            registrar_peso = text(
+                "INSERT INTO registro_peso (id_mascota, peso) VALUES (:id_mascota, :peso)"
+            )
+            self.session.execute(
+                registrar_peso,
+                {"id_mascota": turno["id_mascota"], "peso": peso},
+            )
 
         self.session.commit()
         return dict(consulta_creada)
