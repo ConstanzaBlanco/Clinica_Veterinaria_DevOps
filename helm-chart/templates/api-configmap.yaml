@@ -1,0 +1,17 @@
+# Configuración NO sensible de la API (host de Postgres, usuario, límites de
+# login...). Sale de api.config en values.yaml, así cada entorno la cambia sin
+# tocar la plantilla. Las contraseñas no van acá: van en los Secrets.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.api.name }}-config
+  labels:
+    {{- include "petcore.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+data:
+  {{- range $clave, $valor := .Values.api.config }}
+  {{ $clave }}: {{ $valor | quote }}
+  {{- end }}
+  # Rutas donde se montan los Secrets en el contenedor (ver api-deployment.yaml).
+  POSTGRES_PASSWORD_FILE: /run/secrets/db-password
+  JWT_SECRET_KEY_FILE: /run/jwt-secret/jwt-secret

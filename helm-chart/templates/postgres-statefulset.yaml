@@ -1,0 +1,119 @@
+# PostgreSQL. Basado en k8s/postgres-statefulset.yaml.
+#
+# Es un StatefulSet y no un Deployment porque una base de datos necesita
+# identidad fija: el Pod siempre se llama postgres-0 y siempre vuelve a
+# engancharse al MISMO disco. Un Deployment crea Pods con nombres al azar
+# y no garantiza eso.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  labels:
+    {{- include "petcore.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  # Service "headless" asociado (ver postgres-service.yaml).
+  serviceName: {{ .Values.postgres.serviceName }}
+  # Siempre 1: Postgres no se replica agregando Pods iguales.
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "petcore.selectorLabels" (dict "ctx" $ "component" "postgres") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "petcore.labels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      automountServiceAccountToken: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: {{ .Values.postgres.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.postgres.securityContext.runAsGroup }}
+        # Los archivos del disco quedan con este grupo, así Postgres (999)
+        # puede escribir sin ser root.
+        fsGroup: {{ .Values.postgres.securityContext.fsGroup }}
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: postgres
+          image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+
+          ports:
+            - name: postgres
+              containerPort: 5432
+
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+          env:
+            # Superusuario inicial. La API NO usa este: usa petcore_app, que
+            # crea 02_permisos.sql con permisos recortados.
+            - name: POSTGRES_DB
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD_FILE
+              value: /run/secrets/db-password
+
+          volumeMounts:
+            - name: postgres-secret
+              mountPath: /run/secrets
+              readOnly: true
+            # La imagen oficial ejecuta los .sql de esta carpeta, en orden,
+            # SOLO la primera vez (cuando el disco está vacío).
+            - name: postgres-init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+            - name: postgres-data
+              mountPath: /var/lib/postgresql
+
+          # Recién cuando acepta conexiones el Service le manda tráfico.
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "postgres"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+          # Si deja de aceptar conexiones por un buen rato, se reinicia.
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "postgres"]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+      volumes:
+        - name: postgres-secret
+          secret:
+            secretName: {{ .Values.secrets.postgres }}
+        - name: postgres-init
+          configMap:
+            name: {{ .Values.postgres.initConfigMap }}
+
+  # Por cada Pod, Kubernetes crea un PersistentVolumeClaim (un "pedido de
+  # disco"). En minikube lo cumple el storage-provisioner que viste en
+  # kube-system. Ojo: "helm uninstall" NO borra este disco (a propósito,
+  # para no perder datos); se borra a mano con kubectl delete pvc.
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+        labels:
+          {{- include "petcore.labels" . | nindent 10 }}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.postgres.storage }}
