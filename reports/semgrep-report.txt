@@ -1,0 +1,73 @@
+                   
+                   
+┌─────────────────┐
+│ 4 Code Findings │
+└─────────────────┘
+                                    
+    /src/app/historial/repository.py
+   ❯❯❱ veterinaria-sqlalchemy-text-fstring
+          ❰❰ Blocking ❱❱
+          Consulta SQL construida con f-string dentro de text(). Si el valor interpolado puede venir del
+          usuario hay inyeccion SQL. Usar parametros (:nombre) o verificar que lo interpolado sea una   
+          constante del codigo.                                                                         
+                                                                                                        
+          105┆ consulta = text(
+          106┆     f"""
+          107┆     SELECT cc.id_consulta
+          108┆     FROM consulta_clinica cc
+          109┆     JOIN turno t ON t.id_turno = cc.id_turno
+          110┆     JOIN tipo_atencion ta ON ta.id_tipo_atencion = t.id_tipo_atencion
+          111┆     WHERE cc.id_mascota = :id_mascota AND cc.id_consulta_original IS NULL
+          112┆     {condicion_tipo}
+          113┆     """
+          114┆ )
+            ⋮┆----------------------------------------
+          124┆ consulta = text(
+          125┆     f"""
+          126┆     SELECT
+          127┆         cc.id_consulta, cc.fecha_registro::date AS fecha,
+          128┆         to_char(cc.fecha_registro, 'HH24:MI') AS hora,
+          129┆         ta.nombre AS tipo,
+          130┆         u.nombre || ' ' || u.apellido AS veterinario,
+          131┆         cc.motivo, cc.observaciones, cc.diagnostico,
+          132┆         cc.tratamiento, cc.recomendaciones,
+          133┆         cc.fecha_modificacion AS modificada_el,
+             [hid 10 additional lines, adjust with --max-lines-per-finding] 
+                                    
+    /src/app/pacientes/repository.py
+   ❯❯❱ veterinaria-sqlalchemy-text-fstring
+          ❰❰ Blocking ❱❱
+          Consulta SQL construida con f-string dentro de text(). Si el valor interpolado puede venir del
+          usuario hay inyeccion SQL. Usar parametros (:nombre) o verificar que lo interpolado sea una   
+          constante del codigo.                                                                         
+                                                                                                        
+           47┆ consulta = text(
+           48┆     f"""
+           49┆     SELECT
+           50┆         m.id_mascota AS id, m.nombre, m.especie, m.raza, m.estado,
+           51┆         date_part('year', age(m.fecha_nacimiento))::int AS edad_anios,
+           52┆         u.nombre || ' ' || u.apellido AS propietario_nombre,
+           53┆         u.telefono AS propietario_telefono,
+           54┆
+           55┆         (SELECT COUNT(*) FROM consulta_clinica c
+           56┆          WHERE c.id_mascota = m.id_mascota
+             [hid 48 additional lines, adjust with --max-lines-per-finding] 
+                                 
+    /src/app/turnos/repository.py
+   ❯❯❱ veterinaria-sqlalchemy-text-fstring
+          ❰❰ Blocking ❱❱
+          Consulta SQL construida con f-string dentro de text(). Si el valor interpolado puede venir del
+          usuario hay inyeccion SQL. Usar parametros (:nombre) o verificar que lo interpolado sea una   
+          constante del codigo.                                                                         
+                                                                                                        
+          130┆ consulta = text(
+          131┆     f"""
+          132┆     SELECT
+          133┆         t.id_turno, t.fecha_hora_inicio, t.duracion_minutos,
+          134┆         t.estado, t.canal_origen,
+          135┆         ta.nombre AS tipo,
+          136┆         m.id_mascota, m.nombre AS mascota_nombre,
+          137┆         m.especie, m.estado AS mascota_estado,
+          138┆         u.nombre || ' ' || u.apellido AS veterinario
+          139┆     FROM turno t
+             [hid 8 additional lines, adjust with --max-lines-per-finding] 
