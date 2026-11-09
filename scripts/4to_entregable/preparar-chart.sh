@@ -5,7 +5,8 @@
 #   - el namespace,
 #   - los Secrets postgres-secret y jwt-secret (desde db/*.txt, que no están en git),
 #   - el ConfigMap postgres-init con los SQL de db/init/,
-#   - la imagen de la API, construida DENTRO de minikube con el tag de la chart.
+#   - las imágenes de la API y del frontend, construidas DENTRO de minikube
+#     con el tag de la chart.
 #
 # Uso (desde la raíz del repo, en Git Bash):
 #   bash scripts/4to_entregable/preparar-chart.sh            # namespace "petcore"
@@ -63,10 +64,10 @@ echo "OK. Namespace: $NAMESPACE | tag de imagen: $TAG"
 # recurso sin crearlo y se lo pasa a apply, que lo crea si no existe o lo
 # actualiza si ya existe. Un "kubectl create" a secas fallaría la segunda vez.
 
-paso "1/4 Namespace $NAMESPACE"
+paso "1/5 Namespace $NAMESPACE"
 kc create namespace "$NAMESPACE" --dry-run=client -o yaml | kc apply -f -
 
-paso "2/4 Secrets (contraseña de Postgres y clave JWT)"
+paso "2/5 Secrets (contraseña de Postgres y clave JWT)"
 kc create secret generic postgres-secret \
     --from-file=db-password=db/password.txt \
     --namespace "$NAMESPACE" --dry-run=client -o yaml | kc apply -f -
@@ -75,7 +76,7 @@ kc create secret generic jwt-secret \
     --from-file=jwt-secret=db/jwt-secret.txt \
     --namespace "$NAMESPACE" --dry-run=client -o yaml | kc apply -f -
 
-paso "3/4 ConfigMap postgres-init (SQL de db/init/)"
+paso "3/5 ConfigMap postgres-init (SQL de db/init/)"
 kc create configmap postgres-init \
     --from-file=db/init \
     --namespace "$NAMESPACE" --dry-run=client -o yaml | kc apply -f -
@@ -84,8 +85,13 @@ kc create configmap postgres-init \
 # "minikube image build" construye adentro de minikube, así el cluster la
 # encuentra sin registry (por eso la chart usa pullPolicy: Never).
 
-paso "4/4 Imagen de la API: clinica-veterinaria:$TAG (puede tardar unos minutos)"
+paso "4/5 Imagen de la API: clinica-veterinaria:$TAG (puede tardar unos minutos)"
 minikube image build -t "clinica-veterinaria:$TAG" .
+
+paso "5/5 Imagen del frontend: clinica-frontend:$TAG"
+# Dockerfile.k8s es el multi-stage (Node compila, nginx sirve). Usa el
+# nginx.conf por defecto, que reenvía /api/ al Service "api" de la chart.
+minikube image build -t "clinica-frontend:$TAG" -f Dockerfile.k8s frontend
 
 # --- Listo ------------------------------------------------------------------
 

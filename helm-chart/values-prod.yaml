@@ -1,0 +1,62 @@
+# Valores para PRODUCCIÓN.
+# Solo pisa lo que cambia respecto de values.yaml; el resto se hereda.
+#
+#   helm upgrade --install petcore ./helm-chart -n petcore -f helm-chart/values-prod.yaml
+#
+# Idea: más de una copia de lo que atiende usuarios (si una se cae, la otra
+# sigue), más recursos y reglas de seguridad estrictas.
+
+api:
+  # 2 copias. Es seguro porque la API no guarda estado en memoria: el bloqueo
+  # por intentos de login vive en la base (con FOR UPDATE) y el JWT no se
+  # guarda en el servidor. La tarea periódica (app/turnos/tareas_programadas.py)
+  # corre en cada copia, pero es un UPDATE ... WHERE estado = 'CONFIRMADO':
+  # si las dos la ejecutan, la segunda no encuentra nada que cambiar.
+  replicaCount: 2
+
+  service:
+    # Solo accesible dentro del cluster: desde afuera se entra por el Ingress.
+    type: ClusterIP
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+
+  config:
+    # Sesiones cortas y bloqueo rápido ante intentos fallidos.
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+    LOGIN_MAX_INTENTOS: "5"
+    LOGIN_BLOQUEO_MINUTOS: "30"
+
+frontend:
+  # nginx sirviendo archivos estáticos: varias copias no tienen ningún riesgo.
+  replicaCount: 2
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+postgres:
+  # Siempre 1 copia (ver postgres-statefulset.yaml); en producción, más disco
+  # y más memoria.
+  storage: 5Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+ingress:
+  # Otro nombre para no confundirlo con el de desarrollo. Para probarlo en la
+  # PC hay que agregarlo también al archivo hosts.
+  host: petcore-prod.local

@@ -98,3 +98,53 @@ api:
   securityContext:
     runAsUser: 10001
     runAsGroup: 10001
+
+  # initContainer que frena el arranque de la API hasta que Postgres acepte
+  # conexiones en db:5432. Sin esto la API arranca antes que la base y los
+  # primeros requests fallan.
+  esperarBaseDeDatos: true
+
+# --- Frontend (React compilado, servido por nginx) ---
+frontend:
+  name: frontend
+
+  replicaCount: 1
+
+  image:
+    repository: clinica-frontend
+    # Vacío = appVersion de Chart.yaml, igual que la API.
+    tag: ""
+    pullPolicy: Never
+
+  # nginx-unprivileged escucha en 8080 (no en 80: abrir un puerto menor a
+  # 1024 requiere root). Ver frontend/Dockerfile.k8s y frontend/nginx.conf.
+  containerPort: 8080
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+  # Usuario "nginx" de la imagen nginx-unprivileged.
+  securityContext:
+    runAsUser: 101
+    runAsGroup: 101
+
+# --- Ingress: la puerta de entrada HTTP desde fuera del cluster ---
+# Todo el tráfico va al frontend; el nginx del frontend reenvía /api/... a la
+# API (ver frontend/nginx.conf). Así el navegador ve un solo origen.
+ingress:
+  enabled: true
+  # Controlador que atiende este Ingress. En minikube se activa con:
+  #   minikube addons enable ingress
+  className: nginx
+  # Nombre con el que se entra desde el navegador. Hay que agregarlo al
+  # archivo hosts de Windows apuntando a 127.0.0.1 (ver NOTES.txt).
+  host: petcore.local
