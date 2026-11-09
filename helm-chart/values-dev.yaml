@@ -9,10 +9,10 @@
 api:
   replicaCount: 1
 
-  service:
-    # NodePort: la API queda accesible también por fuera del Ingress, así se
-    # puede abrir Swagger con "minikube service api -n petcore --url".
-    type: NodePort
+  # El Service queda en ClusterIP (como en values.yaml). Para abrir Swagger se
+  # usa "kubectl port-forward svc/api 8000:8000 -n petcore" (ver NOTES.txt):
+  # en Windows con minikube sobre Docker, un NodePort necesita además
+  # "minikube service", que arma un túnel inestable con un puerto distinto cada vez.
 
   resources:
     requests:

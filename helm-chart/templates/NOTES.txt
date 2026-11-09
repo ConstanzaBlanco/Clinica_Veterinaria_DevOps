@@ -16,13 +16,14 @@ Pet-Core instalado: release "{{ .Release.Name }}", namespace "{{ .Release.Namesp
    Probar sin navegador:
      curl -s -H "Host: {{ .Values.ingress.host }}" http://127.0.0.1/api/health
 {{- end }}
-{{- if eq .Values.api.service.type "NodePort" }}
 
-3. Swagger de la API, directo (sin pasar por el frontend):
 
-   minikube service {{ .Values.api.name }} -n {{ .Release.Namespace }} --url
-   (abrir la URL que imprime, agregando /docs)
-{{- end }}
+3. Swagger de la API, directo (sin pasar por el frontend). En otra terminal,
+   y dejarla abierta:
+
+   kubectl port-forward svc/{{ .Values.api.name }} 8000:{{ .Values.api.service.port }} -n {{ .Release.Namespace }}
+
+   Después abrir: http://localhost:8000/docs
 
 Réplicas: API {{ .Values.api.replicaCount }}, frontend {{ .Values.frontend.replicaCount }}, Postgres 1.
 Historial de versiones: helm history {{ .Release.Name }} -n {{ .Release.Namespace }}
