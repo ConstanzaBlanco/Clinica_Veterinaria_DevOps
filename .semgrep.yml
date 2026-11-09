@@ -1,0 +1,37 @@
+rules:
+  # Regla 1: esta regla avisa cuando uan consulta SQL se arma pegando texto (con f-string o + o .format()).
+  # Si este etxto vieniera del usuario, podrían meter una inyección SQL y manipular la BD.
+  - id: veterinaria-sqlalchemy-text-fstring
+    languages: [python]
+    severity: ERROR
+    message: >-
+      Consulta SQL construida con f-string dentro de text(). Si el valor
+      interpolado puede venir del usuario hay inyeccion SQL. Usar parametros
+      (:nombre) o verificar que lo interpolado sea una constante del codigo.
+    metadata:
+      cwe: "CWE-89: SQL Injection"
+      owasp: "A03:2021 Injection"
+    patterns:
+      - pattern-either:
+          - pattern: text(f"...")
+          - pattern: sqlalchemy.text(f"...")
+          - pattern: text("..." + $X)
+          - pattern: text("...".format(...))
+
+  # Regla 2: avisa cuando se lee un token de login sin verificar bein su firma. Si
+  # no se verifica, alguien podría inventar un token falso y entrar como otro usuario.
+  - id: veterinaria-jwt-decode-inseguro
+    languages: [python]
+    severity: ERROR
+    message: >-
+      jwt.decode sin lista de `algorithms` o con la verificacion de firma
+      desactivada. Un atacante podria forjar tokens.
+    metadata:
+      cwe: "CWE-347: Improper Verification of Cryptographic Signature"
+      owasp: "A02:2021 Cryptographic Failures"
+    pattern-either:
+      - patterns:
+          - pattern: jwt.decode(...)
+          - pattern-not: jwt.decode(..., algorithms=[...], ...)
+      - pattern: 'jwt.decode(..., options={..., "verify_signature": False, ...}, ...)'
+      - pattern: 'jwt.decode(..., verify=False, ...)'
