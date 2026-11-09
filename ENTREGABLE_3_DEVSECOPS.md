@@ -35,7 +35,7 @@
 
 En este entregable se trabajó sobre la seguridad de la aplicación que ya estaba funcionando. Se revisaron el código, las imágenes de Docker, la configuración de Kubernetes y lo que pasa dentro de los contenedores mientras están en ejecución.
 
-La idea fue seguir el recorrido de la aplicación: primero revisar lo que se va a construir, después analizar la imagen y, por último, comprobar cómo se despliega y cómo se comporta. En cada paso se guardó el resultado en `reports/`, se corrigió lo que correspondía y se dejó explicado por qué algunas alertas se mantienen.
+La idea fue seguir el recorrido de la aplicación: primero revisar lo que se va a construir, después analizar la imagen y, por último, comprobar cómo se despliega y cómo se comporta. En cada paso se guardó el resultado en `reports/entregable-3/`, se corrigió lo que correspondía y se dejó explicado por qué algunas alertas se mantienen.
 
 ### El orden de trabajo
 
@@ -89,7 +89,7 @@ flowchart TB
         E["Eventos del kernel Linux<br/>Actividad de los contenedores"]
         FAL["Falco · namespace falco<br/>Driver modern_ebpf"]
     end
-    R["reports/falco-event.log<br/>Copia local mientras el script está abierto"]
+    R["reports/entregable-3/falco-event.log<br/>Copia local mientras el script está abierto"]
     U --> F
     U --> G
     F -->|"Solicitudes /api mediante Nginx"| A
@@ -132,7 +132,7 @@ Quedaron alertas revisadas y riesgos documentados, con sus motivos en la secció
 
 ## 2. Seguridad en el código
 
-**Reportes:** [`npm-audit-inicial.txt`](reports/npm-audit-inicial.txt), [`npm-audit.txt`](reports/npm-audit.txt), [`semgrep-inicial.txt`](reports/semgrep-inicial.txt), [`semgrep.txt`](reports/semgrep.txt).
+**Reportes:** [`npm-audit-inicial.txt`](reports/entregable-3/npm-audit-inicial.txt), [`npm-audit.txt`](reports/entregable-3/npm-audit.txt), [`semgrep-inicial.txt`](reports/entregable-3/semgrep-inicial.txt), [`semgrep.txt`](reports/entregable-3/semgrep.txt).
 
 ### 2.1 Qué se revisó primero
 
@@ -150,7 +150,7 @@ Semgrep se ejecutó con su configuración automática sobre las carpetas `app/` 
 Se empezó por las dependencias del frontend. Aunque el código propio esté bien, una biblioteca utilizada por el proyecto puede tener una vulnerabilidad conocida. Se ejecutó `npm audit` dentro de `frontend/` y se guardó una primera salida para poder comparar después. El objetivo fue identificar qué paquetes necesitaban actualizarse y comprobar que el frontend pudiera seguir construyéndose después del cambio:
 ```powershell
 cd frontend
-cmd /c "npm audit > ..\reports\npm-audit-inicial.txt"
+cmd /c "npm audit > ..\reports\entregable-3\npm-audit-inicial.txt"
 ```
 
 El primer análisis encontró 2 vulnerabilidades HIGH (severidad alta):
@@ -163,7 +163,7 @@ El primer análisis encontró 2 vulnerabilidades HIGH (severidad alta):
 Se actualizó `vite` de 8.2.2 a 8.3.5 (`package.json`: `"vite": "^8.3.5"`), lo que también actualizó `source-map-js` de 1.2.1 a 1.2.2 en `package-lock.json`:
 ```powershell
 npx -y npm@11 install vite@^8.3.5
-cmd /c "npx -y npm@11 audit > ..\reports\npm-audit.txt"
+cmd /c "npx -y npm@11 audit > ..\reports\entregable-3\npm-audit.txt"
 ```
 
 Después de actualizar, se repitió el análisis y el reporte quedó en `found 0 vulnerabilities`. También se ejecutaron `npm run build` y `npm run lint` con la versión nueva, sin errores de lint. Así se comprobó que la actualización permitía seguir construyendo el frontend.
@@ -172,7 +172,7 @@ Después de actualizar, se repitió el análisis y el reporte quedó en `found 0
 
 Después se revisó el código con Semgrep. Se ejecutó con Docker para usar la herramienta desde su imagen, sin depender de una instalación local en Windows. El análisis se hizo sobre el backend y el frontend. El objetivo fue localizar patrones potencialmente inseguros y revisar el código señalado antes de decidir si se corregía o se mantenía con una justificación:
 ```powershell
-docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/semgrep.txt /src/app /src/frontend/src
+docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/entregable-3/semgrep.txt /src/app /src/frontend/src
 ```
 
 El análisis inicial encontró 5 hallazgos relacionados con la construcción de consultas SQL. No se detectaron hallazgos en el frontend, la autenticación, la configuración ni el middleware.
@@ -213,8 +213,8 @@ Los archivos permiten consultar el antes y el después:
 
 | Evidencia | Antes | Después |
 |---|---|---|
-| Backend | `reports/trivy-backend-inicial.txt` | `reports/trivy-backend.txt` |
-| Frontend | `reports/trivy-frontend-inicial.txt` | `reports/trivy-frontend.txt` |
+| Backend | `reports/entregable-3/trivy-backend-inicial.txt` | `reports/entregable-3/trivy-backend.txt` |
+| Frontend | `reports/entregable-3/trivy-frontend-inicial.txt` | `reports/entregable-3/trivy-frontend.txt` |
 
 ### 3.2 Paso 2 Actualizar la imagen del backend
 
@@ -247,7 +247,7 @@ Después de actualizar, se revisaron las alertas que seguían presentes para ide
 
 Los **44 HIGH restantes corresponden a 8 CVE distintos**, repetidos en paquetes como util-linux, ncurses, libacl, bibliotecas de systemd y perl-base. El reporte no indica una versión corregida en `Fixed Version`.
 
-En **`reports/debian-versiones.txt`** se guardó la consulta de cinco paquetes representativos. Se comparó la versión instalada con la disponible en los repositorios de Debian: coincidían en los cinco casos, por lo que no había una actualización disponible para esos paquetes al momento de la consulta.
+En **`reports/entregable-3/debian-versiones.txt`** se guardó la consulta de cinco paquetes representativos. Se comparó la versión instalada con la disponible en los repositorios de Debian: coincidían en los cinco casos, por lo que no había una actualización disponible para esos paquetes al momento de la consulta.
 
 Estos hallazgos quedan **documentados como riesgo residual**, ya que al momento del análisis no había una versión corregida disponible en los repositorios consultados. Ejecutar sin root reduce ciertos riesgos, pero no elimina estas vulnerabilidades.
 
@@ -260,8 +260,8 @@ Los comandos se ejecutaron en **PowerShell, desde la raíz del repositorio**, co
 #### Preparación de la carpeta de reportes
 
 ~~~powershell
-New-Item -ItemType Directory -Force -Path .\reports | Out-Null
-$reportsPath = (Resolve-Path .\reports).Path
+New-Item -ItemType Directory -Force -Path .\reports\entregable-3 | Out-Null
+$reportsPath = (Resolve-Path .\reports\entregable-3).Path
 ~~~
 
 #### Construcción de las imágenes
@@ -294,7 +294,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath)
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-frontend.txt clinica-frontend:test
 ~~~
 
-Trivy analizó las imágenes locales de Docker y guardó los resultados en `reports/` mediante la opción `--output`.
+Trivy analizó las imágenes locales de Docker y guardó los resultados en `reports/entregable-3/` mediante la opción `--output`.
 
 Con estos comandos se generaron los **reportes finales**. Los archivos iniciales se conservaron con nombres distintos para mantener la comparación.
 
@@ -367,7 +367,7 @@ Tras aplicar el cambio, el pod quedó en `Running` sin reinicios. Para comprobar
 minikube kubectl -- exec deploy/prometheus -n clinica-veterinaria -- id
 ```
 
-La salida mostró `uid=65534(nobody)`. De ahí sale el número 65534: es el identificador del usuario `nobody` dentro del contenedor y confirma que el proceso se ejecuta sin permisos de administrador. El resultado quedó guardado en `reports/hardening-verificacion.txt`. También se comprobó que Prometheus siguió recolectando las métricas de sus fuentes, incluido cAdvisor, para el que utiliza el token del ServiceAccount.
+La salida mostró `uid=65534(nobody)`. De ahí sale el número 65534: es el identificador del usuario `nobody` dentro del contenedor y confirma que el proceso se ejecuta sin permisos de administrador. El resultado quedó guardado en `reports/entregable-3/hardening-verificacion.txt`. También se comprobó que Prometheus siguió recolectando las métricas de sus fuentes, incluido cAdvisor, para el que utiliza el token del ServiceAccount.
 
 ##### Grafana
 
@@ -379,7 +379,7 @@ Para comprobar que Grafana se ejecutaba sin permisos de administrador y que la c
 minikube kubectl -- exec deploy/grafana -n clinica-veterinaria -- id
 ```
 
-La salida mostró `uid=472(grafana)`. El UID es el número que identifica al usuario dentro del contenedor: en este caso, 472 corresponde al usuario `grafana` de la imagen oficial. Como el usuario administrador (`root`) tiene el UID 0, este resultado permite comprobar que el proceso se ejecuta con otro usuario, sin permisos de administrador. La evidencia quedó guardada en `reports/hardening-verificacion.txt`.
+La salida mostró `uid=472(grafana)`. El UID es el número que identifica al usuario dentro del contenedor: en este caso, 472 corresponde al usuario `grafana` de la imagen oficial. Como el usuario administrador (`root`) tiene el UID 0, este resultado permite comprobar que el proceso se ejecuta con otro usuario, sin permisos de administrador. La evidencia quedó guardada en `reports/entregable-3/hardening-verificacion.txt`.
 
 También se configuró el grupo de acceso a los archivos montados para que Grafana pudiera leer la conexión a Prometheus, el dashboard y las reglas de alerta. El montaje automático del token del ServiceAccount ya estaba deshabilitado: Grafana no necesita esa credencial porque no consulta la API interna de Kubernetes.
 
@@ -397,7 +397,7 @@ Para comprobar que la configuración del usuario se había aplicado, se ejecutó
 minikube kubectl -- exec postgres-0 -n clinica-veterinaria -- id
 ```
 
-La salida mostró `uid=999(postgres) gid=999(postgres)`. Estos números identifican al usuario y a su grupo dentro del contenedor. El UID 999 corresponde al usuario `postgres`; como es distinto de 0, que identifica a `root`, se comprobó que el comando se ejecutó con un usuario sin permisos de administrador del sistema operativo. Esto verifica el usuario configurado para la ejecución del contenedor; no describe los permisos que tienen las cuentas dentro de la base de datos. La evidencia quedó guardada en `reports/hardening-verificacion.txt`.
+La salida mostró `uid=999(postgres) gid=999(postgres)`. Estos números identifican al usuario y a su grupo dentro del contenedor. El UID 999 corresponde al usuario `postgres`; como es distinto de 0, que identifica a `root`, se comprobó que el comando se ejecutó con un usuario sin permisos de administrador del sistema operativo. Esto verifica el usuario configurado para la ejecución del contenedor; no describe los permisos que tienen las cuentas dentro de la base de datos. La evidencia quedó guardada en `reports/entregable-3/hardening-verificacion.txt`.
 
 PostgreSQL tiene configurado un volumen persistente para conservar los datos cuando se reemplaza el pod. El reporte guardado confirma su estado y usuario; no incluye una comparación de la cantidad de registros antes y después del cambio.
 
@@ -415,7 +415,7 @@ Para verificar que se estaba usando el usuario configurado, se ejecutó el sigui
 minikube kubectl -- exec deploy/frontend-monitoring -n clinica-veterinaria -- id
 ```
 
-La salida mostró `uid=101(nginx) gid=101(nginx)`. El UID identifica al usuario y el GID a su grupo dentro del contenedor. En este caso ambos corresponden a `nginx`; el UID 101 es distinto de 0, que identifica al administrador (`root`). El resultado permite comprobar que el usuario configurado se aplicó y que la ejecución se realiza sin root. La evidencia quedó guardada en `reports/hardening-verificacion.txt`.
+La salida mostró `uid=101(nginx) gid=101(nginx)`. El UID identifica al usuario y el GID a su grupo dentro del contenedor. En este caso ambos corresponden a `nginx`; el UID 101 es distinto de 0, que identifica al administrador (`root`). El resultado permite comprobar que el usuario configurado se aplicó y que la ejecución se realiza sin root. La evidencia quedó guardada en `reports/entregable-3/hardening-verificacion.txt`.
 
 No se activó `readOnlyRootFilesystem`: se mantuvo la escritura en el sistema de archivos del contenedor, que Nginx utiliza para sus archivos temporales y su PID en `/tmp`.
 
@@ -433,7 +433,7 @@ Para comprobar que esa configuración se había aplicado, se consultó el usuari
 minikube kubectl -- exec deploy/api-monitoring -n clinica-veterinaria -- id
 ```
 
-La salida mostró `uid=10001(app) gid=10001(app)`. El UID identifica al usuario y el GID a su grupo dentro del contenedor. El resultado coincide con el usuario `app` creado en el Dockerfile y con el número indicado en el manifiesto. Al ser distinto de 0, que identifica a `root`, permite comprobar que la ejecución se realiza con el usuario configurado sin permisos de administrador. La evidencia quedó guardada en `reports/hardening-verificacion.txt`.
+La salida mostró `uid=10001(app) gid=10001(app)`. El UID identifica al usuario y el GID a su grupo dentro del contenedor. El resultado coincide con el usuario `app` creado en el Dockerfile y con el número indicado en el manifiesto. Al ser distinto de 0, que identifica a `root`, permite comprobar que la ejecución se realiza con el usuario configurado sin permisos de administrador. La evidencia quedó guardada en `reports/entregable-3/hardening-verificacion.txt`.
 
 También se agregaron restricciones para impedir que los procesos obtengan más privilegios y para quitar capacidades especiales de Linux que la API no necesita. No hizo falta configurar un grupo de acceso adicional para los volúmenes, porque solo se montan archivos de Secrets en modo de lectura.
 
@@ -547,7 +547,7 @@ require-resources:
 
 El mensaje muestra que el recurso fue rechazado por las tres condiciones esperadas: usa latest, no declara la ejecución sin root y no define los recursos necesarios. Esto confirma que las políticas bloquearon el manifiesto de prueba.
 
-Las pruebas individuales también fueron rechazadas únicamente por la política que incumplían, como se resume en la tabla. Las salidas completas quedaron en `reports/kyverno-validacion.txt`.
+Las pruebas individuales también fueron rechazadas únicamente por la política que incumplían, como se resume en la tabla. Las salidas completas quedaron en `reports/entregable-3/kyverno-validacion.txt`.
 
 #### Manifiestos del proyecto
 
@@ -561,7 +561,7 @@ minikube kubectl -- apply --dry-run=server -f k8s/<manifiesto>.yaml
 
 Los nueve manifiestos fueron aceptados por Kyverno. Esto confirma que los ajustes de la sección 4.1 cumplen las tres políticas. La opción `--dry-run=server` permitió hacer la comprobación sin guardar cambios ni reemplazar los pods.
 
-Las salidas de las pruebas se guardaron en `reports/kyverno-validacion.txt`, con el comando ejecutado y el resultado de cada caso. Los pasos para repetirlas se encuentran en la [guía DevSecOps del README](README.md#devsecops-y-reproducción-de-pruebas).
+Las salidas de las pruebas se guardaron en `reports/entregable-3/kyverno-validacion.txt`, con el comando ejecutado y el resultado de cada caso. Los pasos para repetirlas se encuentran en la [guía DevSecOps del README](README.md#devsecops-y-reproducción-de-pruebas).
 
 #### Limitaciones
 
@@ -580,7 +580,7 @@ Se revisaron los archivos de Kubernetes con KubeLinter para detectar configuraci
 **Comando ejecutado** (versión 0.8.3), sobre los manifiestos de `k8s/` (excluyendo `k8s/policies/`, que son las políticas de Kyverno, no manifiestos de despliegue):
 
 ~~~powershell
-kube-linter lint k8s\*.yaml > reports\kubelinter.txt
+kube-linter lint k8s\*.yaml > reports\entregable-3\kubelinter.txt
 ~~~
 
 **Resultado:** 12 hallazgos, de solo 2 tipos de chequeo.
@@ -592,7 +592,7 @@ kube-linter lint k8s\*.yaml > reports\kubelinter.txt
 
 En esta pasada se mantuvieron los 12 hallazgos con los motivos de la tabla. Los tres relacionados con secretos señalan una ruta de archivo, no una clave en texto plano. Los otros nueve corresponden al sistema de archivos con escritura, que se mantuvo en los manifiestos. Esta configuración queda documentada como una limitación; su justificación no elimina el riesgo.
 
-Evidencia completa en [`reports/kubelinter.txt`](reports/kubelinter.txt).
+Evidencia completa en [`reports/entregable-3/kubelinter.txt`](reports/entregable-3/kubelinter.txt).
 
 ## 5. Seguridad en tiempo de ejecución: Falco
 
@@ -612,7 +612,7 @@ La instalación y la captura de alertas se iniciaron con el siguiente script:
 
 El script comprueba que Helm esté disponible, instala o actualiza Falco y aplica la configuración de `k8s/falco-values.yaml`. También verifica los pods y deja preparada la captura de alertas.
 
-La captura del script copia las alertas a `reports/falco-event.log` mientras permanece activa. También muestra en pantalla las alertas de shell del backend. Detener esa captura interrumpe la copia al archivo local, pero no la detección de Falco dentro del clúster.
+La captura del script copia las alertas a `reports/entregable-3/falco-event.log` mientras permanece activa. También muestra en pantalla las alertas de shell del backend. Detener esa captura interrumpe la copia al archivo local, pero no la detección de Falco dentro del clúster.
 
 ### 5.2 Paso 2 Generar una actividad de prueba
 
@@ -635,7 +635,7 @@ Dentro se ejecutaron `id`, `pwd` y `exit`. El objetivo era abrir una terminal en
 
 ### 5.3 Paso 3 Comprobar qué detectó
 
-El mensaje y los datos de la tabla se extrajeron de la primera alerta guardada en `reports/falco-event.log`, generada al abrir la shell dentro de la API de monitoreo. Se incluyen como evidencia para relacionar la alerta con esa prueba y comprobar que Falco detectó la acción en el contenedor correspondiente.
+El mensaje y los datos de la tabla se extrajeron de la primera alerta guardada en `reports/entregable-3/falco-event.log`, generada al abrir la shell dentro de la API de monitoreo. Se incluyen como evidencia para relacionar la alerta con esa prueba y comprobar que Falco detectó la acción en el contenedor correspondiente.
 
 Extracto del mensaje real:
 
@@ -680,15 +680,15 @@ Kyverno rechazó los casos de prueba que incumplían las políticas. Esos rechaz
 
 | Qué se quiere comprobar | Archivo |
 |---|---|
-| Dependencias del frontend antes y después | [Inicial](reports/npm-audit-inicial.txt) y [final](reports/npm-audit.txt). |
-| Alertas del código antes y después | [Inicial](reports/semgrep-inicial.txt) y [final](reports/semgrep.txt). |
-| Vulnerabilidades de la imagen del backend | [Inicial](reports/trivy-backend-inicial.txt) y [final](reports/trivy-backend.txt). |
-| Vulnerabilidades de la imagen del frontend | [Inicial](reports/trivy-frontend-inicial.txt) y [final](reports/trivy-frontend.txt). |
-| Versiones de paquetes consultadas en Debian | [debian-versiones.txt](reports/debian-versiones.txt). |
-| Estado y usuarios de los pods comprobados | [hardening-verificacion.txt](reports/hardening-verificacion.txt). |
-| Rechazos y aceptación de las políticas | [kyverno-validacion.txt](reports/kyverno-validacion.txt). |
-| Alertas de los manifiestos | [kubelinter.txt](reports/kubelinter.txt). |
-| Actividad detectada durante la ejecución | [falco-event.log](reports/falco-event.log). |
+| Dependencias del frontend antes y después | [Inicial](reports/entregable-3/npm-audit-inicial.txt) y [final](reports/entregable-3/npm-audit.txt). |
+| Alertas del código antes y después | [Inicial](reports/entregable-3/semgrep-inicial.txt) y [final](reports/entregable-3/semgrep.txt). |
+| Vulnerabilidades de la imagen del backend | [Inicial](reports/entregable-3/trivy-backend-inicial.txt) y [final](reports/entregable-3/trivy-backend.txt). |
+| Vulnerabilidades de la imagen del frontend | [Inicial](reports/entregable-3/trivy-frontend-inicial.txt) y [final](reports/entregable-3/trivy-frontend.txt). |
+| Versiones de paquetes consultadas en Debian | [debian-versiones.txt](reports/entregable-3/debian-versiones.txt). |
+| Estado y usuarios de los pods comprobados | [hardening-verificacion.txt](reports/entregable-3/hardening-verificacion.txt). |
+| Rechazos y aceptación de las políticas | [kyverno-validacion.txt](reports/entregable-3/kyverno-validacion.txt). |
+| Alertas de los manifiestos | [kubelinter.txt](reports/entregable-3/kubelinter.txt). |
+| Actividad detectada durante la ejecución | [falco-event.log](reports/entregable-3/falco-event.log). |
 
 Los análisis de Trivy quedaron separados por imagen para poder consultar y comparar cada resultado. La letra pide el nombre `reports/trivyreport.txt`; en el repositorio la evidencia equivalente está en `trivy-backend.txt` y `trivy-frontend.txt`.
 

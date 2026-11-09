@@ -592,12 +592,12 @@ Comprobar que ambos están disponibles y preparar la carpeta de reportes:
 ```powershell
 Test-Path .\db\password.txt
 Test-Path .\db\jwt-secret.txt
-New-Item -ItemType Directory -Force -Path .\reports | Out-Null
+New-Item -ItemType Directory -Force -Path .\reports\entregable-3 | Out-Null
 ```
 
 Los dos primeros comandos deben devolver `True`. Si alguno devuelve `False`, completar la sección de configuración correspondiente antes de continuar.
 
-La preparación está completa cuando el nodo de Minikube está `Ready`, Helm, Node/npm y KubeLinter muestran sus versiones y existen los dos archivos de claves. A continuación se pueden ejecutar las pruebas. Los comandos de análisis escriben los reportes finales en `reports/`; los archivos iniciales se conservan para comparar.
+La preparación está completa cuando el nodo de Minikube está `Ready`, Helm, Node/npm y KubeLinter muestran sus versiones y existen los dos archivos de claves. A continuación se pueden ejecutar las pruebas. Los comandos de análisis escriben los reportes finales en `reports/entregable-3/`; los archivos iniciales se conservan para comparar.
 
 ### Revisar la seguridad del código
 
@@ -606,10 +606,10 @@ Estos comandos repiten la revisión de las dependencias del frontend y del códi
 ```powershell
 cd frontend
 npm ci
-cmd /c "npm audit > ..\reports\npm-audit.txt"
+cmd /c "npm audit > ..\reports\entregable-3\npm-audit.txt"
 cd ..
 
-docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/semgrep.txt /src/app /src/frontend/src
+docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/entregable-3/semgrep.txt /src/app /src/frontend/src
 ```
 
 ### Analizar las imágenes
@@ -617,8 +617,8 @@ docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output 
 Primero se reconstruyen las imágenes con los Dockerfile actuales y después se analizan con Trivy. Se busca que los reportes correspondan al contenido construido con los cambios, no a una imagen anterior.
 
 ```powershell
-New-Item -ItemType Directory -Force -Path .\reports | Out-Null
-$reportsPath = (Resolve-Path .\reports).Path
+New-Item -ItemType Directory -Force -Path .\reports\entregable-3 | Out-Null
+$reportsPath = (Resolve-Path .\reports\entregable-3).Path
 
 docker build --pull --no-cache -t clinica-veterinaria:test .
 docker build --pull --no-cache -f .\frontend\Dockerfile.k8s --build-arg NGINX_CONF=nginx-monitoring.conf -t clinica-frontend:test .\frontend
@@ -664,7 +664,7 @@ minikube kubectl -- delete pod pod-conforme -n clinica-veterinaria
 **KubeLinter:**
 
 ```powershell
-kube-linter lint k8s\*.yaml > reports\kubelinter.txt
+kube-linter lint k8s\*.yaml > reports\entregable-3\kubelinter.txt
 ```
 
 ### Probar la detección de Falco
