@@ -1,0 +1,48 @@
+﻿SNYK - Reporte de dependencias
+Fecha: 2026-11-09 16:52
+
+========== BACKEND (uv.lock) ==========
+Notas:
+- Snyk no soporta uv.lock en esta cuenta: se exporto uv.lock a requirements.txt
+  (mismas versiones) y se analizo ese archivo.
+- uvloop no se analizo: solo existe en Linux y no se puede instalar en Windows.
+
+Testing C:\Users\conbl\AppData\Local\Temp\snyk-backend...
+
+Organization:      constanzablanco
+Package manager:   pip
+Target file:       requirements.txt
+Project name:      snyk-backend
+Open source:       no
+Project path:      C:\Users\conbl\AppData\Local\Temp\snyk-backend
+Licenses:          enabled
+
+Ô£ö Tested 54 dependencies for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+
+
+========== FRONTEND (frontend/package.json) ==========
+Nota: se uso --dev para incluir tambien las dependencias de desarrollo.
+
+Testing C:\Proyecto_Cl├¡nica_Veterinaria\frontend...
+
+Organization:      constanzablanco
+Package manager:   npm
+Target file:       package-lock.json
+Project name:      frontend
+Open source:       no
+Project path:      C:\Proyecto_Cl├¡nica_Veterinaria\frontend
+Licenses:          enabled
+
+Ô£ö Tested 71 dependencies for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+
+

@@ -189,7 +189,7 @@ class MascotaRepository:
         parametros = {**datos, "id_mascota": id_mascota, "id_cliente": id_cliente}
 
         # {columnas} sale de COLUMNAS_EDITABLES (validado arriba); los valores van como parametros.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+        # nosemgrep: veterinaria-sqlalchemy-text-fstring
         consulta = text(
             f"""
             UPDATE mascota SET {columnas}
