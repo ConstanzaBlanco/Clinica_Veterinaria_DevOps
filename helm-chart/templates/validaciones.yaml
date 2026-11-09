@@ -1,0 +1,5 @@
+{{- /*
+No genera ningún recurso: solo ejecuta la validación de prerrequisitos
+(ver _validaciones.tpl). Si falta algo, "helm install" se corta acá.
+*/ -}}
+{{- include "petcore.validarPrerequisitos" . -}}

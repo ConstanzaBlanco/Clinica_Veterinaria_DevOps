@@ -1,0 +1,18 @@
+apiVersion: v2
+
+# Nombre del paquete. Es el que aparece en "helm list".
+name: petcore
+
+description: Pet-Core, sistema de gestión de una clínica veterinaria (API FastAPI, frontend React y PostgreSQL).
+
+# "application" = despliega una app (a diferencia de "library", que solo
+# comparte plantillas con otras charts).
+type: application
+
+# Versión de la chart: se sube cuando cambian las plantillas o los values.
+version: 0.1.0
+
+# Versión de la aplicación que despliega. Es también el tag por defecto de
+# las imágenes propias (si api.image.tag está vacío en values.yaml), y el que
+# usa scripts/4to_entregable/preparar-chart.sh para construirlas. Un solo lugar.
+appVersion: "0.1.0"

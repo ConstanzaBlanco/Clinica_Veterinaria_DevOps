@@ -1,0 +1,18 @@
+# Dirección estable de la API dentro del cluster: http://api:8000
+# (los Pods cambian de IP al reiniciarse; el Service no).
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.api.name }}
+  labels:
+    {{- include "petcore.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  type: {{ .Values.api.service.type }}
+  selector:
+    {{- include "petcore.selectorLabels" (dict "ctx" $ "component" "api") | nindent 4 }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.api.service.port }}
+      targetPort: http

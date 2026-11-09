@@ -1,0 +1,30 @@
+Pet-Core instalado: release "{{ .Release.Name }}", namespace "{{ .Release.Namespace }}", revisión {{ .Release.Revision }}.
+
+1. Ver que todo arranque (salir con Ctrl+C cuando estén en 1/1 Running):
+
+   kubectl get pods -n {{ .Release.Namespace }} -w
+
+{{- if .Values.ingress.enabled }}
+
+2. Entrar desde el navegador: http://{{ .Values.ingress.host }}
+
+   - Una sola vez: minikube addons enable ingress
+   - En otra terminal, y dejarla abierta: minikube tunnel
+   - En C:\Windows\System32\drivers\etc\hosts (como administrador):
+       127.0.0.1 {{ .Values.ingress.host }}
+
+   Probar sin navegador:
+     curl -s -H "Host: {{ .Values.ingress.host }}" http://127.0.0.1/api/health
+{{- end }}
+
+
+3. Swagger de la API, directo (sin pasar por el frontend). En otra terminal,
+   y dejarla abierta:
+
+   kubectl port-forward svc/{{ .Values.api.name }} 8000:{{ .Values.api.service.port }} -n {{ .Release.Namespace }}
+
+   Después abrir: http://localhost:8000/docs
+
+Réplicas: API {{ .Values.api.replicaCount }}, frontend {{ .Values.frontend.replicaCount }}, Postgres 1.
+Historial de versiones: helm history {{ .Release.Name }} -n {{ .Release.Namespace }}
+Volver a la versión anterior: helm rollback {{ .Release.Name }} -n {{ .Release.Namespace }}

@@ -1,0 +1,47 @@
+# Valores para DESARROLLO (la PC de cada uno, con minikube).
+# Solo pisa lo que cambia respecto de values.yaml; el resto se hereda.
+#
+#   helm upgrade --install petcore ./helm-chart -n petcore -f helm-chart/values-dev.yaml
+#
+# Idea: recursos chicos para que entre todo en una notebook, y cosas que
+# hacen más cómodo probar (Swagger directo, sesiones más largas).
+
+api:
+  replicaCount: 1
+
+  # El Service queda en ClusterIP (como en values.yaml). Para abrir Swagger se
+  # usa "kubectl port-forward svc/api 8000:8000 -n petcore" (ver NOTES.txt):
+  # en Windows con minikube sobre Docker, un NodePort necesita además
+  # "minikube service", que arma un túnel inestable con un puerto distinto cada vez.
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+  # Solo se pisan estas claves; las demás de api.config quedan como en values.yaml.
+  config:
+    # Sesiones de 60 minutos (el máximo que acepta app/config.py) para no
+    # tener que loguearse a cada rato mientras se prueba.
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+    # Más intentos antes de bloquear el usuario de prueba.
+    LOGIN_MAX_INTENTOS: "10"
+
+frontend:
+  replicaCount: 1
+
+postgres:
+  storage: 1Gi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+ingress:
+  host: petcore.local
