@@ -7,6 +7,7 @@
 - [Configurar la contraseña de PostgreSQL](#configurar-la-contraseña-de-postgresql)
   - [Configurar la clave secreta JWT](#configurar-la-clave-secreta-jwt)
 - [Ejecutar con Docker Compose (opcional)](#ejecutar-con-docker-compose-opcional)
+- [Lab 4: levantar Pet-Core con Helm (desde cero)](#lab-4-levantar-pet-core-con-helm-desde-cero)
 - [Ejecutar con Kubernetes y Minikube](#ejecutar-con-kubernetes-y-minikube)
   - [Requisitos de Kubernetes](#requisitos-de-kubernetes)
   - [Iniciar o comprobar Minikube](#iniciar-o-comprobar-minikube)
@@ -148,6 +149,176 @@ Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
 ```powershell
 docker compose down
 ```
+
+## Lab 4: levantar Pet-Core con Helm (desde cero)
+
+Guía para levantar la aplicación completa (API, frontend y PostgreSQL) en un
+cluster local de minikube usando la Helm chart de `helm-chart/`, partiendo de
+una PC sin nada instalado del proyecto.
+
+**Todos los comandos se ejecutan en Git Bash**, desde la carpeta del proyecto.
+En PowerShell, `bash` ejecuta WSL en lugar de Git Bash y los scripts fallan.
+
+### 1. Requisitos
+
+| Programa | Para qué | Cómo instalarlo |
+| --- | --- | --- |
+| Git (incluye Git Bash) | Clonar el repositorio y ejecutar los scripts | `winget install --id Git.Git -e` |
+| Docker Desktop | Motor donde corre minikube | Descargarlo de docker.com e iniciarlo |
+| minikube | Cluster de Kubernetes local | `winget install --id Kubernetes.minikube -e` |
+| kubectl | Consultar el cluster | Viene con Docker Desktop |
+| Helm | Instalar la chart | `winget install --id Helm.Helm -e` |
+
+Después de instalar, cerrar y abrir Git Bash para que reconozca los programas
+nuevos. Comprobar con:
+
+```bash
+docker info --format '{{.ServerVersion}}'
+minikube version
+helm version
+```
+
+Docker Desktop tiene que estar abierto antes de seguir.
+
+### 2. Clonar el repositorio
+
+```bash
+git clone https://github.com/ConstanzaBlanco/Clinica_Veterinaria_DevOps.git
+cd Clinica_Veterinaria_DevOps
+```
+
+### 3. Crear las claves locales
+
+La contraseña de PostgreSQL y la clave que firma los tokens JWT se guardan en dos
+archivos que **no están en git** (`.gitignore` los excluye). Estos comandos los
+crean con valores aleatorios, solo si todavía no existen:
+
+```bash
+mkdir -p db
+[ -s db/password.txt ] || printf '%s' "$(openssl rand -hex 16)" > db/password.txt
+[ -s db/jwt-secret.txt ] || printf '%s' "$(openssl rand -hex 32)" > db/jwt-secret.txt
+```
+
+La clave JWT tiene 64 caracteres; la aplicación exige al menos 32.
+
+### 4. Iniciar minikube y habilitar el Ingress
+
+```bash
+minikube start --driver=docker
+minikube addons enable ingress
+```
+
+El addon `ingress` instala el Ingress controller (nginx), que es el que permite
+entrar a la app desde el navegador. Se habilita una sola vez por cluster.
+
+### 5. Preparar lo que la chart no crea
+
+```bash
+bash scripts/4to_entregable/preparar-chart.sh
+```
+
+El script crea el namespace `petcore`, los Secrets (`postgres-secret`,
+`jwt-secret`), el ConfigMap `postgres-init` con los SQL de `db/init/`, y
+construye las imágenes `clinica-veterinaria` y `clinica-frontend` dentro de
+minikube. La primera vez tarda unos minutos. Termina con:
+
+```
+==> Listo. Recursos creados en petcore:
+```
+
+### 6. Instalar la chart
+
+```bash
+helm upgrade --install petcore ./helm-chart -n petcore -f helm-chart/values-dev.yaml
+```
+
+`upgrade --install` instala si no existe y actualiza si ya existe. Al terminar,
+Helm muestra `STATUS: deployed` y un mensaje con los pasos siguientes. Para la
+configuración de producción se usa `-f helm-chart/values-prod.yaml`.
+
+### 7. Esperar a que los pods estén listos
+
+```bash
+kubectl get pods -n petcore -w
+```
+
+Resultado esperado (los sufijos de los nombres cambian en cada instalación):
+
+```
+NAME                        READY   STATUS    RESTARTS   AGE
+api-78cf9df9b6-tbw96        1/1     Running   0          40s
+frontend-5bd96bc648-g74cw   1/1     Running   0          40s
+postgres-0                  1/1     Running   0          40s
+```
+
+Durante el arranque, el pod de la API pasa por `Init:0/1` mientras espera a
+PostgreSQL. Salir con `Ctrl + C` cuando los tres estén en `1/1 Running`.
+
+### 8. Acceder a la aplicación
+
+**Desde el navegador:**
+
+1. En otra terminal de Git Bash, dejar corriendo (puede pedir permisos de administrador):
+
+   ```bash
+   minikube tunnel
+   ```
+
+2. Agregar el nombre `petcore.local` al archivo `hosts` de Windows: abrir el
+   Bloc de notas **como administrador**, abrir
+   `C:\Windows\System32\drivers\etc\hosts` (elegir "Todos los archivos" en el
+   diálogo) y agregar al final:
+
+   ```
+   127.0.0.1 petcore.local
+   ```
+
+3. Entrar a <http://petcore.local> e iniciar sesión con un usuario de prueba
+   (ver [Datos de prueba](#datos-de-prueba)), por ejemplo
+   `ana.cliente@petcore.com` / `Password123!`.
+
+**Sin navegador** (con `minikube tunnel` corriendo):
+
+```bash
+curl -s -H "Host: petcore.local" http://127.0.0.1/api/health
+```
+
+Resultado esperado: `{"status":"ok"}`.
+
+**Swagger de la API** (en otra terminal, dejarla abierta):
+
+```bash
+kubectl port-forward svc/api 8000:8000 -n petcore
+```
+
+Abrir <http://localhost:8000/docs>.
+
+### 9. Actualizar, volver atrás y borrar
+
+| Acción | Comando |
+| --- | --- |
+| Aplicar cambios de la chart o de los values | `helm upgrade petcore ./helm-chart -n petcore -f helm-chart/values-dev.yaml` |
+| Reconstruir las imágenes después de cambiar código | `bash scripts/4to_entregable/preparar-chart.sh` y luego `kubectl rollout restart deployment -n petcore` |
+| Ver el historial de versiones | `helm history petcore -n petcore` |
+| Volver a la versión anterior | `helm rollback petcore -n petcore` |
+| Desinstalar la app | `helm uninstall petcore -n petcore` |
+| Borrar también los datos de PostgreSQL | `kubectl delete pvc --all -n petcore` |
+| Borrar todo el namespace | `kubectl delete namespace petcore` |
+
+`helm uninstall` no borra el disco de PostgreSQL, a propósito, para no perder
+datos. Los SQL de `db/init/` solo se ejecutan cuando ese disco está vacío: para
+volver a cargar los datos de prueba hay que borrar el PVC.
+
+### 10. Problemas frecuentes
+
+| Síntoma | Causa | Solución |
+| --- | --- | --- |
+| `WSL ... execvpe(/bin/bash) failed` | El script se ejecutó desde PowerShell | Usar Git Bash |
+| `helm install` falla con "Faltan recursos en el namespace" | No se ejecutó el paso 5 | Ejecutar `bash scripts/4to_entregable/preparar-chart.sh` |
+| Pod en `ErrImageNeverPull` | La imagen no está construida dentro de minikube | Ejecutar el paso 5 |
+| `minikube status` muestra un error o `Stopped` | minikube está apagado o su contenedor se borró | `minikube start --driver=docker` |
+| <http://petcore.local> no abre | Falta `minikube tunnel` o la línea en `hosts` | Revisar el paso 8 |
+| El login falla después de cambiar `db/password.txt` | PostgreSQL guardó la contraseña anterior en su disco | `helm uninstall`, `kubectl delete pvc --all -n petcore` y volver a los pasos 5 y 6 |
 
 ## Ejecutar con Kubernetes y Minikube
 
