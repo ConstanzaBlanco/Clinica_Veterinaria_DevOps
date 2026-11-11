@@ -234,11 +234,19 @@ spec:
                             -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply --validate=false -f -
                     '''
                     script {
-                        correrJob(
-                            nombre: "kaniko-backend-${BUILD_NUMBER}",
-                            archivoSalida: 'reports/kaniko-backend.txt',
-                            cortaSiFalla: true,
-                            manifest: """
+                        // Los dos Kaniko no dependen entre si - corren en
+                        // paralelo en vez de uno detras del otro, para no
+                        // sumar sus tiempos. "--cache=true" reusa capas ya
+                        // construidas entre corridas (no ayuda la primera
+                        // vez que se usa, pero si en las siguientes si no
+                        // cambiaron las dependencias).
+                        parallel(
+                            backend: {
+                                correrJob(
+                                    nombre: "kaniko-backend-${BUILD_NUMBER}",
+                                    archivoSalida: 'reports/kaniko-backend.txt',
+                                    cortaSiFalla: true,
+                                    manifest: """
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -257,6 +265,8 @@ spec:
             - --context=git://${REPO_URL.replaceAll('https://', '')}#refs/heads/${GIT_BRANCH_CORTA}
             - --dockerfile=Dockerfile
             - --destination=${DOCKER_REGISTRY}/${IMAGE_BACKEND}:${IMAGE_TAG}
+            - --cache=true
+            - --cache-repo=${DOCKER_REGISTRY}/${IMAGE_BACKEND}-cache
           volumeMounts:
             - { name: docker-config, mountPath: /kaniko/.docker }
       volumes:
@@ -266,12 +276,14 @@ spec:
             items:
               - { key: .dockerconfigjson, path: config.json }
 """
-                        )
-                        correrJob(
-                            nombre: "kaniko-frontend-${BUILD_NUMBER}",
-                            archivoSalida: 'reports/kaniko-frontend.txt',
-                            cortaSiFalla: true,
-                            manifest: """
+                                )
+                            },
+                            frontend: {
+                                correrJob(
+                                    nombre: "kaniko-frontend-${BUILD_NUMBER}",
+                                    archivoSalida: 'reports/kaniko-frontend.txt',
+                                    cortaSiFalla: true,
+                                    manifest: """
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -291,6 +303,8 @@ spec:
             - --context-sub-path=frontend
             - --dockerfile=Dockerfile.k8s
             - --destination=${DOCKER_REGISTRY}/${IMAGE_FRONTEND}:${IMAGE_TAG}
+            - --cache=true
+            - --cache-repo=${DOCKER_REGISTRY}/${IMAGE_FRONTEND}-cache
           volumeMounts:
             - { name: docker-config, mountPath: /kaniko/.docker }
       volumes:
@@ -300,6 +314,8 @@ spec:
             items:
               - { key: .dockerconfigjson, path: config.json }
 """
+                                )
+                            }
                         )
                     }
                 }
@@ -337,12 +353,16 @@ spec:
 // archivarlo, y corta el pipeline si el Job fallo y asi se pidio.
 // Centraliza el polling que, si no, se repetiria igual en 6 etapas.
 def correrJob(Map args) {
-    writeFile file: 'job-actual.yaml', text: args.manifest
+    // Un archivo por Job (no "job-actual.yaml" fijo): Kaniko backend y
+    // frontend corren en paralelo, en el mismo workspace, y se pisarian el
+    // archivo si comparten el nombre.
+    def archivoManifest = "job-${args.nombre}.yaml"
+    writeFile file: archivoManifest, text: args.manifest
     // --validate=false: sin esto, "kubectl apply" intenta bajar el esquema
     // OpenAPI del cluster para validar antes de aplicar, y esa descarga
     // apunta a la IP publica del propio cluster - un pod adentro del cluster
     // que intenta llegar a su propia direccion publica se cuelga (timeout).
-    sh "kubectl apply --validate=false -f job-actual.yaml"
+    sh "kubectl apply --validate=false -f ${archivoManifest}"
     sh """
         set +e
         for i in \$(seq 1 120); do
@@ -351,7 +371,16 @@ def correrJob(Map args) {
             sleep 5
         done
         mkdir -p reports
-        kubectl logs job/${args.nombre} -n \$NAMESPACE --all-containers > ${args.archivoSalida} 2>&1 || true
+        # Pequeña espera + reintento: justo al terminar un contenedor, a veces
+        # "kubectl logs" se adelanta al runtime (containerd) volcando el log a
+        # disco y da "unable to retrieve container logs" aunque el contenedor
+        # haya corrido bien.
+        sleep 3
+        kubectl logs job/${args.nombre} -n \$NAMESPACE --all-containers > ${args.archivoSalida} 2>&1
+        if ! grep -qv "unable to retrieve container logs" ${args.archivoSalida} 2>/dev/null; then
+            sleep 5
+            kubectl logs job/${args.nombre} -n \$NAMESPACE --all-containers > ${args.archivoSalida} 2>&1 || true
+        fi
         cat ${args.archivoSalida}
     """
     def fallo = sh(
