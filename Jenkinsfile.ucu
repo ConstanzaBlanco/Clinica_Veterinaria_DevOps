@@ -32,6 +32,11 @@ pipeline {
         DOCKER_REGISTRY  = "manuelney67"
         REPO_URL         = "https://github.com/ConstanzaBlanco/Clinica_Veterinaria_DevOps.git"
         NAMESPACE        = "alumno-team8"
+        // Kubeconfig propio, apuntado a la direccion INTERNA del API server
+        // (ver stage de clonacion: la credencial KUBECONFIG_UCU trae la
+        // direccion publica, que un pod adentro del cluster no puede
+        // alcanzar - timeout). Se arma una sola vez, al principio.
+        KUBECONFIG       = "${WORKSPACE}/kubeconfig-interno.yaml"
     }
 
     stages {
@@ -44,14 +49,31 @@ pipeline {
                     // git directo y necesitan el nombre sin ese prefijo.
                     env.GIT_BRANCH_CORTA = (env.GIT_BRANCH ?: 'main').replaceFirst('^origin/', '')
                 }
+                // La credencial trae la URL publica del API server
+                // (kubernetes-main-node.reto-ucu.net), que no es alcanzable
+                // desde un pod del propio cluster (confirmado con pruebas
+                // directas: timeout). "kubernetes.default.svc" si funciona,
+                // con la CA que cualquier pod ya tiene montada - se le pisa
+                // la direccion del cluster al kubeconfig, conservando el
+                // usuario/token de "team8" (la autenticacion no depende de
+                // que URL de servidor se use).
+                withCredentials([file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG_ORIGINAL')]) {
+                    sh '''
+                        CLUSTER=$(kubectl --kubeconfig="$KUBECONFIG_ORIGINAL" config view -o jsonpath='{.clusters[0].name}')
+                        cp "$KUBECONFIG_ORIGINAL" kubeconfig-interno.yaml
+                        kubectl --kubeconfig=kubeconfig-interno.yaml config set-cluster "$CLUSTER" \
+                            --server=https://kubernetes.default.svc \
+                            --certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+                            --embed-certs=true
+                    '''
+                }
             }
         }
 
         stage('Analisis estatico - Semgrep') {
             steps {
-                withCredentials([file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG')]) {
-                    script {
-                        correrJob(
+                script {
+                    correrJob(
                             nombre: "semgrep-${BUILD_NUMBER}",
                             archivoSalida: 'reports/semgrep-report.txt',
                             cortaSiFalla: false,
@@ -85,8 +107,7 @@ spec:
       volumes:
         - { name: workspace, emptyDir: {} }
 """
-                        )
-                    }
+                    )
                 }
                 archiveArtifacts artifacts: 'reports/semgrep-report.txt', allowEmptyArchive: true
             }
@@ -97,10 +118,7 @@ spec:
         // mismo comportamiento que en el Jenkinsfile local (requisito 3.e).
         stage('Escaneo de dependencias - Snyk') {
             steps {
-                withCredentials([
-                    file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG'),
-                    string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')
-                ]) {
+                withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
                     script {
                         correrJob(
                             nombre: "snyk-${BUILD_NUMBER}",
@@ -158,9 +176,8 @@ spec:
 
         stage('Construccion y test') {
             steps {
-                withCredentials([file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG')]) {
-                    script {
-                        correrJob(
+                script {
+                    correrJob(
                             nombre: "pytest-${BUILD_NUMBER}",
                             archivoSalida: 'reports/pytest-report.txt',
                             cortaSiFalla: true,
@@ -194,8 +211,7 @@ spec:
       volumes:
         - { name: workspace, emptyDir: {} }
 """
-                        )
-                    }
+                    )
                 }
                 archiveArtifacts artifacts: 'reports/pytest-report.txt', allowEmptyArchive: true
             }
@@ -208,10 +224,7 @@ spec:
         // se pisa) a partir de la credencial DOCKER_REGISTRY_CREDS.
         stage('Construccion y publicacion de imagen') {
             steps {
-                withCredentials([
-                    file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG'),
-                    usernamePassword(credentialsId: 'DOCKER_REGISTRY_CREDS', usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')
-                ]) {
+                withCredentials([usernamePassword(credentialsId: 'DOCKER_REGISTRY_CREDS', usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
                     sh '''
                         kubectl create secret docker-registry docker-config-kaniko \
                             --docker-username="$REG_USER" --docker-password="$REG_PASS" \
@@ -292,18 +305,16 @@ spec:
 
         stage('Despliegue automatico con Helm') {
             steps {
-                withCredentials([file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG')]) {
-                    sh '''
-                        helm upgrade --install petcore ./helm-chart -n "$NAMESPACE" \
-                            -f helm-chart/values-dev.yaml \
-                            --set api.image.repository=${DOCKER_REGISTRY}/${IMAGE_BACKEND} \
-                            --set api.image.tag=${IMAGE_TAG} \
-                            --set api.image.pullPolicy=IfNotPresent \
-                            --set frontend.image.repository=${DOCKER_REGISTRY}/${IMAGE_FRONTEND} \
-                            --set frontend.image.tag=${IMAGE_TAG} \
-                            --set frontend.image.pullPolicy=IfNotPresent
-                    '''
-                }
+                sh '''
+                    helm upgrade --install petcore ./helm-chart -n "$NAMESPACE" \
+                        -f helm-chart/values-dev.yaml \
+                        --set api.image.repository=${DOCKER_REGISTRY}/${IMAGE_BACKEND} \
+                        --set api.image.tag=${IMAGE_TAG} \
+                        --set api.image.pullPolicy=IfNotPresent \
+                        --set frontend.image.repository=${DOCKER_REGISTRY}/${IMAGE_FRONTEND} \
+                        --set frontend.image.tag=${IMAGE_TAG} \
+                        --set frontend.image.pullPolicy=IfNotPresent
+                '''
             }
         }
     }
