@@ -73,6 +73,7 @@ pipeline {
                                 apk add --no-cache python3 py3-pip >/dev/null &&
                                 pip install --no-cache-dir --break-system-packages uv >/dev/null &&
                                 uv export --format requirements-txt --no-dev > requirements.txt &&
+                                pip install --no-cache-dir --break-system-packages -r requirements.txt >/dev/null &&
                                 npm install -g snyk >/dev/null &&
                                 snyk test --file=requirements.txt --severity-threshold=critical
                             "
