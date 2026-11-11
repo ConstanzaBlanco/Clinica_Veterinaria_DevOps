@@ -18,3 +18,13 @@ dependencies = [
     "dnspython>=2.9.0",
     "urllib3>=2.8.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
+
+[tool.pytest.ini_options]
+# Sin esto, pytest inserta "tests/" en sys.path (no tiene __init__.py) en vez
+# de la raiz del repo, y "from app..." falla con ModuleNotFoundError.
+pythonpath = ["."]

@@ -1,0 +1,364 @@
+// Pipeline de CI/CD del Laboratorio 4, version para el Jenkins que corre
+// DENTRO del cluster de la UCU (namespace alumno-team8).
+//
+// Deliberadamente separado del "Jenkinsfile" de la raiz (ese es el del
+// Jenkins local, en Docker, con "docker run"). Aca NO hay ningun Docker
+// disponible - cada etapa que antes corria un contenedor local ahora lanza
+// un Job de Kubernetes, espera a que termine, y lee su log. Mantenerlos en
+// un solo archivo con ifs por todos lados mezclaba los dos entornos; dos
+// archivos separados, cada Jenkins con su propio "Script Path", queda mas
+// claro y evita que un cambio en un entorno rompa el otro.
+//
+// Credenciales que hay que cargar en ESTE Jenkins (Manage Jenkins >
+// Credentials > System > Global - no en el store personal):
+//   - SNYK_TOKEN              (Secret text)
+//   - DOCKER_REGISTRY_CREDS   (Username/password, token Read & Write)
+//   - KUBECONFIG_UCU          (Secret file, kubeconfig del equipo)
+//
+// No usa el plugin de Kubernetes de Jenkins (agentes dinamicos): el equipo
+// no tiene permiso para crear Roles/RoleBindings, que ese plugin necesita.
+// En cambio, el propio pod de Jenkins tiene "kubectl" instalado (ver
+// k8s/jenkins-ucu.yaml, initContainer "herramientas") y lanza los Jobs el
+// mismo, usando el kubeconfig de la credencial KUBECONFIG_UCU - el mismo que
+// ya se usaba para el "helm upgrade".
+
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_BACKEND    = "clinica-veterinaria"
+        IMAGE_FRONTEND   = "clinica-frontend"
+        IMAGE_TAG        = "build-${BUILD_NUMBER}"
+        DOCKER_REGISTRY  = "manuelney67"
+        REPO_URL         = "https://github.com/ConstanzaBlanco/Clinica_Veterinaria_DevOps.git"
+        NAMESPACE        = "alumno-team8"
+        // Kubeconfig propio, apuntado a la direccion INTERNA del API server
+        // (ver stage de clonacion: la credencial KUBECONFIG_UCU trae la
+        // direccion publica, que un pod adentro del cluster no puede
+        // alcanzar - timeout). Se arma una sola vez, al principio.
+        KUBECONFIG       = "${WORKSPACE}/kubeconfig-interno.yaml"
+    }
+
+    stages {
+
+        stage('Clonacion del repositorio') {
+            steps {
+                checkout scm
+                script {
+                    // Jenkins devuelve "origin/rama"; los Jobs clonan con
+                    // git directo y necesitan el nombre sin ese prefijo.
+                    env.GIT_BRANCH_CORTA = (env.GIT_BRANCH ?: 'main').replaceFirst('^origin/', '')
+                }
+                // La credencial trae la URL publica del API server
+                // (kubernetes-main-node.reto-ucu.net), que no es alcanzable
+                // desde un pod del propio cluster (confirmado con pruebas
+                // directas: timeout). "kubernetes.default.svc" si funciona,
+                // con la CA que cualquier pod ya tiene montada - se le pisa
+                // la direccion del cluster al kubeconfig, conservando el
+                // usuario/token de "team8" (la autenticacion no depende de
+                // que URL de servidor se use).
+                withCredentials([file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG_ORIGINAL')]) {
+                    sh '''
+                        set -e
+                        CLUSTER=$(kubectl --kubeconfig="$KUBECONFIG_ORIGINAL" config view -o jsonpath='{.clusters[0].name}')
+                        rm -f kubeconfig-interno.yaml
+                        cp "$KUBECONFIG_ORIGINAL" kubeconfig-interno.yaml
+                        chmod 600 kubeconfig-interno.yaml
+                        kubectl --kubeconfig=kubeconfig-interno.yaml config set-cluster "$CLUSTER" \
+                            --server=https://kubernetes.default.svc \
+                            --certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+                            --embed-certs=true
+                    '''
+                }
+            }
+        }
+
+        stage('Analisis estatico - Semgrep') {
+            steps {
+                script {
+                    correrJob(
+                            nombre: "semgrep-${BUILD_NUMBER}",
+                            archivoSalida: 'reports/semgrep-report.txt',
+                            cortaSiFalla: false,
+                            manifest: """
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: semgrep-${BUILD_NUMBER}
+  namespace: ${NAMESPACE}
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: clonar
+          image: alpine/git
+          args: ["clone", "--depth=1", "--branch", "${GIT_BRANCH_CORTA}", "${REPO_URL}", "/workspace"]
+          volumeMounts:
+            - { name: workspace, mountPath: /workspace }
+      containers:
+        - name: semgrep
+          image: semgrep/semgrep
+          workingDir: /workspace
+          command: ["sh", "-c"]
+          args:
+            - "semgrep --config .semgrep.yml --metrics=off app || true"
+          volumeMounts:
+            - { name: workspace, mountPath: /workspace }
+      volumes:
+        - { name: workspace, emptyDir: {} }
+"""
+                    )
+                }
+                archiveArtifacts artifacts: 'reports/semgrep-report.txt', allowEmptyArchive: true
+            }
+        }
+
+        // Si hay una vulnerabilidad critica, el Job termina con codigo de
+        // error (snyk test lo hace solo) y correrJob corta el pipeline -
+        // mismo comportamiento que en el Jenkinsfile local (requisito 3.e).
+        stage('Escaneo de dependencias - Snyk') {
+            steps {
+                withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
+                    script {
+                        correrJob(
+                            nombre: "snyk-${BUILD_NUMBER}",
+                            archivoSalida: 'reports/snyk-report.txt',
+                            cortaSiFalla: true,
+                            manifest: """
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: snyk-${BUILD_NUMBER}
+  namespace: ${NAMESPACE}
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: clonar
+          image: alpine/git
+          args: ["clone", "--depth=1", "--branch", "${GIT_BRANCH_CORTA}", "${REPO_URL}", "/workspace"]
+          volumeMounts:
+            - { name: workspace, mountPath: /workspace }
+      containers:
+        - name: snyk
+          image: node:22-alpine
+          workingDir: /workspace
+          env:
+            - { name: SNYK_TOKEN, value: "${SNYK_TOKEN}" }
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -e
+              apk add --no-cache python3 py3-pip >/dev/null
+              pip install --no-cache-dir --break-system-packages uv >/dev/null
+              uv export --format requirements-txt --no-dev > requirements.txt
+              pip install --no-cache-dir --break-system-packages -r requirements.txt >/dev/null
+              npm install -g snyk >/dev/null
+              snyk test --file=requirements.txt --severity-threshold=critical
+              cd frontend
+              npm install -g snyk >/dev/null
+              npm ci >/dev/null
+              snyk test --severity-threshold=critical
+          volumeMounts:
+            - { name: workspace, mountPath: /workspace }
+      volumes:
+        - { name: workspace, emptyDir: {} }
+"""
+                        )
+                    }
+                }
+                archiveArtifacts artifacts: 'reports/snyk-report.txt', allowEmptyArchive: true
+            }
+        }
+
+        stage('Construccion y test') {
+            steps {
+                script {
+                    correrJob(
+                            nombre: "pytest-${BUILD_NUMBER}",
+                            archivoSalida: 'reports/pytest-report.txt',
+                            cortaSiFalla: true,
+                            manifest: """
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pytest-${BUILD_NUMBER}
+  namespace: ${NAMESPACE}
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: clonar
+          image: alpine/git
+          args: ["clone", "--depth=1", "--branch", "${GIT_BRANCH_CORTA}", "${REPO_URL}", "/workspace"]
+          volumeMounts:
+            - { name: workspace, mountPath: /workspace }
+      containers:
+        - name: pytest
+          image: python:3.13-slim
+          workingDir: /workspace
+          command: ["sh", "-c"]
+          args:
+            - "pip install --no-cache-dir uv && uv sync --locked && uv run pytest -v"
+          volumeMounts:
+            - { name: workspace, mountPath: /workspace }
+      volumes:
+        - { name: workspace, emptyDir: {} }
+"""
+                    )
+                }
+                archiveArtifacts artifacts: 'reports/pytest-report.txt', allowEmptyArchive: true
+            }
+        }
+
+        // Kaniko construye y publica la imagen sin Docker y sin privilegios:
+        // clona el repo el mismo (--context=git://...), arma la imagen capa
+        // por capa, y la sube al registry. El Secret con las credenciales de
+        // Docker Hub se recrea en cada corrida (siempre con el mismo nombre,
+        // se pisa) a partir de la credencial DOCKER_REGISTRY_CREDS.
+        stage('Construccion y publicacion de imagen') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DOCKER_REGISTRY_CREDS', usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
+                    sh '''
+                        kubectl create secret docker-registry docker-config-kaniko \
+                            --docker-username="$REG_USER" --docker-password="$REG_PASS" \
+                            -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply --validate=false -f -
+                    '''
+                    script {
+                        correrJob(
+                            nombre: "kaniko-backend-${BUILD_NUMBER}",
+                            archivoSalida: 'reports/kaniko-backend.txt',
+                            cortaSiFalla: true,
+                            manifest: """
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kaniko-backend-${BUILD_NUMBER}
+  namespace: ${NAMESPACE}
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: kaniko
+          image: gcr.io/kaniko-project/executor:latest
+          args:
+            - --context=git://${REPO_URL.replaceAll('https://', '')}#refs/heads/${GIT_BRANCH_CORTA}
+            - --dockerfile=Dockerfile
+            - --destination=${DOCKER_REGISTRY}/${IMAGE_BACKEND}:${IMAGE_TAG}
+          volumeMounts:
+            - { name: docker-config, mountPath: /kaniko/.docker }
+      volumes:
+        - name: docker-config
+          secret:
+            secretName: docker-config-kaniko
+            items:
+              - { key: .dockerconfigjson, path: config.json }
+"""
+                        )
+                        correrJob(
+                            nombre: "kaniko-frontend-${BUILD_NUMBER}",
+                            archivoSalida: 'reports/kaniko-frontend.txt',
+                            cortaSiFalla: true,
+                            manifest: """
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kaniko-frontend-${BUILD_NUMBER}
+  namespace: ${NAMESPACE}
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: kaniko
+          image: gcr.io/kaniko-project/executor:latest
+          args:
+            - --context=git://${REPO_URL.replaceAll('https://', '')}#refs/heads/${GIT_BRANCH_CORTA}
+            - --context-sub-path=frontend
+            - --dockerfile=Dockerfile.k8s
+            - --destination=${DOCKER_REGISTRY}/${IMAGE_FRONTEND}:${IMAGE_TAG}
+          volumeMounts:
+            - { name: docker-config, mountPath: /kaniko/.docker }
+      volumes:
+        - name: docker-config
+          secret:
+            secretName: docker-config-kaniko
+            items:
+              - { key: .dockerconfigjson, path: config.json }
+"""
+                        )
+                    }
+                }
+            }
+        }
+
+        stage('Despliegue automatico con Helm') {
+            steps {
+                sh '''
+                    helm upgrade --install petcore ./helm-chart -n "$NAMESPACE" \
+                        -f helm-chart/values-dev.yaml \
+                        --set api.image.repository=${DOCKER_REGISTRY}/${IMAGE_BACKEND} \
+                        --set api.image.tag=${IMAGE_TAG} \
+                        --set api.image.pullPolicy=IfNotPresent \
+                        --set frontend.image.repository=${DOCKER_REGISTRY}/${IMAGE_FRONTEND} \
+                        --set frontend.image.tag=${IMAGE_TAG} \
+                        --set frontend.image.pullPolicy=IfNotPresent
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'reports/*.txt', allowEmptyArchive: true
+        }
+        failure {
+            echo 'Pipeline detenido. Revisar el log de la etapa que fallo arriba - el Job de Kubernetes correspondiente ya se limpia solo (ttlSecondsAfterFinished).'
+        }
+    }
+}
+
+// Aplica el manifest de un Job, espera a que termine (exito o falla),
+// vuelca su log a un archivo del workspace de Jenkins para poder
+// archivarlo, y corta el pipeline si el Job fallo y asi se pidio.
+// Centraliza el polling que, si no, se repetiria igual en 6 etapas.
+def correrJob(Map args) {
+    writeFile file: 'job-actual.yaml', text: args.manifest
+    // --validate=false: sin esto, "kubectl apply" intenta bajar el esquema
+    // OpenAPI del cluster para validar antes de aplicar, y esa descarga
+    // apunta a la IP publica del propio cluster - un pod adentro del cluster
+    // que intenta llegar a su propia direccion publica se cuelga (timeout).
+    sh "kubectl apply --validate=false -f job-actual.yaml"
+    sh """
+        set +e
+        for i in \$(seq 1 120); do
+            ESTADO=\$(kubectl get job ${args.nombre} -n \$NAMESPACE -o jsonpath='{.status.succeeded}{.status.failed}')
+            if [ -n "\$ESTADO" ]; then break; fi
+            sleep 5
+        done
+        mkdir -p reports
+        kubectl logs job/${args.nombre} -n \$NAMESPACE --all-containers > ${args.archivoSalida} 2>&1 || true
+        cat ${args.archivoSalida}
+    """
+    def fallo = sh(
+        script: "kubectl get job ${args.nombre} -n \$NAMESPACE -o jsonpath='{.status.failed}'",
+        returnStdout: true
+    ).trim() == '1'
+    if (fallo && args.cortaSiFalla) {
+        error("El Job ${args.nombre} fallo - ver ${args.archivoSalida}")
+    }
+}

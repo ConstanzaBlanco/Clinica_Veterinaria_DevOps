@@ -1,0 +1,62 @@
+# Ruta publica de Pet-Core en el gateway APISIX del laboratorio (reto-ucu.net).
+# El Ingress nginx que ya crea la chart de Helm (host "petcore.local") queda
+# apuntando a una IP interna del cluster, no alcanzable desde afuera - APISIX
+# es el gateway que si sale a internet, igual que uso el proyecto anterior
+# del equipo (Inventario, path "/equipo2-proyecto4/*", ya dado de baja).
+#
+# Path elegido: "/alumno-team8-petcore/*", para no pisar el de otro equipo ni
+# el del proyecto anterior. Se aplica a mano (no lo aplica el Jenkinsfile).
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: petcore-route
+  namespace: alumno-team8
+spec:
+  http:
+    - name: petcore
+      match:
+        paths:
+          - /alumno-team8-petcore/*
+      backends:
+        - serviceName: frontend
+          servicePort: 8080
+      plugins:
+        - name: proxy-rewrite
+          enable: true
+          config:
+            regex_uri: ["^/alumno-team8-petcore/(.*)", "/$1"]
+
+    # El build del frontend (Vite) pide sus archivos en rutas absolutas
+    # ("/assets/...", "/favicon.svg"), sin el prefijo de arriba - no sabe que
+    # esta publicado bajo "/alumno-team8-petcore/". En vez de fijarle ese
+    # prefijo al build (lo cual romperia el acceso local en minikube, que usa
+    # la raiz "/"), se reenvian esos pedidos sin reescribir nada. Ocupa esas
+    # rutas para todo el dominio "equipo2-proyecto4.reto-ucu.net", no solo
+    # bajo nuestro prefijo - riesgo bajo porque hoy no hay otra ruta activa en
+    # ese dominio.
+    - name: petcore-assets
+      match:
+        paths:
+          - /assets/*
+          - /favicon.svg
+      backends:
+        - serviceName: frontend
+          servicePort: 8080
+
+    # El frontend llama a la API en "/api/..." (ruta absoluta, mismo problema
+    # que los assets - ver frontend/src/api/client.js). El backend (FastAPI)
+    # no tiene prefijo "/api" en sus rutas (ver app/main.py, los routers se
+    # incluyen sin prefix), asi que hay que sacarle el "/api/" antes de
+    # reenviar, igual que hace nginx.conf del frontend en local/minikube.
+    - name: petcore-api
+      match:
+        paths:
+          - /api/*
+      backends:
+        - serviceName: api
+          servicePort: 8000
+      plugins:
+        - name: proxy-rewrite
+          enable: true
+          config:
+            regex_uri: ["^/api/(.*)", "/$1"]
