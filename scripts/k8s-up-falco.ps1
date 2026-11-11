@@ -19,7 +19,7 @@ if (-not (Get-Command helm -ErrorAction SilentlyContinue)) {
 $projectRoot = Split-Path -Parent $PSScriptRoot
 # Script del entregable 3: guarda su evidencia en reports\entregable-3, asi no
 # se mezcla con reports\falco-event.log del Lab 4 (que tiene que tener otro evento).
-$reportsPath = Join-Path $projectRoot "reports\entregable-3"
+$reportsPath = Join-Path $projectRoot "reports"
 $logPath = Join-Path $reportsPath "falco-event.log"
 $logEncoding = New-Object System.Text.UTF8Encoding $false
 
