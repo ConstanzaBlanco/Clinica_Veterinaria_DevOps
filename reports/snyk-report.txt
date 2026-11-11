@@ -1,5 +1,5 @@
 ﻿SNYK - Reporte de dependencias
-Fecha: 2026-11-09 20:26
+Fecha: 2026-11-11 16:38
 
 ========== BACKEND (uv.lock) ==========
 Notas:
@@ -7,40 +7,42 @@ Notas:
   (mismas versiones) y se analizo ese archivo.
 - uvloop no se analizo: solo existe en Linux y no se puede instalar en Windows.
 
- ERROR   Missing required packages (SNYK-OS-PYTHON-0013)
-                                                                                        
-           Missing required packages                                                    
+Testing C:\Users\conbl\AppData\Local\Temp\snyk-backend...
 
-Status:  422 Unprocessable Entity 
-Docs:    https://docs.snyk.io/scan-with-snyk/error-catalog#snyk-os-python-0013 
-Tip:     Try snyk doctor: `snyk <command> -d 2>&1 | snyk doctor --stdin` 
-                                                                         
-ID:      urn:snyk:interaction:83eac7b3-5ea8-46f6-ba09-6ef51cf9ff51 
+Organization:      constanzablanco
+Package manager:   pip
+Target file:       requirements.txt
+Project name:      snyk-backend
+Open source:       no
+Project path:      C:\Users\conbl\AppData\Local\Temp\snyk-backend
+Licenses:          enabled
+
+✔ Tested 54 dependencies for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+
 
 ========== FRONTEND (frontend/package.json) ==========
 Nota: se uso --dev para incluir tambien las dependencias de desarrollo.
-Testing  (package-lock.json) ...
 
-Tested 71 dependencies for known issues, found 0 issues, 0 vulnerable paths.
+Testing C:\Proyecto_Clínica_Veterinaria\frontend...
 
-Open Security issues: 0
+Organization:      constanzablanco
+Package manager:   npm
+Target file:       package-lock.json
+Project name:      frontend
+Open source:       no
+Project path:      C:\Proyecto_Clínica_Veterinaria\frontend
+Licenses:          enabled
 
-╭───────────────────────────────────────────────────────────────────────╮
-│ Test Summary                                                          │
-│                                                                       │
-│   Organization:      belenkanas                                       │
-│   Test type:         Software Composition Analysis                    │
-│   Project name:      frontend                                         │
-│   Project path:      C:\devops\Clinica_Veterinaria_DevOps\frontend    │
-│   Target file:       package-lock.json                                │
-│                                                                       │
-│   Total security issues: 0                                            │
-╰───────────────────────────────────────────────────────────────────────╯
+✔ Tested 71 dependencies for known issues, no vulnerable paths found.
 
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
 
-💡 Tip
-
-   To view ignored issues, use the --include-ignores option.
-                                                            
 
 
