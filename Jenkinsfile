@@ -126,18 +126,28 @@ pipeline {
         // Nunca "latest": la politica de Kyverno disallow-latest-tag lo
         // rechazaria. Usa values-dev.yaml por defecto; para produccion, pisar
         // con --set-string helmValuesFile=values-prod.yaml al lanzar el job.
+        //
+        // Namespace "alumno-team8": es el que viene scopeado en el kubeconfig
+        // de la UCU (KUBECONFIG_UCU), no "petcore". Ojo: este stage asume que
+        // los Secrets (postgres-secret, jwt-secret) y el ConfigMap
+        // (postgres-init) YA EXISTEN en ese namespace - la chart no los crea,
+        // eso lo hacia scripts/4to_entregable/preparar-chart.sh contra
+        // minikube. Contra el cluster de la UCU, si no existen, este stage va
+        // a fallar pidiendolos - falta resolver eso cuando aparezca el error.
         stage('Despliegue automatico con Helm') {
             steps {
-                sh '''
-                    helm upgrade --install petcore ./helm-chart -n petcore \
-                        -f helm-chart/values-dev.yaml \
-                        --set api.image.repository=${DOCKER_REGISTRY}/${IMAGE_BACKEND} \
-                        --set api.image.tag=${IMAGE_TAG} \
-                        --set api.image.pullPolicy=IfNotPresent \
-                        --set frontend.image.repository=${DOCKER_REGISTRY}/${IMAGE_FRONTEND} \
-                        --set frontend.image.tag=${IMAGE_TAG} \
-                        --set frontend.image.pullPolicy=IfNotPresent
-                '''
+                withCredentials([file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG')]) {
+                    sh '''
+                        helm upgrade --install petcore ./helm-chart -n alumno-team8 \
+                            -f helm-chart/values-dev.yaml \
+                            --set api.image.repository=${DOCKER_REGISTRY}/${IMAGE_BACKEND} \
+                            --set api.image.tag=${IMAGE_TAG} \
+                            --set api.image.pullPolicy=IfNotPresent \
+                            --set frontend.image.repository=${DOCKER_REGISTRY}/${IMAGE_FRONTEND} \
+                            --set frontend.image.tag=${IMAGE_TAG} \
+                            --set frontend.image.pullPolicy=IfNotPresent
+                    '''
+                }
             }
         }
     }
