@@ -65,6 +65,9 @@ spec:
               set -e
               wget -qO /tools/kubectl https://dl.k8s.io/release/v1.29.5/bin/linux/amd64/kubectl
               chmod +x /tools/kubectl
+              wget -qO- https://get.helm.sh/helm-v3.15.4-linux-amd64.tar.gz \
+                | tar -xz -C /tools --strip-components=1 linux-amd64/helm
+              chmod +x /tools/helm
           volumeMounts:
             - name: tools
               mountPath: /tools

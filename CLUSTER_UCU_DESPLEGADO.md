@@ -29,8 +29,9 @@ Leyenda: ✅ desplegado y verificado · 🔜 planeado, todavía no aplicado · �
 
 ## Acceso
 
-- **URL pública del frontend**: `https://equipo2-proyecto4.reto-ucu.net/alumno-team8-petcore/` (vía `ApisixRoute` `petcore-route`, ver `k8s/apisix-route-ucu.yaml`). El Ingress nginx que crea la chart de Helm (`petcore.local`) no sirve para esto: resuelve a una IP interna del cluster, no alcanzable desde afuera.
-  - La `ApisixRoute` tiene reglas adicionales para `/assets/*`, `/favicon.svg` y `/api/*`: el frontend (Vite build) pide esos recursos en rutas absolutas, sin el prefijo `/alumno-team8-petcore/`, así que se reenvían aparte — `/api/*` además le sacan el prefijo antes de llegar al backend (que no espera "/api" en sus rutas, igual que hace `nginx.conf` del frontend en local/minikube). Ocupan esas rutas para todo el dominio compartido, no solo bajo nuestro prefijo — riesgo aceptado porque hoy no hay otra ruta activa en ese dominio.
+- **URL pública del frontend**: `https://petcore.reto-ucu.net/` (vía `ApisixRoute` `petcore-route`, ver `k8s/apisix-route-ucu.yaml`). `reto-ucu.net` tiene DNS wildcard (`*.reto-ucu.net` resuelve al mismo gateway) — se usa el subdominio propio `petcore` en vez de colgarse del subdominio del proyecto anterior (`equipo2-proyecto4`) con un path largo. La app queda en la raíz del dominio, sin prefijo. El Ingress nginx que crea la chart de Helm (`petcore.local`) no sirve para esto: resuelve a una IP interna del cluster, no alcanzable desde afuera.
+  - Hay una regla adicional solo para `/api/*`: el backend (FastAPI) no espera el prefijo "/api" en sus rutas, así que se le sacan antes de reenviar — igual que hace `nginx.conf` del frontend en local/minikube.
+  - `frontend/src/app/App.jsx` tiene un `basename` condicional para el prefijo `/alumno-team8-petcore` (de una versión anterior de esta ruta, con path en vez de subdominio) — ya no hace falta con esta URL (vive en la raíz), pero queda ahí sin romper nada. Se puede limpiar si se quiere, no es urgente.
 - Cluster: provisto por la UCU, compartido con otros equipos de la materia.
 - Namespace asignado al equipo: `alumno-team8`.
 - Kubeconfig: archivo propio del equipo (no se versiona en el repo), cargado en Jenkins como credencial `KUBECONFIG_UCU`.
