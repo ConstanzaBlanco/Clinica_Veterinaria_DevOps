@@ -59,8 +59,11 @@ pipeline {
                 // que URL de servidor se use).
                 withCredentials([file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG_ORIGINAL')]) {
                     sh '''
+                        set -e
                         CLUSTER=$(kubectl --kubeconfig="$KUBECONFIG_ORIGINAL" config view -o jsonpath='{.clusters[0].name}')
+                        rm -f kubeconfig-interno.yaml
                         cp "$KUBECONFIG_ORIGINAL" kubeconfig-interno.yaml
+                        chmod 600 kubeconfig-interno.yaml
                         kubectl --kubeconfig=kubeconfig-interno.yaml config set-cluster "$CLUSTER" \
                             --server=https://kubernetes.default.svc \
                             --certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
