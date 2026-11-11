@@ -1,0 +1,113 @@
+# Jenkins corriendo DENTRO del cluster de la UCU (namespace alumno-team8),
+# para que el pipeline sea visible sin depender de la notebook de nadie del
+# equipo.
+#
+# No usa un ServiceAccount propio con RBAC (el team no tiene permiso para
+# crear Roles/RoleBindings, verificado con "kubectl auth can-i") - sigue
+# usando el mismo kubeconfig externo (credencial KUBECONFIG_UCU en Jenkins)
+# que ya usaba el Jenkins local para desplegar con Helm.
+#
+# No tiene sidecar de Docker-in-Docker ni monta el socket del nodo: construir
+# imagenes sin privilegios es trabajo de Kaniko (ver Jenkinsfile, etapa
+# "Construccion y publicacion de imagen"), que corre como Job aparte, no
+# dentro de este Pod.
+#
+# Sin Ingress: no hay forma de saber que IngressClass esta disponible en este
+# cluster (es un recurso cluster-scoped, sin permiso para listarlo). Acceso a
+# la UI via "kubectl port-forward svc/jenkins 8080:8080 -n alumno-team8".
+#
+# Storage en 2Gi (no 5Gi): la ResourceQuota "student-quota" del namespace
+# limita requests.storage a 5Gi en total para TODO el namespace, y Postgres ya
+# usa 1Gi. Dejamos margen para Prometheus (PVC propio) mas adelante - maximo
+# 3 PVCs permite la quota.
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-home
+  namespace: alumno-team8
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: alumno-team8
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate        # un solo pod usa el volumen RWO a la vez
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      # La imagen de Jenkins no trae kubectl - lo descarga este initContainer
+      # a un volumen compartido (/tools), igual que se hizo en el proyecto
+      # anterior del equipo (DevOps-InventoryProyect, k8s/jenkins/jenkins.yaml).
+      # El Jenkinsfile lo usa para lanzar Jobs (Semgrep, Snyk, tests, Kaniko)
+      # en vez de "docker run", que aca no existe.
+      initContainers:
+        - name: herramientas
+          image: alpine:3.20
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              wget -qO /tools/kubectl https://dl.k8s.io/release/v1.29.5/bin/linux/amd64/kubectl
+              chmod +x /tools/kubectl
+          volumeMounts:
+            - name: tools
+              mountPath: /tools
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 200m, memory: 128Mi }
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PATH
+              value: /tools:/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+            - name: tools
+              mountPath: /tools
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins-home
+        - name: tools
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins
+  namespace: alumno-team8
+spec:
+  selector:
+    app: jenkins
+  ports:
+    - port: 8080
+      targetPort: 8080
