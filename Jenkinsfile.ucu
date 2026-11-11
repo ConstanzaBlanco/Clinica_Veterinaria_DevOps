@@ -215,7 +215,7 @@ spec:
                     sh '''
                         kubectl create secret docker-registry docker-config-kaniko \
                             --docker-username="$REG_USER" --docker-password="$REG_PASS" \
-                            -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+                            -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply --validate=false -f -
                     '''
                     script {
                         correrJob(
@@ -324,7 +324,11 @@ spec:
 // Centraliza el polling que, si no, se repetiria igual en 6 etapas.
 def correrJob(Map args) {
     writeFile file: 'job-actual.yaml', text: args.manifest
-    sh "kubectl apply -f job-actual.yaml"
+    // --validate=false: sin esto, "kubectl apply" intenta bajar el esquema
+    // OpenAPI del cluster para validar antes de aplicar, y esa descarga
+    // apunta a la IP publica del propio cluster - un pod adentro del cluster
+    // que intenta llegar a su propia direccion publica se cuelga (timeout).
+    sh "kubectl apply --validate=false -f job-actual.yaml"
     sh """
         set +e
         for i in \$(seq 1 120); do
