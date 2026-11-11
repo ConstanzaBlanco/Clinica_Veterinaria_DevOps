@@ -20,6 +20,13 @@ pipeline {
         IMAGE_FRONTEND   = "clinica-frontend"
         IMAGE_TAG        = "build-${BUILD_NUMBER}"
         DOCKER_REGISTRY  = "manuelney67" // Docker Hub
+        // Jenkins corre "Docker fuera de Docker": el socket es del Docker
+        // del host, asi que un "docker run -v $WORKSPACE:..." NO ve esa ruta
+        // (solo existe dentro de este contenedor). La forma correcta de que
+        // un contenedor hermano vea el workspace es montar el MISMO volumen
+        // con nombre (no una ruta) y pararse en $WORKSPACE adentro, que
+        // coincide porque el volumen entero queda montado en el mismo punto.
+        JENKINS_VOLUME   = "petcore-jenkins-home"
     }
 
     stages {
@@ -40,9 +47,9 @@ pipeline {
             steps {
                 sh '''
                     mkdir -p reports
-                    docker run --rm -v "$WORKSPACE:/src" semgrep/semgrep \
-                        semgrep --config /src/.semgrep.yml --metrics=off \
-                        --output /src/reports/semgrep-report.txt /src/app || true
+                    docker run --rm -v "$JENKINS_VOLUME:/var/jenkins_home" semgrep/semgrep \
+                        semgrep --config "$WORKSPACE/.semgrep.yml" --metrics=off \
+                        --output "$WORKSPACE/reports/semgrep-report.txt" "$WORKSPACE/app" || true
                 '''
                 archiveArtifacts artifacts: 'reports/semgrep-report.txt', allowEmptyArchive: true
             }
@@ -61,7 +68,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
                     sh '''
                         docker run --rm -e SNYK_TOKEN="$SNYK_TOKEN" \
-                            -v "$WORKSPACE:/project" -w /project \
+                            -v "$JENKINS_VOLUME:/var/jenkins_home" -w "$WORKSPACE" \
                             node:22-alpine sh -c "
                                 apk add --no-cache python3 py3-pip >/dev/null &&
                                 pip install --no-cache-dir --break-system-packages uv >/dev/null &&
@@ -72,7 +79,7 @@ pipeline {
                     '''
                     sh '''
                         docker run --rm -e SNYK_TOKEN="$SNYK_TOKEN" \
-                            -v "$WORKSPACE/frontend:/project" -w /project \
+                            -v "$JENKINS_VOLUME:/var/jenkins_home" -w "$WORKSPACE/frontend" \
                             node:22-alpine sh -c "
                                 npm install -g snyk >/dev/null &&
                                 npm ci >/dev/null &&
@@ -87,7 +94,7 @@ pipeline {
             steps {
                 sh '''
                     docker run --rm \
-                        -v "$WORKSPACE:/app" -w /app \
+                        -v "$JENKINS_VOLUME:/var/jenkins_home" -w "$WORKSPACE" \
                         python:3.13-slim \
                         sh -c "pip install --no-cache-dir uv && uv sync --locked && uv run pytest -v"
                 '''

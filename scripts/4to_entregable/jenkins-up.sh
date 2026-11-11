@@ -48,6 +48,13 @@ else
         jenkins/jenkins:lts
 fi
 
+# El usuario "jenkins" dentro del contenedor no queda en el grupo dueno del
+# socket montado, asi que sin esto los stages que llaman a "docker run"
+# fallan con "permission denied". No siempre sobrevive a un reinicio de
+# Docker Desktop (recrea el socket); si vuelve a fallar, se repite solo.
+paso "Dando permiso al socket de Docker para el usuario de Jenkins"
+docker exec -u root "$CONTENEDOR" chmod 666 /var/run/docker.sock
+
 paso "Esperando a que Jenkins termine de arrancar"
 for i in $(seq 1 30); do
     if docker exec "$CONTENEDOR" test -f /var/jenkins_home/secrets/initialAdminPassword 2>/dev/null; then
