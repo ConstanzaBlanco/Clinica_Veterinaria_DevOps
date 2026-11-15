@@ -124,30 +124,50 @@ pipeline {
         }
 
         // Nunca "latest": la politica de Kyverno disallow-latest-tag lo
-        // rechazaria. Usa values-dev.yaml por defecto; para produccion, pisar
-        // con --set-string helmValuesFile=values-prod.yaml al lanzar el job.
+        // rechazaria.
         //
-        // Namespace "alumno-team8": es el que viene scopeado en el kubeconfig
-        // de la UCU (KUBECONFIG_UCU), no "petcore". Ojo: este stage asume que
-        // los Secrets (postgres-secret, jwt-secret) y el ConfigMap
-        // (postgres-init) YA EXISTEN en ese namespace - la chart no los crea,
-        // eso lo hacia scripts/4to_entregable/preparar-chart.sh contra
-        // minikube. Contra el cluster de la UCU, si no existen, este stage va
-        // a fallar pidiendolos - falta resolver eso cuando aparezca el error.
+        // Despliega contra minikube local (namespace "petcore"), no contra
+        // el cluster de la UCU: ese destino ya lo cubre Jenkinsfile.ucu,
+        // corriendo dentro del cluster con Kaniko. Tener las dos cosas en
+        // este mismo pipeline era redundante y ademas no cumplia con que
+        // el pipeline del laboratorio despliegue en el entorno local.
+        //
+        // El archivo /var/jenkins_home/kubeconfig-minikube-interno.yaml NO
+        // es el kubeconfig que genera "minikube start" (ese apunta a un
+        // puerto del host, no alcanzable desde un contenedor hermano de
+        // Jenkins): tiene el "server" reescrito a "https://minikube:8443",
+        // la direccion del contenedor de minikube dentro de la red docker
+        // "minikube". jenkins-up.sh lo genera de nuevo cada vez que levanta
+        // Jenkins, usando el minikube/kubectl que ya estan instalados en esa
+        // maquina - por eso no es una credencial de Jenkins cargada a mano:
+        // cada persona del equipo tiene su propio minikube (con sus propios
+        // certificados), asi que este archivo tiene que generarse en cada
+        // maquina, no compartirse entre compañeros.
+        //
+        // Se usa "--kubeconfig" como parametro explicito, no la variable de
+        // entorno KUBECONFIG: en este Jenkins, el binario de helm ignora la
+        // variable de entorno y sigue resolviendo contra el Jenkins local
+        // (se repitio el problema a mano antes de este fix) - con el flag
+        // explicito funciona bien.
+        //
+        // Este stage asume que el Secret (postgres-secret, jwt-secret) y el
+        // ConfigMap (postgres-init) ya existen en el namespace "petcore" -
+        // la chart no los crea, eso lo hace
+        // scripts/4to_entregable/preparar-chart.sh (o inicializar-todo.sh,
+        // que lo llama). Hay que haber corrido uno de los dos antes de
+        // correr este pipeline por primera vez.
         stage('Despliegue automatico con Helm') {
             steps {
-                withCredentials([file(credentialsId: 'KUBECONFIG_UCU', variable: 'KUBECONFIG')]) {
-                    sh '''
-                        helm upgrade --install petcore ./helm-chart -n alumno-team8 \
-                            -f helm-chart/values-dev.yaml \
-                            --set api.image.repository=${DOCKER_REGISTRY}/${IMAGE_BACKEND} \
-                            --set api.image.tag=${IMAGE_TAG} \
-                            --set api.image.pullPolicy=IfNotPresent \
-                            --set frontend.image.repository=${DOCKER_REGISTRY}/${IMAGE_FRONTEND} \
-                            --set frontend.image.tag=${IMAGE_TAG} \
-                            --set frontend.image.pullPolicy=IfNotPresent
-                    '''
-                }
+                sh '''
+                    helm --kubeconfig /var/jenkins_home/kubeconfig-minikube-interno.yaml \
+                        upgrade --install petcore ./helm-chart -n petcore \
+                        --set api.image.repository=${DOCKER_REGISTRY}/${IMAGE_BACKEND} \
+                        --set api.image.tag=${IMAGE_TAG} \
+                        --set api.image.pullPolicy=IfNotPresent \
+                        --set frontend.image.repository=${DOCKER_REGISTRY}/${IMAGE_FRONTEND} \
+                        --set frontend.image.tag=${IMAGE_TAG} \
+                        --set frontend.image.pullPolicy=IfNotPresent
+                '''
             }
         }
     }
