@@ -2,9 +2,14 @@
 # "reto-ucu.net" tiene un wildcard de DNS (*.reto-ucu.net resuelve al mismo
 # gateway) - en vez de colgarnos del subdominio del proyecto anterior
 # (equipo2-proyecto4) con un path largo, usamos nuestro propio subdominio
-# "petcore.reto-ucu.net" y la app queda en la raiz. Esto ademas evita el
-# problema de rutas absolutas (/assets/*, /api/*) que tenia la version con
-# prefijo: al vivir en la raiz, coinciden sin reescribir nada.
+# "petcore.reto-ucu.net" y la app queda en la raiz.
+#
+# Una sola regla, todo al "frontend": el backend ("api") NO se expone
+# directo en este gateway a proposito - el propio nginx del frontend
+# (frontend/nginx.conf) ya tiene un proxy interno a "http://api:8000" para
+# "/api/*", asi que no hace falta (ni conviene) que APISIX le pegue al
+# backend de forma directa. Los clientes solo se comunican con el frontend;
+# el backend queda alcanzable unicamente desde dentro del namespace.
 #
 # El Ingress nginx que crea la chart de Helm (host "petcore.local") no sirve
 # para esto: resuelve a una IP interna del cluster, no alcanzable desde
@@ -25,21 +30,3 @@ spec:
       backends:
         - serviceName: frontend
           servicePort: 8080
-
-    # El backend (FastAPI) no tiene prefijo "/api" en sus rutas (ver
-    # app/main.py), asi que hay que sacarle el "/api/" antes de reenviar,
-    # igual que hace nginx.conf del frontend en local/minikube.
-    - name: petcore-api
-      match:
-        hosts:
-          - petcore.reto-ucu.net
-        paths:
-          - /api/*
-      backends:
-        - serviceName: api
-          servicePort: 8000
-      plugins:
-        - name: proxy-rewrite
-          enable: true
-          config:
-            regex_uri: ["^/api/(.*)", "/$1"]
