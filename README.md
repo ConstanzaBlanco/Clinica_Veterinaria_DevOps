@@ -2,6 +2,7 @@
 
 ## Índice
 
+- [Entrega final (D4): levantar todo con un comando](#entrega-final-d4-levantar-todo-con-un-comando)
 - [Requisitos](#requisitos)
   - [Instalar uv para desarrollo local](#instalar-uv-para-desarrollo-local)
 - [Configurar la contraseña de PostgreSQL](#configurar-la-contraseña-de-postgresql)
@@ -26,6 +27,50 @@
   - [Preparar el entorno para las pruebas DevSecOps](#preparar-el-entorno-para-las-pruebas-devsecops)
 - [Datos de prueba](#datos-de-prueba)
 - [Proteger endpoints con el middleware](#proteger-endpoints-con-el-middleware)
+
+## Entrega final (D4): levantar todo con un comando
+
+Tres scripts de bash levantan, prueban y borran todo el proyecto. **Reemplazan a los scripts
+`.ps1` de `scripts/` para la entrega final.** Los `.ps1` quedan como evidencia de los
+entregables 1 a 3 (Blue/Green y el monitoreo en `clinica-veterinaria`), y no hace falta
+correrlos para evaluar D4.
+
+Se ejecutan en **Git Bash**, no en PowerShell. Requisitos: Docker Desktop abierto, minikube y
+Helm (ver la tabla de [Lab 4](#1-requisitos)).
+
+```bash
+# 1. Levantar todo: minikube + ingress, chart petcore, Kyverno + 4 políticas, Falco, Prometheus y Grafana
+bash scripts/4to_entregable/inicializar-todo.sh            # agregar --con-jenkins para levantar también Jenkins
+
+# 2. Generar tráfico real contra la API para que los dashboards tengan datos
+bash scripts/4to_entregable/poblar-dashboards.sh           # agregar --disparar-alertas para que las 2 alertas pasen a Firing
+
+# 3. Borrar todo y verificar que no quede nada
+bash scripts/4to_entregable/borrar-todo.sh                 # opciones: --con-jenkins, --borrar-cluster
+```
+
+Los tres scripts se pueden volver a correr sin problema: lo que ya existe se actualiza y lo que
+ya se borró se saltea. Cada uno muestra sus opciones con `--ayuda`.
+
+> A diferencia de los entregables 2 y 3, ahora hay **una sola API**: Prometheus y Grafana corren
+> en el namespace `petcore` y miden el `api` que instala la chart. Ya no se usa
+> `api-monitoring`.
+
+### Cómo comprobar que cada pieza funciona
+
+| Pieza | Comando | Resultado esperado |
+| --- | --- | --- |
+| Aplicación | `minikube kubectl -- get pods -n petcore` | `api`, `frontend`, `postgres-0`, `prometheus` y `grafana` en `1/1 Running` |
+| Releases de Helm | `helm list -A` | `petcore`, `kyverno` y `falco` en `deployed` |
+| Kyverno (políticas) | `minikube kubectl -- get clusterpolicy` | `disallow-latest-tag`, `require-resources`, `disallow-root` y `require-probes` con `READY True` |
+| Kyverno (bloqueo) | `minikube kubectl -- run prueba --image=nginx:latest -n petcore` | Rechazado por el admission webhook (`disallow-latest-tag` y las demás políticas) |
+| Falco | `minikube kubectl -- exec -it -n petcore deploy/api -- /bin/sh` (escribir `exit`), y después `minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --tail=20` | Alerta `Terminal shell in container` con `k8s.ns.name=petcore` |
+| Prometheus | `minikube kubectl -- port-forward svc/prometheus 9090:9090 -n petcore` y abrir <http://localhost:9090/targets> | El target de la API en estado `UP` |
+| Grafana | `minikube service grafana -n petcore --url` (usuario `admin` / `admin`) | Dashboards › Pet-Core › **Pet-Core — Monitoreo** con datos unos 30 s después de correr `poblar-dashboards.sh` |
+| Alertas | `poblar-dashboards.sh --disparar-alertas` y en Grafana ir a Alerting › Alert rules | Las 2 reglas en `Firing` a los 15–45 s |
+| App en el navegador | `minikube kubectl -- port-forward svc/frontend 8081:8080 -n petcore` | <http://localhost:8081> abre el login (usuario `ana.cliente@petcore.com` / `Password123!`) |
+| Jenkins (si se usó `--con-jenkins`) | `docker ps --filter name=petcore-jenkins` y abrir <http://localhost:8080> | Contenedor `Up` y la pantalla de Jenkins. La primera vez pide la contraseña inicial que muestra el script, y hay que seguir los pasos manuales que imprime: plugins, credenciales `SNYK_TOKEN` y `DOCKER_REGISTRY_CREDS`, y el job |
+| Borrado | `bash scripts/4to_entregable/borrar-todo.sh` | Todas las líneas en `[OK]` y el mensaje `Todo borrado.` |
 
 ## Requisitos
 

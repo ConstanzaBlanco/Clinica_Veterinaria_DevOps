@@ -109,6 +109,22 @@ for p in "${POLITICAS[@]}"; do
     [[ -f "k8s/policies/$p.yaml" ]] || error "Falta la politica k8s/policies/$p.yaml"
 done
 
+# Claves locales (no estan en git). Se crean con valores aleatorios SOLO si
+# no existen: si ya hay un disco de Postgres con la contraseña anterior,
+# cambiarla romperia el login.
+mkdir -p db
+if [[ ! -s db/password.txt || ! -s db/jwt-secret.txt ]]; then
+    command -v openssl >/dev/null || error "No se encuentra openssl (viene con Git Bash). Crea db/password.txt y db/jwt-secret.txt a mano."
+fi
+if [[ ! -s db/password.txt ]]; then
+    printf '%s' "$(openssl rand -hex 16)" > db/password.txt
+    echo "Creado db/password.txt (contraseña aleatoria de PostgreSQL)."
+fi
+if [[ ! -s db/jwt-secret.txt ]]; then
+    printf '%s' "$(openssl rand -hex 32)" > db/jwt-secret.txt
+    echo "Creado db/jwt-secret.txt (clave aleatoria de 64 caracteres para JWT)."
+fi
+
 # --- 1. minikube + ingress --------------------------------------------------
 
 paso "1/6 minikube"
