@@ -1,0 +1,52 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-probes
+spec:
+  # Enforce: rechaza el recurso. Con Audit solo lo registraría.
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    # Regla 1: todo contenedor debe declarar livenessProbe
+    - name: require-liveness-probe
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - falco
+      validate:
+        message: "require-probes: todo contenedor debe declarar livenessProbe."
+        pattern:
+          spec:
+            containers:
+              - livenessProbe:
+                  periodSeconds: ">0"
+
+    # Regla 2: todo contenedor debe declarar readinessProbe
+    - name: require-readiness-probe
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - falco
+      validate:
+        message: "require-probes: todo contenedor debe declarar readinessProbe."
+        pattern:
+          spec:
+            containers:
+              - readinessProbe:
+                  periodSeconds: ">0"

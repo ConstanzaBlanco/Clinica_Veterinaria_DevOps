@@ -10,6 +10,12 @@ spec:
   containers:
     - name: app
       image: busybox:latest
+      livenessProbe:
+        exec:
+          command: ["true"]
+      readinessProbe:
+        exec:
+          command: ["true"]
       command: ["sleep", "3600"]
       resources:
         requests:

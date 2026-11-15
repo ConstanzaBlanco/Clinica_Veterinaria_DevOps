@@ -1,0 +1,72 @@
+=== Kyverno validation 2026-11-15T18:38:31Z ===
+
+--- clusterpolicy ---
+Warning: kyverno.io/v1 ClusterPolicy is deprecated and will be removed in a future release; migrate to ValidatingPolicy, MutatingPolicy, GeneratingPolicy or ImageValidatingPolicy (policies.kyverno.io), see https://kyverno.io/docs/guides/migration-to-cel/
+NAME                  ADMISSION   BACKGROUND   READY   AGE   MESSAGE
+disallow-latest-tag   true        true         True    14d   Ready
+disallow-root         true        true         True    14d   Ready
+require-probes        true        true         True    11m   Ready
+require-resources     true        true         True    14d   Ready
+
+--- pod-conforme.yaml ---
+pod/pod-conforme created
+(exit code: 0)
+
+--- pod-no-conforme.yaml ---
+Error from server: error when creating "k8s/policies/test/pod-no-conforme.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/clinica-veterinaria/pod-no-conforme was blocked due to the following policies 
+
+disallow-latest-tag:
+  validate-image-tag: 'validation error: No se permite el tag ''latest''. rule validate-image-tag failed at path /spec/containers/0/image/'
+disallow-root:
+  require-run-as-non-root: 'validation error: No se permite ejecutar como root: runAsNonRoot debe ser true a nivel de Pod o en todos los contenedores. rule require-run-as-non-root[0] failed at path /spec/securityContext/runAsNonRoot/ rule require-run-as-non-root[1] failed at path /spec/containers/0/securityContext/'
+require-probes:
+  require-liveness-probe: 'validation error: require-probes: todo contenedor debe declarar livenessProbe. rule require-liveness-probe failed at path /spec/containers/0/livenessProbe/'
+  require-readiness-probe: 'validation error: require-probes: todo contenedor debe declarar readinessProbe. rule require-readiness-probe failed at path /spec/containers/0/readinessProbe/'
+require-resources:
+  validate-resources: 'validation error: Todos los contenedores deben definir requests y limits de cpu y memoria. rule validate-resources failed at path /spec/containers/0/resources/limits/'
+(exit code: 1)
+
+--- pod-solo-latest.yaml ---
+Error from server: error when creating "k8s/policies/test/pod-solo-latest.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/clinica-veterinaria/pod-solo-latest was blocked due to the following policies 
+
+disallow-latest-tag:
+  validate-image-tag: 'validation error: No se permite el tag ''latest''. rule validate-image-tag failed at path /spec/containers/0/image/'
+(exit code: 1)
+
+--- pod-solo-root.yaml ---
+Error from server: error when creating "k8s/policies/test/pod-solo-root.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/clinica-veterinaria/pod-solo-root was blocked due to the following policies 
+
+disallow-root:
+  require-run-as-non-root: 'validation error: No se permite ejecutar como root: runAsNonRoot debe ser true a nivel de Pod o en todos los contenedores. rule require-run-as-non-root[0] failed at path /spec/securityContext/runAsNonRoot/ rule require-run-as-non-root[1] failed at path /spec/containers/0/securityContext/'
+(exit code: 1)
+
+--- pod-solo-sin-probes.yaml ---
+Error from server: error when creating "k8s/policies/test/pod-solo-sin-probes.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/clinica-veterinaria/pod-solo-sin-probes was blocked due to the following policies 
+
+require-probes:
+  require-liveness-probe: 'validation error: require-probes: todo contenedor debe declarar livenessProbe. rule require-liveness-probe failed at path /spec/containers/0/livenessProbe/'
+  require-readiness-probe: 'validation error: require-probes: todo contenedor debe declarar readinessProbe. rule require-readiness-probe failed at path /spec/containers/0/readinessProbe/'
+(exit code: 1)
+
+--- pod-solo-sin-resources.yaml ---
+Error from server: error when creating "k8s/policies/test/pod-solo-sin-resources.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/clinica-veterinaria/pod-solo-sin-resources was blocked due to the following policies 
+
+require-resources:
+  validate-resources: 'validation error: Todos los contenedores deben definir requests y limits de cpu y memoria. rule validate-resources failed at path /spec/containers/0/resources/limits/'
+(exit code: 1)
+
+--- resumen ---
+disallow-latest-tag: rechazo registrado
+require-resources: rechazo registrado
+disallow-root: rechazo registrado
+require-probes: rechazo registrado
