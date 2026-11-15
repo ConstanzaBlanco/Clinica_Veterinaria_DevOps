@@ -1,10 +1,9 @@
 # Qué hay desplegado en el cluster de la UCU (namespace `alumno-team8`)
 
-> Este archivo es el documento **principal** sobre el cluster de la UCU: qué está desplegado hoy, y también cómo y por qué se armó así (en particular, Jenkins — que es la parte más compleja). No es un entregable en sí mismo ni reemplaza a `ENTREGABLE_4.md` — es la referencia técnica para no perder la cuenta ni confundir esta evidencia con la de minikube local. Se actualiza a mano cada vez que algo cambia.
+> Este documento explica el estado y configuración del cluster de la UCU que utilizamos para alojar nuestros proyecto, va desde qué está desplegado hoy, como está implementado y por qué se tomaron las decisiones que se tomaron.
 >
-> Para los diagramas de arquitectura física (pod por pod, con quién habla cada uno) ver [`ARQUITECTURA_FISICA_CLUSTER_UCU.md`](./ARQUITECTURA_FISICA_CLUSTER_UCU.md) — ese documento se mantiene aparte porque es largo y centrado en diagramas, no en decisiones.
+> Para los diagramas de arquitectura (pod por pod, con quién habla cada uno) ver [`ARQUITECTURA_FISICA_CLUSTER_UCU.md`](./ARQUITECTURA_FISICA_CLUSTER_UCU.md) — ese documento se mantuvo aparte porque ya era bastante extenso y centrado en diagramas, no en las decisiones que tomamos.
 >
-> Última verificación: 2026-11-12, contra `kubectl` con el kubeconfig `KUBECONFIG_UCU` (contexto `ucu`, usuario `team8`, namespace `alumno-team8`).
 
 ## Índice
 
@@ -13,46 +12,57 @@
 3. [Qué está desplegado ahora mismo](#3-qué-está-desplegado-ahora-mismo)
 4. [Jenkins en el cluster — decisiones y cómo quedó armado](#4-jenkins-en-el-cluster--decisiones-y-cómo-quedó-armado)
 5. [El `Jenkinsfile.ucu`, etapa por etapa](#5-el-jenkinsfileucu-etapa-por-etapa)
-6. [Problemas reales que aparecieron y cómo se resolvieron](#6-problemas-reales-que-aparecieron-y-cómo-se-resolvieron)
-7. [Otras herramientas del D4 (Kyverno, Falco, Prometheus/Grafana)](#7-otras-herramientas-del-d4-kyverno-falco-prometheusgrafana)
+6. [Otras herramientas del D4 (Kyverno, Falco, Prometheus/Grafana)](#6-otras-herramientas-del-d4-kyverno-falco-prometheusgrafana)
+7. [Guía práctica: hacer un cambio y verlo funcionando, paso a paso](#7-guía-práctica-hacer-un-cambio-y-verlo-funcionando-paso-a-paso)
+8. [Comandos de referencia rápida](#8-comandos-de-referencia-rápida)
+
+> **¿Qué es un PVC?** Un Pod es descartable: si se recrea (falla, se actualiza, se mueve de nodo), pierde todo lo que tenía escrito en su propio disco. Un `PersistentVolumeClaim` (PVC) es un disco aparte, que sobrevive aunque el Pod se recree — el Pod nuevo se monta sobre el mismo PVC y sigue viendo los mismos datos. En este cluster se usa solo donde perder los datos sería grave: `postgres-data` (la base, 1Gi) y `jenkins-home` (configuración, credenciales e historial de builds, 2Gi). `api`, `frontend`, `prometheus` y `grafana` no tienen PVC — no guardan nada que no se pueda perder sin problema.
 
 ---
 
 ## 1. Mapa de componentes
 
+Esta es una tabla de los componentes que utilizamos dentro del cluster
+
 | Componente | Tipo de recurso | Estado | Se conecta con |
 |---|---|---|---|
-| `api` | Deployment + Service (ClusterIP) | ✅ Desplegado (`build-8`) | `postgres` (SQL); solo lo alcanza `frontend`, no tiene ruta pública propia |
-| `frontend` | Deployment + Service (ClusterIP) | ✅ Desplegado (`build-8`) | `api` (proxy interno); único Service expuesto al público |
+| `api` | Tiene su deployment y service con ClusterIP (significa que solo son alcanzables dentro del mismo cluster) | ✅ Desplegado (`build-8`) | directamente con `postgres` (SQL) y solo lo alcanza `frontend`, no tiene ruta pública propia |
+| `frontend` | Tiene su deployment y service con ClusterIP (significa que solo son alcanzables dentro del mismo cluster)| ✅ Desplegado (`build-8`) | hace solicitudes a `api` y tiene su único Service expuesto al público |
 | `postgres` | StatefulSet + Service headless (`db`) | ✅ Desplegado | consumido por `api` |
-| `jwt-secret`, `postgres-secret` | Secret | ✅ Desplegado | montados en `api` / `postgres` |
-| `postgres-init`, `api-config` | ConfigMap | ✅ Desplegado | montados en `postgres` / `api` |
-| Jenkins (controlador) | Deployment + PVC (2Gi) + Service | ✅ Desplegado | lanza Jobs efímeros y hace `helm upgrade` |
+| `jwt-secret`, `postgres-secret` | Secret | ✅ Desplegado | configurados en `api` / `postgres` |
+| `postgres-init`, `api-config` | ConfigMap | ✅ Desplegado | configurados en `postgres` / `api` |
+| Jenkins (controlador) | Deployment + PVC (con 2Gi ) + Service | ✅ Desplegado | lanza Jobs efímeros y hace `helm upgrade` |
 | Kaniko | Job efímero (backend + frontend, en paralelo) | ✅ Funciona, probado de punta a punta | lo lanza Jenkins, publica en Docker Hub |
 | `docker-config-kaniko` | Secret (`dockerconfigjson`) | ✅ Se recrea cada build | lo usa Kaniko para publicar |
 | `petcore-route` | ApisixRoute (`k8s/apisix-route-ucu.yaml`) | ✅ Desplegado | expone únicamente `frontend` al público |
 | Kyverno (webhook de admisión) | Instalación cluster-wide | ✅ Activo (no administrado por el equipo) | intercepta cualquier `apply`/Helm contra el namespace |
-| Prometheus / Grafana | — | 🔜 Evaluando | ver sección 7 |
-| Falco | — | ❌ Descartado para este cluster | ver sección 7 |
+| `prometheus` | Deployment + Service (ClusterIP) | ✅ Desplegado (`k8s/monitoring-ucu.yaml`) | scrapea `api:8000/metrics`; target `pet-core-api` confirmado `up` |
+| `grafana` | Deployment + Service (ClusterIP) | ✅ Desplegado (`k8s/monitoring-ucu.yaml`) | consulta a `prometheus` como datasource |
+| Falco | — | ❌ Descartado para este cluster | necesita acceso a nivel de nodo, compartido con otros equipos |
 | `inventory-config`, `inventory-secret` | ConfigMap / Secret | ⚠️ De otro proyecto propio (Inventario), no de Pet-Core | no se conecta a nada de este proyecto |
 
-Leyenda: ✅ desplegado y verificado · 🔜 evaluando, todavía no aplicado · ❌ descartado deliberadamente · ⚠️ existe pero no es de Pet-Core.
+Leyenda: ✅ desplegado y verificado · ❌ descartado deliberadamente · ⚠️ existe pero no es Pet-Core.
 
 ---
 
 ## 2. Acceso
 
-- **URL pública del frontend**: `https://petcore.reto-ucu.net/` (vía `ApisixRoute` `petcore-route`). `reto-ucu.net` tiene DNS wildcard (`*.reto-ucu.net` resuelve al mismo gateway) — se usa el subdominio propio `petcore` en vez de colgarse de un subdominio ajeno con un path largo. Hay **una sola regla** en la `ApisixRoute`, que manda todo al Service `frontend` — el Service `api` no tiene ninguna ruta pública propia: los clientes solo hablan con el frontend, nunca directo con el backend (las llamadas a `/api/...` las resuelve el propio `nginx.conf` del frontend, reenviando por dentro del namespace). El Ingress nginx que también crea la chart de Helm (`petcore.local`) no sirve para acceso externo: resuelve a una IP interna del cluster.
-- **Jenkins**: sin URL pública, a propósito. Se accede con `kubectl port-forward svc/jenkins 8081:8080 -n alumno-team8` y `http://127.0.0.1:8081/` — cada integrante que lo necesite corre su propio túnel con el kubeconfig del equipo. No se puede "compartir" ese link: `127.0.0.1` es la propia máquina de cada uno.
+- **URL pública del frontend**: `https://petcore.reto-ucu.net/`. El dominio `reto-ucu.net` que nos dio la UCU funciona como un "paraguas": cualquier palabra que se le ponga delante (`petcore.reto-ucu.net`, lo que sea) apunta al mismo gateway (APISIX), sin tener que pedirle a nadie que la registre. Nosotros elegimos `petcore` como nombre para nuestra app.
+  - Le dijimos a APISIX (archivo `k8s/apisix-route-ucu.yaml`) una sola regla: todo lo que llegue a `petcore.reto-ucu.net` se manda al Service `frontend`. No hay ninguna otra regla — por eso no existe ningún camino desde internet hacia el backend (`api`): la gente de afuera solo puede hablarle al frontend.
+  - La chart de Helm también crea, aparte, un Ingress (`host: petcore.local`) — es de la versión local (minikube), no se usa para el acceso público de este cluster. Está en el código porque la misma chart sirve para los dos entornos, pero acá para conectarnos utilizamos la `ApisixRoute`.
+  - A través del proxy del frontend quedan públicas, sin login, `/api/docs` (el Swagger) y `/api/metrics`. **Decisión confirmada con el equipo (2026-11-15): se dejan públicas** — no exponen datos de clientes ni credenciales, solo estructura de la API y estadísticas, y puede ser útil tenerlas visibles para la demo. Si se quiere cambiar, se bloquean en el `nginx.conf` del frontend.
+- **Jenkins**: sin URL pública se realizó con esa intención. Se accede con `kubectl port-forward svc/jenkins 8081:8080 -n alumno-team8` y se abre en `http://127.0.0.1:8081/` — por esto cada integrante que lo necesite corre su propio túnel con el kubeconfig del equipo.
+- **Prometheus / Grafana**: tampoco tienen URL pública, se utilizó el mismo criterio que con Jenkins. Se accede con:
+  - `kubectl port-forward svc/prometheus 9090:9090 -n alumno-team8` quedando en `http://127.0.0.1:9090/targets` (ver el estado de los scrape targets).
+  - `kubectl port-forward svc/grafana 3000:3000 -n alumno-team8` quedando en `http://127.0.0.1:3000/` (usuario/contraseña `admin`/`admin`, pide cambiarla al entrar — el dashboard "Pet-Core" ya queda provisionado solo, carpeta "Pet-Core").
 - Cluster: provisto por la UCU, compartido con otros equipos de la materia.
 - Namespace asignado al equipo: `alumno-team8`.
-- Kubeconfig: archivo propio del equipo (no se versiona en el repo), cargado en Jenkins como credencial `KUBECONFIG_UCU`.
-- El usuario del equipo (`team8`) es un ServiceAccount **namespace-scoped**: puede crear Deployments, Services, PVCs, Secrets, ConfigMaps, Jobs y `ApisixRoute` dentro de `alumno-team8`, pero no tiene permiso para crear `Role`/`RoleBinding` (ni ahí ni en ningún lado) ni ningún recurso cluster-scoped (ClusterRole, CRD, Webhook, Namespace). Verificado con `kubectl auth can-i`.
-- `frontend/src/app/App.jsx` tiene un `basename` condicional para un prefijo de path (`/alumno-team8-petcore`) que quedó de una versión anterior de la ruta pública. Ya no hace falta con la URL actual (vive en la raíz del subdominio), pero no rompe nada — se puede limpiar sin apuro.
+- Kubeconfig: archivo propio del equipo (no se versionó en el repo), cargado en Jenkins como credencial `KUBECONFIG_UCU`.
+- El usuario del equipo (`team8`) es un ServiceAccount **namespace-scoped** por lo tanto puede crear Deployments, Services, PVCs, Secrets, ConfigMaps, Jobs y `ApisixRoute` dentro de `alumno-team8`, pero no tiene permiso para crear `Role`/`RoleBinding` (ni ahí ni en ningún lado) ni ningún recurso cluster-scoped (ClusterRole, CRD, Webhook, Namespace). Verificado con `kubectl auth can-i`.
 
 ### Cuota del namespace (`student-quota`)
 
-| Recurso | Límite | Uso actual aproximado |
+| Recurso | Límite | Uso actual aproximado que tenemos nosotros |
 |---|---|---|
 | Pods simultáneos | 15 | 4 permanentes + hasta 5 efímeros durante un build |
 | CPU requests / limits | 2 / 4 | ~0.5-1 en reposo |
@@ -66,6 +76,26 @@ Leyenda: ✅ desplegado y verificado · 🔜 evaluando, todavía no aplicado · 
 ## 3. Qué está desplegado ahora mismo
 
 ### Aplicación (vía Helm)
+
+#### Qué es Helm y por qué lo usamos
+
+La app no se arma con un solo archivo de Kubernetes, sino con varios: uno para la API, uno para el frontend, uno para la base de datos, uno para las contraseñas, etc. Sin ninguna herramienta de por medio, cada vez que se instala o se actualiza la app habría que aplicar todos esos archivos uno por uno, a mano.
+
+**Helm es la herramienta que resuelve esto**: agarra todos esos archivos juntos y los aplica de una sola vez, con un solo comando, en vez de tener que aplicarlos de a uno.
+
+Un **chart** es, literalmente, la carpeta donde se juntan todos esos archivos — en este proyecto, `helm-chart/`. No es más que eso: una carpeta organizada con todo lo que la app necesita para desplegarse.
+
+Dentro de esos archivos hay valores que cambian según dónde se instala la app (por ejemplo, cuántas copias de la API correr: una en la notebook, posiblemente más en otro entorno). En vez de mantener una carpeta completa distinta por cada entorno, se usa **una sola carpeta** (`helm-chart/`) más un archivo aparte y chico que indica qué valores puntuales usar en cada caso — `values.yaml` tiene los valores por defecto, y `values-dev.yaml`/`values-prod.yaml` pisan solo los que cambian para ese entorno.
+
+El comando que junta todo esto es:
+
+```
+helm upgrade --install petcore ./helm-chart -n alumno-team8 -f helm-chart/values-dev.yaml
+```
+
+`helm upgrade --install` le dice a Helm "instalá esto si es la primera vez, o actualizalo si ya existe" — un solo comando sirve para los dos casos. Lo que hace, en concreto, es reescribir dentro de Kubernetes el manifest de cada pieza de la app (la API, el frontend) con los valores indicados. A partir de ahí, es **Kubernetes mismo** quien nota que algo cambió y actualiza lo que corresponda.
+
+#### Release actual
 
 Release de Helm `petcore`, instalado/actualizado por el propio pipeline de Jenkins (`helm upgrade --install petcore ./helm-chart -n alumno-team8 -f helm-chart/values-dev.yaml`).
 
@@ -82,39 +112,37 @@ Release de Helm `petcore`, instalado/actualizado por el propio pipeline de Jenki
 | Secret | `jwt-secret` | secreto de firma JWT |
 | Secret | `postgres-secret` | credenciales de Postgres |
 
-El tag de imagen (`build-N`) lo fija el `Jenkinsfile.ucu` en cada corrida (`IMAGE_TAG = "build-${BUILD_NUMBER}"`) — nunca es `latest` (la política Kyverno `disallow-latest-tag`, activa en este cluster, lo rechazaría).
+El tag de imagen (`build-N`) lo fija el `Jenkinsfile.ucu` en cada corrida (`IMAGE_TAG = "build-${BUILD_NUMBER}"`).
 
-Los Secrets/ConfigMaps de arriba no los crea la chart de Helm (decisión de diseño documentada en `helm-chart/values.yaml`, forzada por `helm-chart/templates/validaciones.yaml`): se crearon una sola vez a mano, siguiendo el mismo patrón que `scripts/4to_entregable/preparar-chart.sh` usa contra minikube, apuntando al namespace `alumno-team8`.
-
-### Recursos que ya existían en el namespace — de un proyecto propio anterior, no de Pet-Core
-
-- ConfigMap `inventory-config`, Secret `inventory-secret`: son del proyecto anterior del equipo, **Inventario** (`C:\Repos\DevOps-InventoryProyect`), que ya usaba este mismo namespace con su propio Jenkins. No tocar: siguen siendo del equipo, pero **no son parte del D4 de Pet-Core** — no mezclar esta evidencia con la de este entregable.
+Los Secrets y el ConfigMap con datos sensibles no los crea la chart de Helm, porque sería inseguro tenerlos escritos en un `values.yaml` — la idea es que esos datos nunca queden guardados en el repositorio de GitHub. Para el cluster de la UCU, esos valores se declararon manualmente. Como se crean una sola vez a mano, cada build nuevo del pipeline (`helm upgrade`) no los vuelve a crear ni los modifica — solo verifica que ya existan antes de seguir (esto lo fuerza `helm-chart/templates/validaciones.yaml`: si falta algo, corta la instalación con un mensaje claro en vez de dejar los pods trabados sin explicación).
 
 ---
 
 ## 4. Jenkins en el cluster — decisiones y cómo quedó armado
 
-### 4.1 Por qué adentro del cluster y no solo local
-
-Al principio Jenkins corría únicamente en Docker, en la notebook del equipo (`scripts/4to_entregable/jenkins-up.sh`). Eso funciona, pero si la notebook de quien lo tiene está apagada, nadie más puede ver ni correr el pipeline. Por eso se levantó una segunda instancia, esta vez **dentro del namespace del cluster**, para que no dependa de una PC puntual. Las dos conviven: la local queda como entorno de desarrollo/backup.
-
 ### 4.2 Por qué no hay Docker dentro de este Jenkins
 
-En la notebook, Jenkins construía imágenes porque se le montaba el socket de Docker Desktop — se le prestaba el Docker que ya estaba instalado ahí. Adentro de un pod no hay ningún Docker para prestarle. Las formas clásicas de resolver esto (Docker-in-Docker con sidecar privilegiado, o montar el socket real del nodo) requieren que el contenedor corra en modo **privilegiado**, con permisos de administrador sobre el servidor físico. El cluster técnicamente lo permite (se probó con `kubectl apply --dry-run=server` que no hay restricción de `PodSecurity` en este namespace), pero no se hizo: el nodo se comparte con otros equipos, y un contenedor privilegiado ahí es una superficie de ataque sobre infraestructura que no es nuestra. Decisión deliberada, no limitación técnica.
+Para construir una imagen de Docker hace falta un motor de Docker al que pedirle que la arme — Jenkins no sabe construir imágenes por sí solo. En la notebook esto no era un problema porque ya teníamos Docker Desktop instalado: Jenkins simplemente usaba ese mismo Docker de la máquina.
 
-### 4.3 Por qué Kaniko a mano, y no el plugin de Kubernetes de Jenkins
+El problema aparece al mover Jenkins adentro del cluster: ahí no hay ningún Docker instalado, así que el pod de Jenkins queda solo, sin forma de construir nada.
 
-Kaniko construye imágenes leyendo el `Dockerfile` capa por capa, sin daemon de Docker y sin privilegios. La forma "oficial" de integrarlo con Jenkins (el plugin de Kubernetes, que lanza agentes dinámicos) necesita que la cuenta pueda crear `Role`/`RoleBinding` por cada agente — permiso que el equipo **no tiene**. Por este motivo, el proyecto anterior del equipo (Inventario, mismo namespace) había descartado Kaniko y optado por un sidecar privilegiado.
+Este mismo problema ya lo habíamos visto hace un mes, en el trabajo práctico anterior sobre el cluster (el proyecto Inventario): ahí se resolvió instalando Docker dentro del propio pod de Jenkins (Docker-in-Docker). El problema de esa solución es que el contenedor necesita correr con permisos de administrador sobre el nodo del cluster, no solo sobre sí mismo. Y el cluster que usamos ahora lo compartimos con otros equipos: si le diéramos esos permisos a nuestro contenedor y tuviera un bug o fuera comprometido, el problema podría extenderse más allá de nuestro propio namespace, afectando a otros equipos.
 
-La diferencia acá: el propio `Jenkinsfile.ucu` lanza Kaniko **a mano**, como un `Job` de Kubernetes suelto, con `kubectl apply` usando el kubeconfig que el equipo ya tiene. Crear un `Job` no requiere ningún `Role` nuevo (se verificó: `kubectl auth can-i create jobs` → `yes`). Esto evita tanto el problema de permisos como el de privilegios.
+Por eso, para Pet-Core, se decidió no repetir esa solución a pesar de que ya la conocíamos (el cluster técnicamente la permitiría: se probó con `kubectl apply --dry-run=server` que no hay restricción de `PodSecurity` en este namespace). En su lugar, se usó **Kaniko**.
+
+### 4.3 Qué es Kaniko y por qué se integró a mano, sin el plugin de Kubernetes de Jenkins
+
+Kaniko es una herramienta que construye imágenes de Docker **sin necesitar un motor de Docker instalado y sin necesitar permisos de administrador**: lee el `Dockerfile` por su cuenta y arma la imagen capa por capa, corriendo como un contenedor normal. En la práctica, cuando el pipeline necesita construir una imagen, Jenkins lanza un pod aparte y temporal con Kaniko adentro, que clona el código, arma la imagen, la sube a Docker Hub, y se borra solo al terminar.
+
+Lo que dice el propio `Jenkinsfile.ucu` es que lanza Kaniko a mano, como un `Job` de Kubernetes suelto, con `kubectl apply` usando el kubeconfig que el equipo ya tiene. Y como crear un `Job` no requiere ningún `Role` nuevo esto evita tanto el problema de permisos como el de privilegios.
 
 ### 4.4 Por qué no hay Ingress para Jenkins
 
-No se pudo confirmar qué `IngressClass` está disponible en este cluster (recurso cluster-scoped, sin permiso para listarlo). En vez de arriesgar un Ingress con una clase que podría no existir, se decidió no publicar Jenkins: se accede solo por `port-forward` (ver sección 2). Esto además evita exponer el panel de administración de Jenkins a internet.
+No quisimos de cierta manera "exponer" la administración de Jenkings a internet por eso decidimos dejarlo accesisble solo con `port-forward`.
 
-### 4.5 El manifest (`k8s/jenkins-ucu.yaml`), lo no obvio
+### 4.5 El manifest (`k8s/jenkins-ucu.yaml`).
 
-- **PVC de 2Gi, no 5Gi**: la quota del namespace limita el storage total a 5Gi, y Postgres ya usa 1Gi. Pedir los 5Gi completos hizo fallar el primer intento (`exceeded quota`).
+- **PVC de 2Gi, no 5Gi**: la quota del namespace limita el almacenamiento total a 5Gi y Postgres ya usa 1Gi, como pensamos que ninguna otra aplicación iba a requerir de este almacenamiento persistente decidimos dejarle 2Gi.
 - **`strategy: Recreate`**: el volumen es `ReadWriteOnce` (un solo pod a la vez). Con `RollingUpdate` normal, el pod nuevo quedaría esperando un volumen que el viejo todavía tiene agarrado. El costo: cada vez que se actualiza este manifest, el pod se reinicia — **si hay un build corriendo en ese momento, se interrumpe** (pasó en la práctica más de una vez).
 - **`initContainer` "herramientas"**: la imagen `jenkins/jenkins:lts` no trae `kubectl` ni `helm`. Un contenedor que corre antes (`alpine:3.20`) los descarga a un volumen compartido (`/tools`), que el contenedor principal agrega a su `PATH`. Mismo patrón que usó el proyecto Inventario para el mismo problema.
 - **Sin sidecar**: a diferencia del proyecto Inventario (que sí tenía un `dind` privilegiado), este Jenkins no tiene ningún contenedor extra — todo el trabajo "pesado" lo hacen Jobs aparte (sección 5).
@@ -123,49 +151,213 @@ No se pudo confirmar qué `IngressClass` está disponible en este cluster (recur
 
 ## 5. El `Jenkinsfile.ucu`, etapa por etapa
 
-Vive separado del `Jenkinsfile` de la raíz (el del Jenkins local, con `docker run`). Cada Jenkins usa su propio archivo (`Script Path` en la config del job), para que un cambio en un entorno no rompa el otro.
+Este es distinto del `Jenkinsfile` que es el que se utiliza para el cluster local
 
 | Etapa | Qué hace | Corta el pipeline si falla |
 |---|---|---|
-| 1. Clonación | `checkout scm` + reescribe el kubeconfig para apuntar a la dirección **interna** del cluster (ver sección 6) | — |
+| 1. Clonación | `checkout scm` + reescribe el kubeconfig para apuntar a la dirección **interna** del cluster (la dirección pública no es alcanzable desde un pod del propio cluster) | — |
 | 2. Semgrep | Job efímero (`semgrep/semgrep`), clona el repo con `alpine/git`, analiza y reporta | No — solo informa |
 | 3. Snyk | Job efímero (`node:22-alpine`), instala `uv`/`pip`/`npm` y corre `snyk test` sobre backend y frontend | Sí, ante vulnerabilidad crítica |
 | 4. Tests | Job efímero (`python:3.13-slim`), `uv sync --locked && uv run pytest -v` | Sí |
 | 5. Build + Push | **Dos** Jobs de Kaniko (backend y frontend) **en paralelo**, cada uno clona el repo él mismo (`--context=git://...`, directo desde GitHub) y publica en Docker Hub. Usan `--cache=true --cache-repo=...` para reusar capas entre corridas | Sí |
-| 6. Deploy | `helm upgrade --install petcore ...` con las imágenes nuevas — el *rolling update* en sí lo ejecuta Kubernetes solo (estrategia por defecto, sin configuración especial) | Sí |
+| 6. Deploy | `helm upgrade --install petcore ...` con las imágenes nuevas — el *rolling update* en sí lo ejecuta Kubernetes solo. | Sí |
 
-**La función `correrJob`** (al final del archivo) centraliza la lógica repetida en las etapas 2 a 5: aplica el manifest del Job, espera a que termine (con un *polling* manual de hasta 10 minutos), trae su log, y decide si cortar el pipeline según el resultado. Sin ella, esa lógica se repetiría casi palabra por palabra seis veces.
-
-El `SNYK_TOKEN` se pasa como variable de entorno dentro del propio YAML del Job (igual de expuesto que cuando se pasaba con `docker run -e SNYK_TOKEN=...` en el Jenkinsfile local) — el Job se autolimpia solo (`ttlSecondsAfterFinished: 300`).
+**La función `correrJob`** (al final del archivo) centraliza la lógica repetida en las etapas 2 a 5 lo que hace es aplicar el manifest de ese job, trae su log, y decide si cortar el pipeline según el resultado. Es una cuestión de prolijidad del código, no afecta en nada el comportamiento.
 
 ---
 
-## 6. Problemas reales que aparecieron y cómo se resolvieron
+## 6. Prometheus / Grafana en el cluster
 
-| Problema | Causa | Solución |
-|---|---|---|
-| `kubectl apply` se cuelga con `dial tcp ...: i/o timeout` contra `kubernetes-main-node.reto-ucu.net` | La credencial `KUBECONFIG_UCU` tiene la dirección **pública** del cluster. Un pod de adentro del cluster no puede alcanzar la IP pública de su propio cluster | Reescribir el kubeconfig para apuntar a `https://kubernetes.default.svc` (dirección interna), conservando el usuario/token original |
-| `kubectl apply` falla por validación OpenAPI | Por defecto descarga el esquema OpenAPI del cluster antes de aplicar — esa descarga pega contra la misma IP pública bloqueada | `--validate=false` en todos los `kubectl apply` |
-| `helm: command not found` en la etapa de deploy | El `initContainer` solo instalaba `kubectl`, nunca se agregó `helm` | Agregar la descarga de `helm` al mismo `initContainer` |
-| El pipeline se interrumpe con `Resuming build ... after Jenkins restart` | Se aplicó un cambio al `Deployment` de Jenkins mientras había un build corriendo — el pod viejo se borró y Jenkins perdió el proceso que esperaba | No tocar el `Deployment` de Jenkins con un build activo (el Job de Kubernetes en sí sobrevive, es un objeto separado) |
-| `ERROR: Could not find credentials entry with ID 'SNYK_TOKEN'` | La credencial nunca se cargó en esta instancia de Jenkins (no se comparten entre instancias aunque tengan el mismo ID) | Cargarla de nuevo en System → Global de este Jenkins |
-| La app pública cargaba en blanco | `App.jsx` usaba `<BrowserRouter>` sin `basename`; React Router comparaba sus rutas contra una URL que incluía un prefijo que ninguna ruta esperaba | Resuelto de raíz al pasar a la URL por subdominio (`petcore.reto-ucu.net/`, sin prefijo) |
-| `kubectl logs` da `unable to retrieve container logs for containerd://...` justo al terminar un Job | Condición de carrera: el runtime todavía no volcó el log a disco | Pequeña espera + reintento en `correrJob` |
-| Dos builds corriendo a la vez (`semgrep-8` y `snyk-9` simultáneos) | No se marcó "Do not allow concurrent builds" en la config del job — el `Poll SCM` puede disparar un build nuevo antes de que termine el anterior | Tildar esa opción en **Configure → General** |
-| El backend quedaba expuesto directo en internet (`/api/*` en APISIX) | La `ApisixRoute` original tenía una regla extra que mandaba `/api/*` directo al Service `api` | Se sacó esa regla: ahora todo el tráfico público va solo al `frontend`, que ya tiene su propio proxy interno hacia `api` |
+**Desplegados en el cluster** (`k8s/monitoring-ucu.yaml`), adaptados de la versión local (`k8s/prometheus-*.yaml`, `k8s/grafana-*.yaml`). Dos diferencias necesarias respecto a esa versión:
+
+1. **Sin el job `kubernetes-cadvisor`** (el que mide CPU/memoria por contenedor vía cAdvisor): necesita un `ClusterRole`/`ClusterRoleBinding` que el equipo no puede crear en este cluster pero si en el local. Por eso el dashboard de Grafana en este cluster **no tiene** los 2 paneles de "CPU/RAM de la API (% del límite)" que sí existen en la versión local — se sacaron en vez de dejarlos rotos sin datos.
+2. **Grafana queda en `ClusterIP`, no `NodePort`**: igual que Jenkins, no conviene exponer un panel con usuario/contraseña por defecto (`admin`/`admin`) a internet. Se accede con `kubectl port-forward`, nunca desde afuera del cluster.
+
+El resto (métricas HTTP de la API — requests, latencia, errores — y las métricas de negocio como turnos creados/cancelados) funciona igual que en local, scrapeando directo `api:8000/metrics`.
 
 ---
 
-## 7. Otras herramientas del D4 (Kyverno, Falco, Prometheus/Grafana)
+## 7. Kyverno y Falco: por qué no son trabajo nuestro en este cluster
+
+A diferencia de Prometheus/Grafana, estas dos herramientas no las desplegamos ni las administramos acá — cada una por un motivo distinto.
 
 ### Kyverno
 
-**No administrado por el equipo, pero activo.** El cluster ya tiene Kyverno instalado y funcionando a nivel cluster (lo gestiona la UCU) — se confirmó que la política `disallow-latest-tag` rechaza un deploy con tag `:latest` contra este namespace. El equipo no tiene permiso para listar ni crear `ClusterPolicy` propias (`kubectl auth can-i list clusterpolicies` → Forbidden). No hay nada que desplegar de nuestra parte; la evidencia es la prueba de que la política activa efectivamente bloquea.
+Kyverno ya viene instalado en el cluster que nos dio la UCU, lo administran ellos, nosotros no lo tocamos. Intentamos ver qué políticas tiene configuradas (`kubectl auth can-i list clusterpolicies`) y nos dio Forbidden — no tenemos permiso ni para mirarlo. Así que no sabemos exactamente qué reglas tiene activas ni en qué modo están corriendo, solo podemos ver si algo se rechaza o no cuando lo probamos.
 
 ### Falco
 
-**No desplegado, decisión deliberada.** Necesita acceso a nivel de nodo (hostPID, hostNetwork, socket del runtime) para tener visibilidad real. El cluster técnicamente lo permitiría (mismo hallazgo que en 4.2: no hay restricción de `PodSecurity` para esto), pero no se despliega ahí: el nodo es compartido con otros equipos, y de paso solo vería ese nodo en particular — ni sería una demo limpia. La evidencia de Falco se mantiene en minikube local, documentando esta limitación de RBAC/multi-tenant como parte del análisis.
+Decidimos no instalar Falco en el cluster de la UCU, por decisión nuestra, no porque no se pudiera. El tema es que Falco, para vigilar de verdad, necesita acceso a nivel de **nodo** (el servidor físico), no a nivel de nuestro namespace. Y ese nodo lo compartimos con otros equipos de la clase. Si pusiéramos Falco ahí, estaríamos vigilando en tiempo real no solo nuestros contenedores, sino también los de los otros equipos que corren en el mismo nodo — eso no nos corresponde, es meternos donde no deberíamos. Por eso la evidencia de Falco la dejamos en minikube (nuestra propia máquina), donde sí es 100% nuestro.
 
-### Prometheus / Grafana
+---
 
-**Todavía no desplegados en este cluster.** La evidencia de monitoreo del D4 hoy vive en minikube local (`k8s/prometheus-*.yaml`, `k8s/grafana-*.yaml`). Evaluando sumarlos acá también — no necesitarían permisos adicionales (alcanza con lo que el namespace ya permite), usando targets estáticos para Prometheus en vez de descubrimiento vía API (que sí necesitaría permisos de lectura que el equipo no puede otorgarle a un ServiceAccount propio, al no poder crear Roles).
+## 8. Guía práctica: hacer un cambio y verlo funcionando, paso a paso
+
+Todo lo anterior explica las piezas. Esta sección es la receta completa: desde que alguien toca código hasta que se ve andando en el cluster, con el comando exacto para cada paso y cómo saber si salió bien.
+
+### 8.1 Hacer el cambio y subirlo
+
+1. Editar el código (backend `app/`, frontend `frontend/src/`, infraestructura `k8s/`, `helm-chart/`, o el propio `Jenkinsfile.ucu`).
+2. Commitear y pushear a la rama que tiene configurado el job de Jenkins:
+   ```
+   git add .
+   git commit -m "..."
+   git push
+   ```
+3. El `Jenkinsfile` **local** (el de Docker) y el `Jenkinsfile.ucu` (el del cluster) son archivos distintos — si el cambio es sobre cómo corre el pipeline, hay que tocar el que corresponda al entorno donde se quiere ver el efecto.
+
+### 8.2 Ver que el pipeline se disparó
+
+No hay webhook (Jenkins no es alcanzable desde GitHub) — el disparo es por **polling**, cada 5 minutos, y solo si el commit tocó una ruta relevante (`app/`, `frontend/`, `helm-chart/`, `Jenkinsfile.ucu`, `k8s/`, `db/`, `pyproject.toml`, `uv.lock`).
+
+- Para no esperar: entrar a Jenkins y apretar **Build Now** a mano.
+- Para confirmar que arrancó solo (no manual): en Jenkins, la lista de builds del job `petcore-pipeline` muestra una build nueva con "Started by SCM change" en vez de "Started by user ...".
+
+### 8.3 Ver el progreso en vivo (Jenkins)
+
+```
+kubectl port-forward svc/jenkins 8081:8080 -n alumno-team8
+```
+→ `http://127.0.0.1:8081/` → job `petcore-pipeline` → la build en curso → **Console Output** (o `/consoleText` para la versión plana, más liviana por el túnel, que siempre tiene más latencia que un acceso directo).
+
+Mientras corre, se puede mirar en paralelo qué Jobs/pods efímeros hay vivos en ese momento:
+```
+kubectl get pods -n alumno-team8
+kubectl get jobs -n alumno-team8
+```
+(van a aparecer y desaparecer: `semgrep-N`, `snyk-N`, `pytest-N`, `kaniko-backend-N`, `kaniko-frontend-N`, con `N` = número de build).
+
+### 8.4 Si una etapa falla, cómo ver por qué
+
+- El log de cada etapa en la consola de Jenkins ya incluye el log del Job de Kubernetes correspondiente (lo vuelca `correrJob`, sección 5).
+- Si el Job ya se autolimpió (`ttlSecondsAfterFinished: 300`, 5 minutos) y hace falta mirarlo en caliente:
+  ```
+  kubectl logs job/<nombre-del-job> -n alumno-team8 --all-containers
+  kubectl describe pod -n alumno-team8 -l job-name=<nombre-del-job>
+  ```
+- Los mensajes de error de Kubernetes/Jenkins suelen decir directamente qué falta (por ejemplo, una credencial no cargada, o una imagen que no se pudo bajar) — conviene leer el log completo antes de asumir la causa.
+
+### 8.5 Confirmar que terminó y qué quedó desplegado
+
+```
+helm list -n alumno-team8
+kubectl get deployment api frontend -n alumno-team8 -o jsonpath='{range .items[*]}{.metadata.name}{" -> "}{.spec.template.spec.containers[*].image}{"\n"}{end}'
+```
+El número de revisión de Helm sube, y el tag de imagen (`build-N`) coincide con el número de la build de Jenkins que acaba de correr.
+
+### 8.6 Ver la app funcionando
+
+- **Navegador, directo**: `https://petcore.reto-ucu.net/` — sin túnel, es la URL pública real.
+- Para confirmar que lo que se ve es la versión nueva (no una cacheada): abrir en una ventana privada/incógnito, o mirar la Network tab y confirmar el hash del archivo `/assets/index-*.js` cambió respecto a antes.
+
+### 8.7 Ver las métricas de esa corrida
+
+```
+kubectl port-forward svc/grafana 3000:3000 -n alumno-team8
+```
+→ `http://127.0.0.1:3000/` (`admin`/`admin` la primera vez) → Dashboards → carpeta **Pet-Core** → dashboard "Pet-Core — Monitoreo". Si los gráficos están vacíos, es porque no hubo tráfico todavía — navegar la app pública unos segundos y refrescar (scrape cada 15s).
+
+Para ver el estado crudo de Prometheus (qué está scrapeando y si está `up`):
+```
+kubectl port-forward svc/prometheus 9090:9090 -n alumno-team8
+```
+→ `http://127.0.0.1:9090/targets`.
+
+### 8.8 Resumen en una tabla: "quiero ver/hacer X, ¿cómo?"
+
+| Quiero... | Comando / URL |
+|---|---|
+| Ver si el pipeline está corriendo | `kubectl get pods -n alumno-team8` (buscar pods efímeros) |
+| Ver el log de Jenkins en vivo | `kubectl port-forward svc/jenkins 8081:8080 -n alumno-team8` → `127.0.0.1:8081` |
+| Disparar un build a mano | Jenkins UI → job → **Build Now** |
+| Ver qué imagen está desplegada ahora | `kubectl get deployment api frontend -n alumno-team8 -o jsonpath=...` |
+| Ver el historial de releases de Helm | `helm history petcore -n alumno-team8` |
+| Entrar a la app | `https://petcore.reto-ucu.net/` |
+| Ver métricas / dashboard | `kubectl port-forward svc/grafana 3000:3000 -n alumno-team8` → `127.0.0.1:3000` |
+| Ver el estado de los scrape targets | `kubectl port-forward svc/prometheus 9090:9090 -n alumno-team8` → `127.0.0.1:9090/targets` |
+| Ver cuánta cuota queda libre | `kubectl get resourcequota student-quota -n alumno-team8 -o jsonpath='{.status}'` |
+| Revertir a una versión anterior sin esperar un nuevo build | `helm rollback petcore <revisión> -n alumno-team8` |
+
+---
+
+## 9. Comandos de referencia rápida
+
+Todos los comandos que aparecen sueltos en el resto del documento, juntos acá con la explicación de para qué sirve cada uno. Pensado para que cualquiera del equipo (no solo quien lo armó) entienda qué hace cada línea antes de copiarla.
+
+### 9.1 Configurar el acceso — una sola vez por integrante
+
+Antes de poder correr cualquier otro comando de esta lista, hace falta tener el kubeconfig del equipo apuntando a este cluster. Es un archivo que ya existe (no se versiona en el repo, por seguridad) — cada integrante lo guarda en su propia máquina:
+
+```
+# Guardar el archivo que te paso el equipo, por ejemplo en:
+#   Windows: $HOME\.kube\ucu.yaml
+#   Git Bash / Linux/Mac: ~/.kube/ucu.yaml
+
+# Después, para que "kubectl" lo use sin tener que repetir --kubeconfig en cada comando:
+export KUBECONFIG=~/.kube/ucu.yaml          # Git Bash
+$env:KUBECONFIG = "$HOME\.kube\ucu.yaml"    # PowerShell
+
+# Confirmar que apunta donde corresponde:
+kubectl config current-context    # tiene que decir "ucu"
+kubectl get pods -n alumno-team8  # si responde con la lista de pods, está bien configurado
+```
+
+Esta misma identidad (`team8`) es la que usa Jenkins — está cargada ahí como la credencial `KUBECONFIG_UCU`, no hay que crear una nueva por cada persona.
+
+### 9.2 Entrar a las UIs internas (`kubectl port-forward`)
+
+**Qué es un `port-forward`, en una frase:** abre un túnel entre un puerto de tu propia máquina y un Service de dentro del cluster — mientras el comando queda corriendo en una terminal, podés usar ese puerto local como si el servicio estuviera en tu PC. Ninguna de estas tres UIs tiene URL pública, a propósito, así que esta es la única forma de entrar.
+
+```
+# Jenkins: ver y disparar builds del pipeline
+kubectl port-forward svc/jenkins 8081:8080 -n alumno-team8
+# → abrir http://127.0.0.1:8081
+
+# Grafana: ver el dashboard de métricas
+kubectl port-forward svc/grafana 3000:3000 -n alumno-team8
+# → abrir http://127.0.0.1:3000  (usuario/contraseña: admin/admin la primera vez)
+
+# Prometheus: ver el estado crudo de qué se está scrapeando
+kubectl port-forward svc/prometheus 9090:9090 -n alumno-team8
+# → abrir http://127.0.0.1:9090/targets
+```
+
+Cada túnel ocupa la terminal donde se corre (queda "colgado" ahí a propósito, mientras lo necesites) — si lo cerrás, se corta, y lo volvés a abrir con el mismo comando. No se puede compartir el link con nadie más: `127.0.0.1` es siempre "esta misma máquina", cada persona necesita correr su propio túnel.
+
+### 9.3 Ver estado / diagnóstico
+
+```
+kubectl get pods -n alumno-team8              # qué hay corriendo ahora (incluye los pods efimeros si hay un build activo)
+kubectl get jobs -n alumno-team8              # Jobs del pipeline (Semgrep, Snyk, tests, Kaniko)
+kubectl get deployment api frontend -n alumno-team8 \
+  -o jsonpath='{range .items[*]}{.metadata.name}{" -> "}{.spec.template.spec.containers[*].image}{"\n"}{end}'
+                                               # que imagen (tag build-N) tiene cada Deployment ahora mismo
+kubectl get resourcequota student-quota -n alumno-team8 -o jsonpath='{.status}'
+                                               # cuanto se esta usando de la cuota del namespace vs el limite
+kubectl top pod -n alumno-team8               # consumo real de CPU/memoria de cada pod
+kubectl logs job/<nombre-del-job> -n alumno-team8 --all-containers
+                                               # log completo de un Job (si todavia no se autolimpio)
+kubectl describe pod -n alumno-team8 -l job-name=<nombre-del-job>
+                                               # eventos del pod de un Job (util cuando no llega a arrancar)
+kubectl auth can-i <verbo> <recurso> -n alumno-team8
+                                               # confirmar si la cuenta del equipo tiene o no un permiso puntual
+```
+
+### 9.4 Helm (qué versión está desplegada, y volver atrás)
+
+```
+helm list -n alumno-team8              # release actual, revision, estado
+helm history petcore -n alumno-team8   # todas las revisiones anteriores
+helm rollback petcore <revisión> -n alumno-team8
+                                        # volver a una version anterior sin esperar un build nuevo
+```
+
+### 9.5 Git (disparar el pipeline)
+
+```
+git add .
+git commit -m "..."
+git push
+```
+
+El `push` es lo que el `Poll SCM` de Jenkins va a detectar (cada 5 minutos, solo si tocó una ruta relevante). Para no esperar, se puede entrar a Jenkins y apretar **Build Now** a mano.
