@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: petcore
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+
+    scrape_configs:
+      # Entrega final: Prometheus scrapea el Service "api" del chart de Helm
+      # (namespace petcore). Ya no existe el Deployment paralelo api-monitoring.
+      # El job_name se mantiene igual porque el dashboard filtra por job="pet-core-api".
+      - job_name: "pet-core-api"
+        metrics_path: /metrics
+        static_configs:
+          - targets: ["api:8000"]
+
+      - job_name: "kubernetes-cadvisor"
+        scheme: https
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node
+        metric_relabel_configs:
+          # Conservar solo el cgroup del pod de la API (namespace petcore),
+          # evitando sumar tambien sus contenedores.
+          - source_labels: [namespace, pod, container, id]
+            regex: petcore;api-.+;;.*/[^/]*pod[^/]+
+            action: keep
+          - source_labels: [__name__]
+            regex: container_cpu_usage_seconds_total|container_spec_cpu_quota|container_spec_cpu_period|container_memory_working_set_bytes|container_spec_memory_limit_bytes
+            action: keep
