@@ -76,7 +76,7 @@ services:
   # Prometheus: scrapea /metrics de "server". Independiente de Kubernetes y
   # de Blue/Green — no depende de que esas ramas existan ni estén desplegadas.
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.15.0
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
@@ -84,7 +84,7 @@ services:
 
   # Grafana: ya arranca con Prometheus provisionado como datasource.
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.2.4
     volumes:
       - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
     ports:
