@@ -6,7 +6,7 @@
 #   2. imagenes y recursos previos (preparar-chart.sh) + helm chart "petcore"
 #   3. Kyverno (helm) + las 4 politicas de k8s/policies/
 #   4. Falco (helm)
-#   5. Prometheus y Grafana en el namespace petcore (k8s/entrega-final/)
+#   5. Prometheus y Grafana en el namespace petcore (k8s/4to_entregable/)
 #   6. (opcional) Jenkins
 #
 # Uso (desde cualquier carpeta, en Git Bash):
@@ -70,12 +70,12 @@ esperar_pods() {
 # lo transforma al vuelo (clinica-veterinaria -> petcore, y el filtro de pod
 # api-monitoring-.+ -> api-.+ del dashboard) en vez de mantener una copia.
 # Si despues de transformar queda algun nombre viejo, corta: quiere decir que
-# ese archivo necesita una copia propia en k8s/entrega-final/.
+# ese archivo necesita una copia propia en k8s/4to_entregable/.
 aplicar_adaptado() {
     local archivo="$1" salida
     salida="$(sed -e 's/clinica-veterinaria/petcore/g' -e 's/api-monitoring-\.+/api-.+/g' "$archivo" | tr -d '\r')"
     if grep -qE 'clinica-veterinaria|api-monitoring' <<<"$salida"; then
-        error "$archivo todavia menciona clinica-veterinaria/api-monitoring despues de adaptarlo. Hace una copia a mano en k8s/entrega-final/."
+        error "$archivo todavia menciona clinica-veterinaria/api-monitoring despues de adaptarlo. Hace una copia a mano en k8s/4to_entregable/."
     fi
     printf '%s\n' "$salida" | kc apply -f -
 }
@@ -92,11 +92,11 @@ docker info >/dev/null 2>&1    || error "Docker Desktop no esta corriendo."
 for archivo in \
     scripts/4to_entregable/preparar-chart.sh \
     helm-chart/Chart.yaml \
-    k8s/entrega-final/prometheus-configmap.yaml \
-    k8s/entrega-final/prometheus-rbac.yaml \
-    k8s/entrega-final/prometheus-deployment.yaml \
-    k8s/entrega-final/grafana-deployment.yaml \
-    k8s/entrega-final/falco-values.yaml \
+    k8s/4to_entregable/prometheus-configmap.yaml \
+    k8s/4to_entregable/prometheus-rbac.yaml \
+    k8s/4to_entregable/prometheus-deployment.yaml \
+    k8s/4to_entregable/grafana-deployment.yaml \
+    k8s/4to_entregable/falco-values.yaml \
     k8s/prometheus-service.yaml \
     k8s/grafana-datasource-configmap.yaml \
     k8s/grafana-dashboard-configmap.yaml \
@@ -192,7 +192,7 @@ hm upgrade --install falco falcosecurity/falco \
     --set falco.priority=notice \
     --set falco.buffered_outputs=false \
     --set falco.stdout_output.enabled=true \
-    --values k8s/entrega-final/falco-values.yaml \
+    --values k8s/4to_entregable/falco-values.yaml \
     --wait --timeout 5m
 
 # --- 5. Prometheus y Grafana ------------------------------------------------
@@ -205,8 +205,8 @@ reiniciar=0
 if kc get deployment prometheus -n "$NAMESPACE" >/dev/null 2>&1; then reiniciar=1; fi
 
 # Copias propias (cambian mas que el namespace)
-kc apply -f k8s/entrega-final/prometheus-configmap.yaml
-kc apply -f k8s/entrega-final/prometheus-rbac.yaml
+kc apply -f k8s/4to_entregable/prometheus-configmap.yaml
+kc apply -f k8s/4to_entregable/prometheus-rbac.yaml
 # Originales adaptados al vuelo
 aplicar_adaptado k8s/grafana-datasource-configmap.yaml
 aplicar_adaptado k8s/grafana-dashboard-configmap.yaml
@@ -214,8 +214,8 @@ aplicar_adaptado k8s/grafana-alerting-configmap.yaml
 aplicar_adaptado k8s/prometheus-service.yaml
 aplicar_adaptado k8s/grafana-service.yaml
 # Deployments (copias propias: agregan la livenessProbe que exige Kyverno)
-kc apply -f k8s/entrega-final/prometheus-deployment.yaml
-kc apply -f k8s/entrega-final/grafana-deployment.yaml
+kc apply -f k8s/4to_entregable/prometheus-deployment.yaml
+kc apply -f k8s/4to_entregable/grafana-deployment.yaml
 
 if [[ "$reiniciar" -eq 1 ]]; then
     kc rollout restart deployment/prometheus deployment/grafana -n "$NAMESPACE"
