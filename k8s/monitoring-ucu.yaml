@@ -1,0 +1,598 @@
+# Prometheus + Grafana dentro del cluster de la UCU (namespace alumno-team8).
+# Adaptado de k8s/prometheus-*.yaml y k8s/grafana-*.yaml (la version local de
+# minikube), con dos diferencias necesarias:
+#
+# 1. Sin el job "kubernetes-cadvisor" ni k8s/prometheus-rbac.yaml: ese job
+#    necesita un ClusterRole/ClusterRoleBinding para leer metricas de los
+#    nodos via la API de Kubernetes, y el equipo no tiene permiso para crear
+#    ese tipo de recurso aca (confirmado con "kubectl auth can-i"). Se probo
+#    tambien la Metrics API (la misma que usa "kubectl top pod") como
+#    alternativa, y la ServiceAccount "default" del namespace (la que usa
+#    este Pod) tampoco tiene permiso: responde 403. Por eso el dashboard de
+#    abajo no tiene los paneles de CPU%/RAM% por contenedor que si existen en
+#    la version local - dependen de ese mismo permiso que no esta disponible.
+# 2. Grafana queda en ClusterIP (no NodePort como en local): no hay forma de
+#    publicarlo sin exponer el usuario/contraseña por defecto (admin/admin) a
+#    internet. Se accede por "kubectl port-forward", igual que Jenkins.
+#
+# Se aplica a mano (no lo aplica el Jenkinsfile): es infraestructura del
+# cluster, no algo que cambie con cada build de la app.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: alumno-team8
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+
+    scrape_configs:
+      - job_name: "pet-core-api"
+        metrics_path: /metrics
+        static_configs:
+          - targets: ["api:8000"]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: alumno-team8
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v3.15.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9090
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: config
+          configMap:
+            name: prometheus-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: alumno-team8
+spec:
+  type: ClusterIP
+  selector:
+    app: prometheus
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9090
+      targetPort: http
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: alumno-team8
+data:
+  datasource.yaml: |
+    apiVersion: 1
+
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        uid: prometheus
+        url: http://prometheus:9090
+        isDefault: true
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: alumno-team8
+data:
+  provider.yaml: |
+    apiVersion: 1
+
+    providers:
+      - name: pet-core
+        folder: Pet-Core
+        type: file
+        options:
+          path: /var/lib/grafana/dashboards
+
+  # Mismo dashboard que la version local, sin los paneles "CPU de la API (%
+  # del limite)" y "RAM de la API (% del limite)" (dependian del job
+  # "kubernetes-cadvisor", que no existe en este cluster - ver la nota de
+  # arriba).
+  pet-core-monitoring.json: |
+    {
+      "title": "Pet-Core — Monitoreo (cluster UCU)",
+      "uid": "pet-core-monitoring",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "15s",
+      "time": { "from": "now-1h", "to": "now" },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Turnos creados (ventana 5 min)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "increase(turnos_creados_total[5m])",
+              "legendFormat": "turnos creados"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 10 }
+                ]
+              },
+              "custom": {
+                "thresholdsStyle": { "mode": "line" },
+                "axisSoftMin": 0,
+                "axisSoftMax": 15
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 2,
+          "title": "Logins fallidos (ventana 1 min)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "increase(logins_fallidos_total[1m])",
+              "legendFormat": "logins fallidos"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 3 }
+                ]
+              },
+              "custom": {
+                "thresholdsStyle": { "mode": "line" },
+                "axisSoftMin": 0,
+                "axisSoftMax": 5
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 3,
+          "title": "Tasa de requests por endpoint",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum by (handler) (rate(http_requests_total[5m]))",
+              "legendFormat": "{{handler}}"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Latencia p95 por endpoint",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "histogram_quantile(0.95, sum by (le, handler) (rate(http_request_duration_seconds_bucket[5m])))",
+              "legendFormat": "{{handler}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "s" },
+            "overrides": []
+          }
+        },
+        {
+          "id": 5,
+          "title": "Errores 5xx (tasa)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(rate(http_requests_total{status=\"5xx\"}[5m]))",
+              "legendFormat": "errores 5xx"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Turnos cancelados (últimas 24 h)",
+          "type": "stat",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(increase(turnos_cancelados_total[24h])) or vector(0)",
+              "legendFormat": "turnos cancelados",
+              "instant": true
+            }
+          ],
+          "options": {
+            "reduceOptions": {
+              "values": false,
+              "calcs": ["lastNotNull"],
+              "fields": ""
+            },
+            "orientation": "auto",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "decimals": 0,
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "orange", "value": 1 }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 9,
+          "title": "Turnos: p95 de consulta PostgreSQL vs endpoint",
+          "description": "Comparación temporal en ventanas de 5 minutos. Query incluye ejecución y lectura desde SQLAlchemy, también fallos. HTTP mide todos los GET /turnos e incluye autenticación y serialización. Son percentiles de poblaciones distintas: no deben restarse ni prueban causalidad. Sin solicitudes no hay percentil.",
+          "type": "timeseries",
+          "gridPos": { "h": 9, "w": 24, "x": 0, "y": 24 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "histogram_quantile(0.95, sum by (le) (rate(pg_query_duration_seconds_bucket{job=\"pet-core-api\",query=\"listar_turnos_cliente\"}[5m])))",
+              "legendFormat": "PostgreSQL: listar turnos (p95)"
+            },
+            {
+              "refId": "B",
+              "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"pet-core-api\",handler=\"/turnos\",method=\"GET\"}[5m])))",
+              "legendFormat": "HTTP: GET /turnos (p95)"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "min": 0,
+              "decimals": 2,
+              "custom": { "drawStyle": "line", "lineWidth": 2, "showPoints": "always", "pointSize": 4 }
+            },
+            "overrides": []
+          },
+          "options": {
+            "tooltip": { "mode": "multi" },
+            "legend": { "displayMode": "list", "placement": "bottom" }
+          }
+        },
+        {
+          "id": 10,
+          "title": "Clientes nuevos registrados (últimas 24 h)",
+          "description": "Estimación de altas de clientes en las últimas 24 horas (increase). El contador vuelve a cero si el pod de la API se reinicia. Solo estadística de negocio, sin alerta asociada.",
+          "type": "stat",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(increase(clientes_registrados_total[24h])) or vector(0)",
+              "legendFormat": "clientes nuevos",
+              "instant": true
+            }
+          ],
+          "options": {
+            "reduceOptions": {
+              "values": false,
+              "calcs": ["lastNotNull"],
+              "fields": ""
+            },
+            "orientation": "auto",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "decimals": 0,
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "blue", "value": 1 }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        }
+      ]
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-alerting
+  namespace: alumno-team8
+data:
+  alerting.yaml: |
+    apiVersion: 1
+
+    groups:
+      - orgId: 1
+        name: pet-core-alertas
+        folder: Pet-Core
+        interval: 30s
+
+        rules:
+          - uid: pet-core-turnos-creados
+            title: Exceso de turnos creados
+            condition: B
+            for: 0s
+            noDataState: NoData
+            execErrState: Error
+            isPaused: false
+            annotations:
+              summary: Más de 10 turnos creados en los últimos 5 minutos.
+              description: Revisar el volumen de reservas de la aplicación.
+            labels:
+              severity: warning
+              categoria: negocio
+            data:
+              - refId: A
+                datasourceUid: prometheus
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                model:
+                  refId: A
+                  datasource:
+                    type: prometheus
+                    uid: prometheus
+                  expr: 'sum(increase(turnos_creados_total{job="pet-core-api"}[5m]))'
+                  instant: true
+                  range: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+              - refId: B
+                datasourceUid: __expr__
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                model:
+                  refId: B
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  type: math
+                  expression: "$A > 10"
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+
+          - uid: pet-core-logins-fallidos
+            title: Exceso de intentos de login fallidos
+            condition: B
+            for: 0s
+            noDataState: NoData
+            execErrState: Error
+            isPaused: false
+            annotations:
+              summary: Más de 3 intentos de login fallidos en el último minuto.
+              description: Revisar posibles accesos sospechosos o errores de autenticación.
+            labels:
+              severity: warning
+              categoria: seguridad
+            data:
+              - refId: A
+                datasourceUid: prometheus
+                relativeTimeRange:
+                  from: 60
+                  to: 0
+                model:
+                  refId: A
+                  datasource:
+                    type: prometheus
+                    uid: prometheus
+                  expr: 'sum(increase(logins_fallidos_total{job="pet-core-api"}[1m]))'
+                  instant: true
+                  range: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+              - refId: B
+                datasourceUid: __expr__
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                model:
+                  refId: B
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  type: math
+                  expression: "$A > 3"
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: alumno-team8
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: grafana
+          image: grafana/grafana:13.2.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboards-json
+              mountPath: /var/lib/grafana/dashboards
+            - name: alerting
+              mountPath: /etc/grafana/provisioning/alerting
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboards-provider
+          configMap:
+            name: grafana-dashboards
+            items:
+              - key: provider.yaml
+                path: provider.yaml
+        - name: dashboards-json
+          configMap:
+            name: grafana-dashboards
+            items:
+              - key: pet-core-monitoring.json
+                path: pet-core-monitoring.json
+        - name: alerting
+          configMap:
+            name: grafana-alerting
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: alumno-team8
+spec:
+  # ClusterIP, no NodePort: Grafana usa admin/admin por defecto, no conviene
+  # exponerlo a internet. Se accede con "kubectl port-forward svc/grafana
+  # 3000:3000 -n alumno-team8", igual que Jenkins.
+  type: ClusterIP
+  selector:
+    app: grafana
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: http

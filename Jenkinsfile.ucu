@@ -260,7 +260,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: kaniko
-          image: gcr.io/kaniko-project/executor:latest
+          image: gcr.io/kaniko-project/executor:v1.24.0
           args:
             - --context=git://${REPO_URL.replaceAll('https://', '')}#refs/heads/${GIT_BRANCH_CORTA}
             - --dockerfile=Dockerfile
@@ -297,7 +297,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: kaniko
-          image: gcr.io/kaniko-project/executor:latest
+          image: gcr.io/kaniko-project/executor:v1.24.0
           args:
             - --context=git://${REPO_URL.replaceAll('https://', '')}#refs/heads/${GIT_BRANCH_CORTA}
             - --context-sub-path=frontend

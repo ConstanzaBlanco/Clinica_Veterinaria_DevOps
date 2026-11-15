@@ -13,6 +13,8 @@
    - 3.2 [`api`](#32-api)
    - 3.3 [`frontend`](#33-frontend)
    - 3.4 [`jenkins`](#34-jenkins)
+   - 3.5 [`prometheus`](#35-prometheus)
+   - 3.6 [`grafana`](#36-grafana)
 4. [Componentes efímeros (los Jobs del pipeline)](#4-componentes-efímeros-los-jobs-del-pipeline)
 5. [Cómo se comunican entre sí (red interna)](#5-cómo-se-comunican-entre-sí-red-interna)
 6. [Cómo se llega desde afuera (red externa)](#6-cómo-se-llega-desde-afuera-red-externa)
@@ -26,7 +28,7 @@
 ```mermaid
 flowchart TB
     USUARIO["Usuario / navegador"] -->|HTTPS| APISIX["Gateway APISIX<br/>(del laboratorio, fuera del namespace)"]
-    DEV["Integrante del equipo<br/>(notebook)"] -->|kubectl port-forward| JENKINS
+    DEV["Integrante del equipo<br/>(notebook)"] -->|"kubectl port-forward<br/>(jenkins / grafana / prometheus)"| JENKINS
 
     subgraph NS["Namespace alumno-team8"]
         APISIX -->|"host petcore.reto-ucu.net<br/>path /* (unica regla)"| FR["Pod frontend<br/>nginx :8080"]
@@ -40,17 +42,20 @@ flowchart TB
         JENKINS --- JV[("PVC 2Gi<br/>jenkins-home")]
         JOBS -->|"git clone"| GH["GitHub<br/>(externo)"]
         JOBS -->|"docker push"| DH["Docker Hub<br/>(externo)"]
+
+        PROM["Pod prometheus<br/>:9090"] -->|"scrape /metrics cada 15s"| API
+        GRAF["Pod grafana<br/>:3000"] -->|"PromQL"| PROM
     end
 
     API -->|"docker pull"| DH
     FR -->|"docker pull"| DH
 ```
 
-Cuatro pods **permanentes** (`postgres`, `api`, `frontend`, `jenkins`) y, mientras corre un pipeline, un puñado de pods **efímeros** que se crean y se autodestruyen (uno por cada etapa del `Jenkinsfile.ucu` que necesita ejecutar algo).
+Seis pods **permanentes** (`postgres`, `api`, `frontend`, `jenkins`, `prometheus`, `grafana`) y, mientras corre un pipeline, hay algunos pods efímeros que se crean y se autodestruyen (uno por cada etapa del `Jenkinsfile.ucu` que necesita ejecutar algo).
 
 ---
 
-## 2. El namespace y sus límites
+## 2. El namespace y sus límites ESTO TMB ESTA EN EL OTRO RDOCMENTO COMO A MI ME GUSTA REO
 
 Todo vive en el namespace `alumno-team8`, con una `ResourceQuota` (`student-quota`) que pone techo a todo el namespace, no a cada pod individualmente:
 
@@ -106,6 +111,22 @@ La cuenta (`ServiceAccount` `team8`) con la que opera todo esto es **namespace-s
   - Al final del pipeline, le habla directo a la API de Kubernetes para hacer `helm upgrade` sobre `api` y `frontend`.
 - **Cómo se accede:** nadie le pega directo por su IP — se entra vía `kubectl port-forward svc/jenkins 8081:8080 -n alumno-team8`, desde la notebook de cada integrante, con su propio kubeconfig. No está expuesto a internet (decisión de seguridad).
 
+### 3.5 `prometheus`
+
+- **Qué es:** `Deployment` de 1 réplica, imagen `prom/prometheus:v3.15.0` (definido en `k8s/monitoring-ucu.yaml`, junto con todo lo de monitoreo).
+- **Puerto:** 9090.
+- **Con quién habla:** scrapea `api:8000/metrics` cada 15 segundos (un solo scrape target, estático). **No** tiene el job de cAdvisor que sí existe en la versión local de minikube — necesita permisos cluster-scoped que el equipo no tiene acá (se probó también la Metrics API con la identidad del pod: `403 Forbidden`).
+- **Sin PVC:** las métricas no persisten si el pod se recrea (igual que en local; aceptable para esto).
+- **Cómo se accede:** `kubectl port-forward svc/prometheus 9090:9090 -n alumno-team8` → `http://127.0.0.1:9090`. Sin exposición pública.
+
+### 3.6 `grafana`
+
+- **Qué es:** `Deployment` de 1 réplica, imagen `grafana/grafana:13.2.4` (mismo archivo `k8s/monitoring-ucu.yaml`). Todo provisionado por ConfigMaps: datasource (Prometheus), el dashboard "Pet-Core" (carpeta Pet-Core) y las 2 reglas de alerta (exceso de turnos creados, exceso de logins fallidos).
+- **Puerto:** 3000.
+- **Con quién habla:** consulta a `prometheus:9090` como único datasource. No le habla a la API de Kubernetes (`automountServiceAccountToken: false`).
+- **Dashboard:** igual al local menos los 2 paneles de CPU%/RAM% por contenedor (dependían de cAdvisor, ver 3.5).
+- **Cómo se accede:** `kubectl port-forward svc/grafana 3000:3000 -n alumno-team8` → `http://127.0.0.1:3000`. `ClusterIP` a propósito (el local usa `NodePort`): usa credenciales por defecto `admin`/`admin`, no se expone a internet.
+
 ---
 
 ## 4. Componentes efímeros (los Jobs del pipeline)
@@ -132,6 +153,8 @@ Dentro del namespace, nada se encuentra por IP (las IPs de los pods cambian cada
 flowchart LR
     FR["frontend<br/>(nginx)"] -->|"http://api:8000"| API["api<br/>(FastAPI)"]
     API -->|"db:5432"| DB["postgres<br/>(via Service 'db')"]
+    PROM["prometheus"] -->|"api:8000/metrics<br/>cada 15s"| API
+    GRAF["grafana"] -->|"prometheus:9090<br/>(PromQL)"| PROM
     JEN["jenkins"] -->|"API de Kubernetes<br/>(kubectl/helm)"| K8S["kube-apiserver<br/>(kubernetes.default.svc)"]
     K8S -->|"crea"| JOBS["Jobs efimeros"]
     JOBS -->|"docker build/push"| DH["Docker Hub"]
@@ -163,16 +186,19 @@ flowchart LR
 - La `ApisixRoute` (`petcore-route`, en `k8s/apisix-route-ucu.yaml`) tiene **una sola regla**, que manda todo (`/*`) al Service `frontend`. El Service `api` **no tiene ninguna ruta pública** — a propósito: los clientes solo deben hablar con el frontend, nunca directo con el backend. Las llamadas a `/api/...` las resuelve el propio `nginx.conf` del `frontend` (reenvía internamente a `http://api:8000`), no APISIX.
 - El Ingress nginx que también genera la chart de Helm (`host: petcore.local`) **no** participa de este camino — queda apuntando a una IP interna del cluster, solo sirve para pruebas dentro del cluster o con `port-forward`.
 
-### 6.2 A Jenkins (privado, solo el equipo)
+### 6.2 A las UIs internas: Jenkins, Grafana, Prometheus (privadas, solo el equipo)
 
 ```mermaid
 flowchart LR
-    NOTE["Notebook de un integrante"] -->|"kubectl port-forward<br/>127.0.0.1:8081 -> svc/jenkins:8080"| API_K8S["API de Kubernetes"]
-    API_K8S -->|tunel| JEN["Pod jenkins"]
+    NOTE["Notebook de un integrante"] -->|"kubectl port-forward"| API_K8S["API de Kubernetes"]
+    API_K8S -->|tunel| JEN["jenkins :8080<br/>grafana :3000<br/>prometheus :9090"]
 ```
 
-- No hay ninguna URL pública para Jenkins — a propósito (ver `CLUSTER_UCU_DESPLEGADO.md`, sección 4.4).
-- Cada persona que necesite entrar corre su propio `port-forward`, con su copia del kubeconfig del equipo.
+- Ninguna de las tres tiene URL pública — a propósito (Jenkins: panel de administración con credenciales de deploy; Grafana: usuario/contraseña por defecto; Prometheus: sin autenticación propia).
+- Cada persona que necesite entrar corre su propio `port-forward`, con su copia del kubeconfig del equipo:
+  - `kubectl port-forward svc/jenkins 8081:8080 -n alumno-team8` → `http://127.0.0.1:8081`
+  - `kubectl port-forward svc/grafana 3000:3000 -n alumno-team8` → `http://127.0.0.1:3000`
+  - `kubectl port-forward svc/prometheus 9090:9090 -n alumno-team8` → `http://127.0.0.1:9090`
 
 ---
 
@@ -204,7 +230,17 @@ Explicación de cada salto:
 4. **Snyk**: un Job escanea las dependencias de backend y frontend. Si hay una vulnerabilidad de severidad crítica, el pipeline **se corta ahí** — no sigue a construir ni a desplegar nada con una vulnerabilidad conocida sin resolver.
 5. **Tests**: un Job corre la suite de `pytest`. Si falla algo, también corta.
 6. **Build + Push**: dos Jobs de Kaniko, uno para el backend y otro para el frontend, corriendo **al mismo tiempo** (no uno después del otro). Cada uno clona el repo por su cuenta, construye la imagen sin Docker ni privilegios, y la publica en Docker Hub.
-7. **Deploy**: Jenkins le dice a Helm "los Deployments `api` y `frontend` ahora usan esta imagen nueva". Helm actualiza el manifest; a partir de ahí, es **Kubernetes** quien ejecuta el *rolling update* (crea pods nuevos, espera que estén sanos, recién ahí apaga los viejos) — ni Jenkins ni Helm hacen ese paso, solo lo piden.
+7. **Deploy**: Jenkins le dice a Helm "los Deployments `api` y `frontend` ahora usan esta imagen nueva". Helm actualiza el manifest; a partir de ahí, es **Kubernetes** quien ejecuta el *rolling update* — ni Jenkins ni Helm hacen ese paso, solo lo piden.
+
+   Vale detallar esta parte porque es fácil malinterpretarla. **Jenkins nunca les habla a los pods, y los pods viejos nunca se "actualizan" — se reemplazan.** La cadena completa:
+
+   1. Kaniko ya publicó la imagen en **Docker Hub** (pushea las capas *mientras* construye; cuando su pod efímero muere, la imagen ya está en el registry — no queda nada en el cluster). Docker Hub es el único puente entre el build y el deploy: el pod de Kaniko y los pods de la app pueden caer en nodos distintos, no comparten ningún almacenamiento de imágenes.
+   2. `helm upgrade` le habla a la **API de Kubernetes** y modifica el objeto `Deployment`: le cambia el campo `image` al tag nuevo (`build-N`). Es solo un cambio de texto en el manifest deseado — ninguna imagen se mueve en este paso.
+   3. El **controlador del Deployment** (pieza de Kubernetes) detecta que lo deseado ya no coincide con lo que corre, y crea **pods nuevos** con la imagen nueva.
+   4. El **kubelet** del nodo donde cae cada pod nuevo baja la imagen de Docker Hub (el tag es nuevo en cada build, así que aunque el `pullPolicy` sea `IfNotPresent`, en la práctica siempre la pullea).
+   5. Cuando el pod nuevo pasa su *readiness* (está sano y respondiendo), el Service le empieza a mandar tráfico y **recién ahí se borra el pod viejo**.
+
+   Consecuencias de este diseño: no hay caída durante el deploy (siempre hay al menos un pod sano sirviendo), y si la imagen nueva viene rota (no arranca o no pasa el readiness), **el pod viejo queda vivo y la app no se cae** — el deploy falla sin romper lo que ya funcionaba.
 8. **Resultado**: la app pública (`https://petcore.reto-ucu.net/`) queda sirviendo la versión nueva, sin que haya habido un momento de caída.
 
 ---
@@ -217,10 +253,14 @@ Explicación de cada salto:
 | APISIX | Service `frontend` | HTTP interno | Sirve la app React — **única ruta pública que existe** |
 | Pod `frontend` | Service `api` | HTTP interno | El propio nginx del frontend reenvía `/api/*` — el backend no tiene ninguna ruta pública propia en APISIX |
 | Pod `api` | Service `db` | PostgreSQL (TCP 5432) | Leer/escribir datos |
-| Notebook de un integrante | Pod `jenkins` | `kubectl port-forward` (túnel vía API de Kubernetes) | Usar la UI de Jenkins |
+| Notebook de un integrante | Pods `jenkins` / `grafana` / `prometheus` | `kubectl port-forward` (túnel vía API de Kubernetes) | Usar las UIs internas (ninguna tiene URL pública) |
+| Pod `prometheus` | Service `api` | HTTP interno (`/metrics`, cada 15s) | Recolectar métricas de la API |
+| Pod `grafana` | Service `prometheus` | HTTP interno (PromQL) | Dashboard y alertas |
 | Pod `jenkins` | API de Kubernetes (interna) | HTTPS, con el token de `team8` | Crear/consultar Jobs, hacer `helm upgrade` |
 | Jobs efímeros | GitHub | HTTPS saliente | Clonar el código a analizar/testear/construir |
 | Jobs efímeros (Kaniko) | Docker Hub | HTTPS saliente | Publicar las imágenes nuevas |
 | Nodos del cluster | Docker Hub | Pull de imagen | Bajar `manuelney67/clinica-*` al crear pods de `api`/`frontend` |
 
-Lo que **no** existe: ninguna conexión directa desde afuera del cluster hacia `postgres` ni hacia `api` — ambos solo son alcanzables desde dentro del namespace (`api` únicamente por el propio `frontend`) — y ninguna URL pública hacia Jenkins.
+Lo que **no** existe (verificado con intentos de conexión reales desde afuera, no solo leyendo la config): ninguna conexión directa desde internet hacia `postgres` (puerto 5432 no conecta), hacia `api` (puerto 8000 no conecta; solo se llega vía el proxy `/api/` del `frontend`), ni hacia Jenkins/Grafana/Prometheus (puertos 8080/3000/9090 cerrados desde afuera). Todos los Services son `ClusterIP`; la única regla del gateway APISIX apunta al `frontend`.
+
+Detalle conocido y aceptado: a través del proxy `/api/` del frontend quedan públicas sin autenticación `/api/docs` (el Swagger de la API) y `/api/metrics` (las métricas de Prometheus de la API). No exponen datos de clientes ni credenciales, pero sí la estructura de la API y estadísticas internas — viene de `values-dev.yaml` (que deja Swagger abierto a propósito para desarrollo). Documentado como riesgo aceptado para el contexto académico; se puede bloquear en el `nginx.conf` del frontend si se decide lo contrario.
