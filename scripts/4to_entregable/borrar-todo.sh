@@ -55,6 +55,13 @@ error() { printf '\nERROR: %s\n' "$*" >&2; exit 1; }
 release_existe() { hm list -n "$1" -q 2>/dev/null | grep -qx "$2"; }
 namespace_existe() { kc get namespace "$1" >/dev/null 2>&1; }
 
+# Nombres de los PV (discos) cuyo claim era del namespace petcore, uno por linea.
+# Solo mira los de petcore: nunca los de otros namespaces.
+pv_de_petcore() {
+    kc get pv -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.claimRef.namespace}{"\n"}{end}' 2>/dev/null \
+        | awk -v ns="$NAMESPACE" '$2 == ns { print $1 }'
+}
+
 # Espera hasta N segundos a que un namespace termine de borrarse.
 esperar_namespace_borrado() {
     local ns="$1" segundos="${2:-120}" i
@@ -101,6 +108,11 @@ if [[ "$CLUSTER_ACTIVO" -eq 1 ]]; then
     fi
     # Recursos de todo el cluster (no viven dentro del namespace)
     kc delete clusterrolebinding,clusterrole petcore-prometheus --ignore-not-found >/dev/null 2>&1 || true
+    # El disco (PV) de Postgres puede quedar en estado "Released" y no se limpia
+    # solo. Se borran los PV que eran de petcore (y solo esos).
+    pv_de_petcore | while read -r pv; do
+        kc delete pv "$pv" --ignore-not-found --timeout=60s || aviso "no pude borrar el PV $pv"
+    done
 
     # --- 2. Falco -----------------------------------------------------------
 
@@ -181,9 +193,9 @@ fi
 if [[ "$CLUSTER_ACTIVO" -eq 1 ]]; then
     paso "Verificando que no quedaron recursos"
 
-    # Los PV de minikube se borran solos cuando se borra su PVC, pero tardan unos segundos.
+    # Por si algun PV de petcore tarda unos segundos en desaparecer.
     for _ in $(seq 1 30); do
-        [[ -z "$(kc get pv -o name 2>/dev/null)" ]] && break
+        [[ -z "$(pv_de_petcore)" ]] && break
         sleep 1
     done
 
@@ -212,8 +224,8 @@ if [[ "$CLUSTER_ACTIVO" -eq 1 ]]; then
         "$(kc get validatingwebhookconfiguration,mutatingwebhookconfiguration -o name 2>/dev/null | grep -i kyverno || true)"
     chequear "sin ClusterRole/Binding de Prometheus (petcore-prometheus)" \
         "$(kc get clusterrole,clusterrolebinding -o name 2>/dev/null | grep 'petcore-prometheus' || true)"
-    chequear "sin volumenes persistentes (PV)" \
-        "$(kc get pv -o name 2>/dev/null || true)"
+    chequear "sin volumenes persistentes (PV) de petcore" \
+        "$(pv_de_petcore || true)"
 fi
 
 echo
