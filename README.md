@@ -108,6 +108,24 @@ docker info
 
 Docker Desktop debe estar abierto y funcionando antes de iniciar el proyecto.
 
+### Guardar las alertas de Falco
+
+Después de ejecutar `inicializar-todo.sh`, iniciar la captura desde la raíz del repositorio.
+
+En **Git Bash**:
+
+```bash
+bash scripts/4to_entregable/guardar-falco.sh
+```
+
+En **PowerShell**:
+
+```powershell
+& "$env:ProgramFiles\Git\bin\bash.exe" ./scripts/4to_entregable/guardar-falco.sh
+```
+
+Dejar esa terminal abierta y realizar la prueba de Falco desde otra terminal. El script muestra las alertas nuevas del namespace `petcore` y las agrega a `reports/falco-event.log`. Para detener la captura, presionar `Ctrl+C`.
+
 ### Instalar uv para desarrollo local
 
 `uv` no es necesario para levantar el proyecto con Docker, porque se instala dentro de la imagen. Sin embargo, es necesario para ejecutar el proyecto, agregar dependencias o utilizar herramientas de Python directamente desde Windows.
