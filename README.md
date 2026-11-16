@@ -72,6 +72,29 @@ ya se borró se saltea. Cada uno muestra sus opciones con `--ayuda`.
 | Jenkins (si se usó `--con-jenkins`) | `docker ps --filter name=petcore-jenkins` y abrir <http://localhost:8080> | Contenedor `Up` y la pantalla de Jenkins. La primera vez pide la contraseña inicial que muestra el script, y hay que seguir los pasos manuales que imprime: plugins, credenciales `SNYK_TOKEN` y `DOCKER_REGISTRY_CREDS`, y el job |
 | Borrado | `bash scripts/4to_entregable/borrar-todo.sh` | Todas las líneas en `[OK]` y el mensaje `Todo borrado.` |
 
+### Instalar Falco a mano (opcional)
+
+`inicializar-todo.sh` ya instala Falco, con los mismos parámetros que estos comandos. Solo hace
+falta correrlos a mano para instalarlo por separado. En Git Bash:
+
+```bash
+# 1. Agregar el repositorio oficial de Falco
+helm repo add falcosecurity https://falcosecurity.github.io/charts --force-update
+
+# 2. Actualizar la lista de aplicaciones disponibles en los repositorios de Helm
+helm repo update
+
+# 3. Instalar (o actualizar) Falco dentro de minikube
+helm upgrade --install falco falcosecurity/falco --version 9.2.2 --kube-context minikube --namespace falco --create-namespace --set driver.kind=modern_ebpf --set tty=true --set falco.json_output=true --set falco.priority=notice --set falco.buffered_outputs=false --set falco.stdout_output.enabled=true --values k8s/4to_entregable/falco-values.yaml --wait --timeout 5m
+```
+
+`k8s/4to_entregable/falco-values.yaml` es la configuración de la entrega final: la excepción del
+chequeo de PostgreSQL apunta al namespace `petcore`. Para ver las alertas en tiempo real:
+
+```bash
+minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --follow
+```
+
 ## Requisitos
 
 Antes de comenzar, comprobar que Git y Docker Desktop estén instalados:
