@@ -1,6 +1,6 @@
 # Entregable 4 - Análisis de seguridad
 
-En este entregable revisamos dos aspectos del proyecto: posibles problemas en el código y vulnerabilidades conocidas en las dependencias. Para eso utilizamos Semgrep y Snyk.
+En este entregable revisamos posibles problemas en el código y vulnerabilidades conocidas en las dependencias, usando Semgrep y Snyk. Además, completamos las cuatro políticas de Kyverno que pide la letra y armamos tres scripts de bash que levantan, prueban y borran todo el proyecto, cada uno con un solo comando.
 
 ## Semgrep (T8)
 
@@ -71,3 +71,58 @@ No se encontraron vulnerabilidades conocidas en las dependencias analizadas, por
 
 En resumen, Semgrep nos permitió revisar patrones del código que podían ser riesgosos y Snyk confirmó que, al momento de la ejecución, no había vulnerabilidades conocidas en las dependencias analizadas.
 
+## Políticas de Kyverno
+
+Kyverno revisa cada recurso que se intenta crear en el cluster y lo rechaza si no cumple las políticas definidas. Del Entregable 3 ya estaban las tres políticas obligatorias; en este entregable se agregó una cuarta, require-probes. Las cuatro están en k8s/policies/. Son de tipo ClusterPolicy, así que aplican en todos los namespaces salvo kube-system, kyverno y falco, y están en modo Enforce: bloquean el recurso en lugar de solo registrarlo.
+
+| Política | Qué exige |
+|---|---|
+| disallow-latest-tag | Que ninguna imagen use la etiqueta latest. |
+| require-resources | Que todo contenedor defina requests y limits de CPU y memoria. |
+| disallow-root | Que runAsNonRoot sea true, a nivel de Pod o en todos los contenedores. |
+| require-probes | Que todo contenedor declare livenessProbe y readinessProbe. |
+
+Elegimos require-probes como cuarta política porque es una buena práctica de Kubernetes que el proyecto todavía no exigía: con la livenessProbe, Kubernetes reinicia un contenedor que dejó de responder, y con la readinessProbe no le envía tráfico hasta que esté listo. La política tiene una regla para cada probe, así que el mensaje de error indica exactamente cuál falta.
+
+Para validarlas, en k8s/policies/test/ hay un pod de prueba por política que incumple solo esa política (se agregó pod-solo-sin-probes.yaml para la nueva), uno que no cumple ninguna (pod-no-conforme.yaml) y uno que cumple todas (pod-conforme.yaml, al que se le agregaron probes).
+
+### Resultado de Kyverno
+
+| Manifiesto de prueba | Resultado | Políticas que lo rechazaron |
+|---|---|---|
+| pod-conforme.yaml | Creado | Ninguna |
+| pod-no-conforme.yaml | Rechazado | Las cuatro |
+| pod-solo-latest.yaml | Rechazado | disallow-latest-tag |
+| pod-solo-root.yaml | Rechazado | disallow-root |
+| pod-solo-sin-resources.yaml | Rechazado | require-resources |
+| pod-solo-sin-probes.yaml | Rechazado | require-probes |
+
+Las cuatro políticas quedaron en estado Ready, y cada pod de prueba fue rechazado solo por la política que incumplía, con un mensaje que la nombra. La salida completa está en reports/kyverno-validation.log. El archivo del Entregable 3 (reports/entregable-3/kyverno-validacion.txt) se conservó sin cambios.
+
+Para repetir la validación: los manifiestos de prueba usan el namespace clinica-veterinaria, heredado del Entregable 3, que no existe en un cluster levantado con inicializar-todo.sh. Hay que crearlo antes de aplicarlos y borrarlo al terminar:
+
+    minikube kubectl -- create namespace clinica-veterinaria
+    minikube kubectl -- apply -f k8s/policies/test/pod-solo-sin-probes.yaml    # debe ser rechazado
+    minikube kubectl -- delete namespace clinica-veterinaria
+
+## Scripts de inicialización en bash
+
+Hasta el Entregable 3, levantar el proyecto requería varios scripts de PowerShell (uno por cada parte) y pasos manuales repartidos en distintos documentos. Para la entrega final armamos tres scripts de bash en scripts/4to_entregable/ que son el punto de entrada único: se ejecutan en Git Bash y no necesitan intervención manual. Los scripts .ps1 de scripts/ no se modificaron y quedan como evidencia de los entregables anteriores.
+
+| Script | Qué hace |
+|---|---|
+| inicializar-todo.sh | Crea las claves locales si faltan, inicia minikube con el addon de Ingress, construye las imágenes, instala el Helm chart petcore, instala Kyverno con sus cuatro políticas, instala Falco y despliega Prometheus y Grafana. Con --con-jenkins también levanta Jenkins. |
+| poblar-dashboards.sh | Genera tráfico real contra la API para que los dashboards de Grafana no arranquen vacíos: registra un cliente, falla el login a propósito, crea y cancela reservas, y lista turnos. Con --disparar-alertas supera los umbrales para que las dos alertas pasen a Firing. |
+| borrar-todo.sh | Desinstala todo lo anterior, incluidos el disco de PostgreSQL y los webhooks y CRDs que Kyverno deja atrás, y verifica que no queden recursos colgados. Con --borrar-cluster también borra el cluster de minikube. |
+
+Se ejecutan en este orden, desde la raíz del proyecto:
+
+    bash scripts/4to_entregable/inicializar-todo.sh
+    bash scripts/4to_entregable/poblar-dashboards.sh
+    bash scripts/4to_entregable/borrar-todo.sh
+
+Los tres se pueden volver a correr sin problema: lo que ya existe se actualiza y lo que ya se borró se saltea. Cada uno muestra sus opciones con --ayuda.
+
+Como parte de este trabajo se unificó el monitoreo. Antes, Prometheus y Grafana observaban una copia de la API (api-monitoring) en el namespace clinica-veterinaria, distinta de la que despliega el Helm chart. Ahora se despliegan en el namespace petcore y observan la misma API que usa la aplicación. Las configuraciones que cambian respecto de los entregables anteriores están en k8s/4to_entregable/; el resto de los archivos de k8s/ se reutilizan y el script los adapta al namespace petcore al aplicarlos.
+
+Cómo comprobar que cada componente quedó funcionando está en la sección "Entrega final (D4)" del README.md.
