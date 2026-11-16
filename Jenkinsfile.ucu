@@ -267,6 +267,11 @@ spec:
             - --destination=${DOCKER_REGISTRY}/${IMAGE_BACKEND}:${IMAGE_TAG}
             - --cache=true
             - --cache-repo=${DOCKER_REGISTRY}/${IMAGE_BACKEND}-cache
+          resources:
+            requests:
+              memory: "256Mi"
+            limits:
+              memory: "1Gi"
           volumeMounts:
             - { name: docker-config, mountPath: /kaniko/.docker }
       volumes:
@@ -305,6 +310,11 @@ spec:
             - --destination=${DOCKER_REGISTRY}/${IMAGE_FRONTEND}:${IMAGE_TAG}
             - --cache=true
             - --cache-repo=${DOCKER_REGISTRY}/${IMAGE_FRONTEND}-cache
+          resources:
+            requests:
+              memory: "256Mi"
+            limits:
+              memory: "1Gi"
           volumeMounts:
             - { name: docker-config, mountPath: /kaniko/.docker }
       volumes:
