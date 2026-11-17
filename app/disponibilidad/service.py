@@ -171,3 +171,71 @@ class DisponibilidadService:
         return (
             datetime.combine(date.min, hora) + timedelta(minutes=minutos)
         ).time()
+
+    # --- Gestión de franjas recurrentes (ADMINISTRADOR) ---
+
+    def listar_franjas(self, id_veterinario: int) -> list[dict]:
+        """Todas las franjas recurrentes (crudas) de un veterinario, para editarlas."""
+        if self.repository.obtener_veterinario_activo(id_veterinario) is None:
+            raise LookupError("Veterinario no encontrado.")
+
+        return [dict(fila) for fila in self.repository.listar_franjas(id_veterinario)]
+
+    def crear_franja(self, id_veterinario: int, datos) -> dict:
+        """Valida el horario y el solapamiento, y crea la franja."""
+        if self.repository.obtener_veterinario_activo(id_veterinario) is None:
+            raise LookupError("Veterinario no encontrado.")
+
+        self._validar_horario(datos.hora_inicio, datos.hora_fin)
+        self._validar_sin_solapamiento(
+            id_veterinario, datos.dia_semana, datos.hora_inicio, datos.hora_fin
+        )
+
+        return self.repository.crear_franja(
+            id_veterinario, datos.dia_semana, datos.hora_inicio, datos.hora_fin
+        )
+
+    def actualizar_franja(self, id_veterinario: int, id_disponibilidad: int, datos) -> dict:
+        """Edita el horario de una franja existente del veterinario (no cambia el día)."""
+        franja = self.repository.obtener_franja(id_disponibilidad)
+
+        if franja is None or franja["id_veterinario"] != id_veterinario:
+            raise LookupError("Franja no encontrada.")
+
+        self._validar_horario(datos.hora_inicio, datos.hora_fin)
+        self._validar_sin_solapamiento(
+            id_veterinario,
+            franja["dia_semana"],
+            datos.hora_inicio,
+            datos.hora_fin,
+            excluir_id=id_disponibilidad,
+        )
+
+        return self.repository.actualizar_horario_franja(
+            id_disponibilidad, datos.hora_inicio, datos.hora_fin
+        )
+
+    @staticmethod
+    def _validar_horario(hora_inicio: time, hora_fin: time) -> None:
+        """La base ya lo exige por CHECK, pero se valida antes para un mensaje claro."""
+        if hora_fin <= hora_inicio:
+            raise ValueError("La hora de fin debe ser posterior a la de inicio.")
+
+        for hora in (hora_inicio, hora_fin):
+            if hora.minute % 15 != 0 or hora.second != 0:
+                raise ValueError("Los horarios deben ser múltiplos de 15 minutos.")
+
+    def _validar_sin_solapamiento(
+        self,
+        id_veterinario: int,
+        dia_semana: int,
+        hora_inicio: time,
+        hora_fin: time,
+        excluir_id: int | None = None,
+    ) -> None:
+        """La tabla no tiene restricción de solapamiento a nivel de base: se valida acá."""
+        franjas = self.repository.obtener_franjas_del_dia(id_veterinario, dia_semana, excluir_id)
+
+        for franja in franjas:
+            if self._solapa(hora_inicio, hora_fin, franja["hora_inicio"], franja["hora_fin"]):
+                raise ValueError("La franja se superpone con otra ya existente ese día.")

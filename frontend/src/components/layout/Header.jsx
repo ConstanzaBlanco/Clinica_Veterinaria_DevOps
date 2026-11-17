@@ -14,6 +14,7 @@ const LINKS_POR_ROL = {
     { to: '/agenda', label: 'Mi agenda' },
     { to: '/pacientes', label: 'Pacientes' },
   ],
+  administrador: [{ to: '/veterinarios', label: 'Veterinarios' }],
 }
 
 function obtenerIniciales(nombre) {

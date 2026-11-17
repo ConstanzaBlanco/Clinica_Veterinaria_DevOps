@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import AppLayout from '../layouts/AppLayout'
 import ClienteLayout from '../layouts/ClienteLayout'
 import VeterinarioLayout from '../layouts/VeterinarioLayout'
+import AdministradorLayout from '../layouts/AdministradorLayout'
 import RoleGuard from '../components/layout/RoleGuard'
 import RutaProtegida from '../components/layout/RutaProtegida'
 import { useAuth } from '../app/AuthContext'
@@ -14,11 +15,14 @@ import ReservarTurnoPage from '../features/turnos/pages/ReservarTurnoPage'
 import HistorialMascotaPage from '../features/historial/pages/HistorialMascotaPage'
 import AgendaDiariaPage from '../features/agenda/pages/AgendaDiariaPage'
 import PacientesPage from '../features/pacientes/pages/PacientesPage'
+import VeterinariosPage from '../features/veterinarios/pages/VeterinariosPage'
+import HorarioVeterinarioPage from '../features/veterinarios/pages/HorarioVeterinarioPage'
 
 // Ruta de entrada por rol, una vez autenticado.
 const RUTA_INICIO_POR_ROL = {
   cliente: '/mascotas',
   veterinario: '/agenda',
+  administrador: '/veterinarios',
 }
 
 function AppRoutes() {
@@ -58,6 +62,17 @@ function AppRoutes() {
             <Route path="agenda" element={<AgendaDiariaPage />} />
             <Route path="pacientes" element={<PacientesPage />} />
             <Route path="pacientes/:idMascota/historial" element={<HistorialMascotaPage />} />
+          </Route>
+
+          <Route
+            element={
+              <RoleGuard rolPermitido="administrador">
+                <AdministradorLayout />
+              </RoleGuard>
+            }
+          >
+            <Route path="veterinarios" element={<VeterinariosPage />} />
+            <Route path="veterinarios/:idVeterinario/horario" element={<HorarioVeterinarioPage />} />
           </Route>
         </Route>
       </Route>

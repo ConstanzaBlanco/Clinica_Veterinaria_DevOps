@@ -1,0 +1,80 @@
+.veterinarios-page {
+  padding: 28px;
+}
+
+.veterinarios-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.veterinarios-mensaje {
+  margin-top: 22px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.veterinarios-mensaje-error {
+  color: var(--error);
+}
+
+.veterinarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.veterinario-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.veterinario-card-encabezado {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.veterinario-foto {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--gray-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-secondary);
+  flex: none;
+}
+
+.veterinario-card-titulo {
+  flex: 1;
+}
+
+.veterinario-nombre {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.veterinario-matricula {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.veterinario-boton {
+  margin-top: 16px;
+  width: 100%;
+}
