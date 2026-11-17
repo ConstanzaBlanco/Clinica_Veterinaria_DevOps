@@ -55,7 +55,7 @@ Seis pods **permanentes** (`postgres`, `api`, `frontend`, `jenkins`, `prometheus
 
 ---
 
-## 2. El namespace y sus límites ESTO TMB ESTA EN EL OTRO RDOCMENTO COMO A MI ME GUSTA REO
+## 2. El namespace y sus límites 
 
 Todo vive en el namespace `alumno-team8`, con una `ResourceQuota` (`student-quota`) que pone techo a todo el namespace, no a cada pod individualmente:
 
