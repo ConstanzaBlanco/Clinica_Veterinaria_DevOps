@@ -1,264 +1,50 @@
 # Pet-Core
 
+Sistema de gestión para una clínica veterinaria: backend en FastAPI con PostgreSQL y frontend en React (servido con Nginx), con tres roles (cliente, veterinario y administrador). Se despliega en Kubernetes (Minikube) con una Helm chart, y se automatiza y asegura con Jenkins, Semgrep, Snyk, Kyverno y Falco.
+
+**Para levantar el proyecto, seguir en orden [Levantar el proyecto](#levantar-el-proyecto-entrega-final).** El resto del documento es de consulta.
+
 ## Índice
 
-- [Entrega final (D4): levantar todo con un comando](#entrega-final-d4-levantar-todo-con-un-comando)
-- [Requisitos](#requisitos)
-  - [Instalar uv para desarrollo local](#instalar-uv-para-desarrollo-local)
-- [Configurar la contraseña de PostgreSQL](#configurar-la-contraseña-de-postgresql)
-  - [Configurar la clave secreta JWT](#configurar-la-clave-secreta-jwt)
-- [Ejecutar con Docker Compose (opcional)](#ejecutar-con-docker-compose-opcional)
-- [Lab 4: levantar Pet-Core con Helm (desde cero)](#lab-4-levantar-pet-core-con-helm-desde-cero)
-- [Ejecutar con Kubernetes y Minikube](#ejecutar-con-kubernetes-y-minikube)
-  - [Requisitos de Kubernetes](#requisitos-de-kubernetes)
-  - [Iniciar o comprobar Minikube](#iniciar-o-comprobar-minikube)
-  - [Preparación local](#preparación-local)
-  - [Versiones utilizadas](#versiones-utilizadas)
-  - [Paso 1: levantar Blue](#paso-1-levantar-blue)
-  - [Paso 2: acceder y probar Blue](#paso-2-acceder-y-probar-blue)
-  - [Paso 3: desplegar Green junto a Blue](#paso-3-desplegar-green-junto-a-blue)
-  - [Paso 4: comprobar Blue y Green](#paso-4-comprobar-blue-y-green)
-  - [Paso 5: cambiar el tráfico a Green](#paso-5-cambiar-el-tráfico-a-green)
-  - [Paso 6: acceder y probar Green](#paso-6-acceder-y-probar-green)
-  - [Paso 7: realizar rollback a Blue](#paso-7-realizar-rollback-a-blue)
-  - [Base de datos compartida](#base-de-datos-compartida)
-- [Monitoreo con Prometheus y Grafana](#monitoreo-con-prometheus-y-grafana)
-- [DevSecOps y reproducción de pruebas](#devsecops-y-reproducción-de-pruebas)
-  - [Preparar el entorno para las pruebas DevSecOps](#preparar-el-entorno-para-las-pruebas-devsecops)
+- [Levantar el proyecto (entrega final)](#levantar-el-proyecto-entrega-final)
+  - [1. Requisitos](#1-requisitos)
+  - [2. Clonar y levantar todo](#2-clonar-y-levantar-todo)
+  - [3. Entrar a la aplicación](#3-entrar-a-la-aplicación)
+  - [4. Comprobar que cada pieza funciona](#4-comprobar-que-cada-pieza-funciona)
+  - [5. Generar datos para Grafana](#5-generar-datos-para-grafana)
+  - [6. Borrar todo](#6-borrar-todo)
+- [Demo (entorno local)](#demo-entorno-local)
+- [Jenkins (pipeline de CI/CD local)](#jenkins-pipeline-de-cicd-local)
+- [Falco](#falco)
+- [Operar la aplicación con Helm](#operar-la-aplicación-con-helm)
+  - [Instalar solo la aplicación](#instalar-solo-la-aplicación)
+  - [Actualizar, volver atrás y borrar](#actualizar-volver-atrás-y-borrar)
 - [Datos de prueba](#datos-de-prueba)
-- [Proteger endpoints con el middleware](#proteger-endpoints-con-el-middleware)
+- [Entregables anteriores (referencia)](#entregables-anteriores-referencia)
+  - [Ejecutar con Kubernetes y Minikube (Blue/Green)](#ejecutar-con-kubernetes-y-minikube)
+  - [Monitoreo con Prometheus y Grafana](#monitoreo-con-prometheus-y-grafana)
+  - [DevSecOps y reproducción de pruebas](#devsecops-y-reproducción-de-pruebas)
 
-## Entrega final (D4): levantar todo con un comando
+## Levantar el proyecto (entrega final)
 
-Tres scripts de bash levantan, prueban y borran todo el proyecto. **Reemplazan a los scripts
-`.ps1` de `scripts/` para la entrega final.** Los `.ps1` quedan como evidencia de los
-entregables 1 a 3 (Blue/Green y el monitoreo en `clinica-veterinaria`), y no hace falta
-correrlos para evaluar D4.
+Todo el entorno local (la aplicación, Kyverno con sus 4 políticas, Falco, Prometheus y Grafana, y opcionalmente Jenkins) se levanta con scripts de bash sobre Minikube.
 
-Se ejecutan en **Git Bash**, no en PowerShell. Requisitos: Docker Desktop abierto, minikube y
-Helm (ver la tabla de [Lab 4](#1-requisitos)).
-
-```bash
-# 1. Levantar todo: minikube + ingress, chart petcore, Kyverno + 4 políticas, Falco, Prometheus y Grafana
-bash scripts/4to_entregable/inicializar-todo.sh            # agregar --con-jenkins para levantar también Jenkins
-
-# 2. Generar tráfico real contra la API para que los dashboards tengan datos
-bash scripts/4to_entregable/poblar-dashboards.sh           # agregar --disparar-alertas para que las 2 alertas pasen a Firing
-
-# 3. Borrar todo y verificar que no quede nada
-bash scripts/4to_entregable/borrar-todo.sh                 # opciones: --con-jenkins, --borrar-cluster
-```
-
-Los tres scripts se pueden volver a correr sin problema: lo que ya existe se actualiza y lo que
-ya se borró se saltea. Cada uno muestra sus opciones con `--ayuda`.
-
-> A diferencia de los entregables 2 y 3, ahora hay **una sola API**: Prometheus y Grafana corren
-> en el namespace `petcore` y miden el `api` que instala la chart. Ya no se usa
-> `api-monitoring`.
-
-### Cómo comprobar que cada pieza funciona
-
-| Pieza | Comando | Resultado esperado |
-| --- | --- | --- |
-| Aplicación | `minikube kubectl -- get pods -n petcore` | `api`, `frontend`, `postgres-0`, `prometheus` y `grafana` en `1/1 Running` |
-| Releases de Helm | `helm list -A` | `petcore`, `kyverno` y `falco` en `deployed` |
-| Kyverno (políticas) | `minikube kubectl -- get clusterpolicy` | `disallow-latest-tag`, `require-resources`, `disallow-root` y `require-probes` con `READY True` |
-| Kyverno (bloqueo) | `minikube kubectl -- run prueba --image=nginx:latest -n petcore` | Rechazado por el admission webhook (`disallow-latest-tag` y las demás políticas) |
-| Falco | `minikube kubectl -- exec -it -n petcore deploy/api -- /bin/sh` (escribir `exit`), y después `minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --tail=20` | Alerta `Terminal shell in container` con `k8s.ns.name=petcore` |
-| Prometheus | `minikube kubectl -- port-forward svc/prometheus 9090:9090 -n petcore` y abrir <http://localhost:9090/targets> | El target de la API en estado `UP` |
-| Grafana | `minikube service grafana -n petcore --url` (usuario `admin` / `admin`) | Dashboards › Pet-Core › **Pet-Core — Monitoreo** con datos unos 30 s después de correr `poblar-dashboards.sh` |
-| Alertas | `poblar-dashboards.sh --disparar-alertas` y en Grafana ir a Alerting › Alert rules | Las 2 reglas en `Firing` a los 15–45 s |
-| App en el navegador | `minikube kubectl -- port-forward svc/frontend 8081:8080 -n petcore` | <http://localhost:8081> abre el login (usuario `ana.cliente@petcore.com` / `Password123!`) |
-| Jenkins (si se usó `--con-jenkins`) | `docker ps --filter name=petcore-jenkins` y abrir <http://localhost:8080> | Contenedor `Up` y la pantalla de Jenkins. La primera vez pide la contraseña inicial que muestra el script, y hay que seguir los pasos manuales que imprime: plugins, credenciales `SNYK_TOKEN` y `DOCKER_REGISTRY_CREDS`, y el job |
-| Borrado | `bash scripts/4to_entregable/borrar-todo.sh` | Todas las líneas en `[OK]` y el mensaje `Todo borrado.` |
-
-### Instalar Falco a mano (opcional)
-
-`inicializar-todo.sh` ya instala Falco, con los mismos parámetros que estos comandos. Solo hace
-falta correrlos a mano para instalarlo por separado. En Git Bash:
-
-```bash
-# 1. Agregar el repositorio oficial de Falco
-helm repo add falcosecurity https://falcosecurity.github.io/charts --force-update
-
-# 2. Actualizar la lista de aplicaciones disponibles en los repositorios de Helm
-helm repo update
-
-# 3. Instalar (o actualizar) Falco dentro de minikube
-helm upgrade --install falco falcosecurity/falco --version 9.2.2 --kube-context minikube --namespace falco --create-namespace --set driver.kind=modern_ebpf --set tty=true --set falco.json_output=true --set falco.priority=notice --set falco.buffered_outputs=false --set falco.stdout_output.enabled=true --values k8s/4to_entregable/falco-values.yaml --wait --timeout 5m
-```
-
-`k8s/4to_entregable/falco-values.yaml` es la configuración de la entrega final: la excepción del
-chequeo de PostgreSQL apunta al namespace `petcore`. Para ver las alertas en tiempo real:
-
-```bash
-minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --follow
-```
-
-## Requisitos
-
-Antes de comenzar, comprobar que Git y Docker Desktop estén instalados:
-
-```powershell
-git --version
-docker --version
-docker compose version
-docker info
-```
-
-Docker Desktop debe estar abierto y funcionando antes de iniciar el proyecto.
-
-### Guardar las alertas de Falco
-
-Después de ejecutar `inicializar-todo.sh`, iniciar la captura desde la raíz del repositorio.
-
-En **Git Bash**:
-
-```bash
-bash scripts/4to_entregable/guardar-falco.sh
-```
-
-En **PowerShell**:
-
-```powershell
-& "$env:ProgramFiles\Git\bin\bash.exe" ./scripts/4to_entregable/guardar-falco.sh
-```
-
-Dejar esa terminal abierta y realizar la prueba de Falco desde otra terminal. El script muestra las alertas nuevas del namespace `petcore` y las agrega a `reports/falco-event.log`. Para detener la captura, presionar `Ctrl+C`.
-
-### Instalar uv para desarrollo local
-
-`uv` no es necesario para levantar el proyecto con Docker, porque se instala dentro de la imagen. Sin embargo, es necesario para ejecutar el proyecto, agregar dependencias o utilizar herramientas de Python directamente desde Windows.
-
-```powershell
-winget install --id astral-sh.uv -e
-```
-
-Después de instalarlo, cerrar y volver a abrir la terminal. Comprobar la instalación:
-
-```powershell
-uv --version
-```
-
-> No es necesario instalar PostgreSQL ni FastAPI manualmente. Docker Compose o los scripts de Kubernetes preparan los servicios según la forma de ejecución elegida.
-
-## Configurar la contraseña de PostgreSQL
-
-El proyecto utiliza un archivo local para proporcionar la contraseña de PostgreSQL sin escribirla directamente en `compose.yaml`.
-
-Abrir una terminal en la carpeta del proyecto:
-
-```powershell
-cd "C:\ruta\Proyecto_Clínica_Veterinaria"
-```
-
-Crear la carpeta `db` si todavía no existe:
-
-```powershell
-New-Item -ItemType Directory -Force db
-```
-
-Crear el archivo de contraseña:
-
-```powershell
-Set-Content -Path db/password.txt -Value "CAMBIAR_POR_UNA_CONTRASENA"
-```
-
-Reemplazar `CAMBIAR_POR_UNA_CONTRASENA` por una contraseña local.
-
-Comprobar que el archivo fue creado:
-
-```powershell
-Get-ChildItem db
-```
-
-> El archivo `db/password.txt` contiene información sensible y no debe guardarse en Git. Debe estar incluido en `.gitignore`.
->
-> Cada integrante del equipo debe crear su propio archivo `db/password.txt` después de descargar el proyecto.
-
-### Configurar la clave secreta JWT
-
-Crear una clave aleatoria para firmar los tokens JWT. El comando conserva el archivo si ya existe y no requiere instalar Python ni uv:
-
-```powershell
-if (-not (Test-Path .\db\jwt-secret.txt)) {
-    $jwtBytes = New-Object byte[] 32
-    $jwtGenerator = [Security.Cryptography.RandomNumberGenerator]::Create()
-    try { $jwtGenerator.GetBytes($jwtBytes) } finally { $jwtGenerator.Dispose() }
-    $jwtSecret = [BitConverter]::ToString($jwtBytes).Replace('-', '').ToLowerInvariant()
-    [IO.File]::WriteAllText((Join-Path $PWD.Path 'db\jwt-secret.txt'), $jwtSecret, [Text.UTF8Encoding]::new($false))
-}
-```
-
-El archivo `db/jwt-secret.txt` contiene información sensible y no debe guardarse en Git.
-
-Agregarlo al archivo `.gitignore`:
-
-```gitignore
-db/password.txt
-db/jwt-secret.txt
-```
-
-> Cada integrante del equipo debe crear su propio archivo `db/jwt-secret.txt`.
-
-## Ejecutar con Docker Compose (opcional)
-
-Docker Compose ofrece una forma sencilla de ejecutar una sola versión del proyecto durante el desarrollo local. Esta sección es opcional y no forma parte del procedimiento Blue/Green.
-
-Si se utilizará Kubernetes con Minikube, omitir esta sección y continuar en **Ejecutar con Kubernetes y Minikube**. No es necesario ejecutar Docker Compose y Kubernetes al mismo tiempo. Docker Desktop sí debe permanecer abierto porque Minikube utiliza el driver de Docker.
-
-Construir las imágenes e iniciar los contenedores:
-
-```powershell
-docker compose up --build
-```
-
-Posteriormente, ingresar a:
-
-- Estado de la API: http://127.0.0.1:8000/
-- Documentación interactiva: http://127.0.0.1:8000/docs
-- Prometheus: http://127.0.0.1:9090/
-- Grafana: http://127.0.0.1:3000/ (usuario/contraseña por defecto: `admin` / `admin`)
-
-> **Esto no es lo que se entrega.** La consigna pide Kubernetes, y eso ya está resuelto
-> aparte en `k8s/` (ver más abajo). Prometheus y Grafana acá son solo una copia para
-> desarrollo rápido, completamente independiente de Kubernetes y de Blue/Green: no hace
-> falta tener ninguna rama desplegada ni mergeada para probarlos, con
-> `docker compose up --build` alcanza. Sirve para validar rápido que las métricas nuevas
-> (`turnos_creados_total`, `logins_fallidos_total`) funcionan, sin depender de Minikube ni
-> arriesgar nada de lo que ya está desplegado ahí. Ver
-> [Monitoreo con Prometheus y Grafana](#monitoreo-con-prometheus-y-grafana)
-> para la versión que sí corre en Kubernetes.
-
-Para detener los contenedores, presionar `Ctrl + C` y ejecutar:
-
-```powershell
-docker compose down
-```
-
-## Lab 4: levantar Pet-Core con Helm (desde cero)
-
-Guía para levantar la aplicación completa (API, frontend y PostgreSQL) en un
-cluster local de minikube usando la Helm chart de `helm-chart/`, partiendo de
-una PC sin nada instalado del proyecto.
-
-**Todos los comandos se ejecutan en Git Bash**, desde la carpeta del proyecto.
-En PowerShell, `bash` ejecuta WSL en lugar de Git Bash y los scripts fallan.
+**Los scripts se ejecutan en Git Bash, no en PowerShell.** En PowerShell, `bash` abre WSL y los scripts fallan.
 
 ### 1. Requisitos
 
 | Programa | Para qué | Cómo instalarlo |
 | --- | --- | --- |
 | Git (incluye Git Bash) | Clonar el repositorio y ejecutar los scripts | `winget install --id Git.Git -e` |
-| Docker Desktop | Motor donde corre minikube | Descargarlo de docker.com e iniciarlo |
+| Docker Desktop | Motor donde corre Minikube | Descargarlo de docker.com e iniciarlo |
 | minikube | Cluster de Kubernetes local | `winget install --id Kubernetes.minikube -e` |
 | kubectl | Consultar el cluster | Viene con Docker Desktop |
 | Helm | Instalar la chart | `winget install --id Helm.Helm -e` |
 
-Después de instalar, cerrar y abrir Git Bash para que reconozca los programas
-nuevos. Comprobar con:
+Después de instalar, cerrar y abrir Git Bash para que reconozca los programas nuevos. Comprobar con:
 
 ```bash
+git --version
 docker info --format '{{.ServerVersion}}'
 minikube version
 helm version
@@ -266,83 +52,45 @@ helm version
 
 Docker Desktop tiene que estar abierto antes de seguir.
 
-### 2. Clonar el repositorio
+### 2. Clonar y levantar todo
+
+**Clonar el repositorio** (se puede hacer en PowerShell o en Git Bash):
 
 ```bash
 git clone https://github.com/ConstanzaBlanco/Clinica_Veterinaria_DevOps.git
 cd Clinica_Veterinaria_DevOps
 ```
 
-### 3. Crear las claves locales
-
-La contraseña de PostgreSQL y la clave que firma los tokens JWT se guardan en dos
-archivos que **no están en git** (`.gitignore` los excluye). Estos comandos los
-crean con valores aleatorios, solo si todavía no existen:
+**Levantar todo.** El script es de bash y **debe ejecutarse en Git Bash** (menú Inicio), dentro de la carpeta del proyecto:
 
 ```bash
-mkdir -p db
-[ -s db/password.txt ] || printf '%s' "$(openssl rand -hex 16)" > db/password.txt
-[ -s db/jwt-secret.txt ] || printf '%s' "$(openssl rand -hex 32)" > db/jwt-secret.txt
+bash scripts/4to_entregable/inicializar-todo.sh
 ```
 
-La clave JWT tiene 64 caracteres; la aplicación exige al menos 32.
+En PowerShell ese `bash` abre WSL y falla. Si se prefiere seguir en PowerShell, llamar a Git Bash explícitamente:
 
-### 4. Iniciar minikube y habilitar el Ingress
-
-```bash
-minikube start --driver=docker
-minikube addons enable ingress
+```powershell
+& "$env:ProgramFiles\Git\bin\bash.exe" ./scripts/4to_entregable/inicializar-todo.sh
 ```
 
-El addon `ingress` instala el Ingress controller (nginx), que es el que permite
-entrar a la app desde el navegador. Se habilita una sola vez por cluster.
+Para levantar también Jenkins, agregar `--con-jenkins` (ver [Jenkins](#jenkins-pipeline-de-cicd-local)).
 
-### 5. Preparar lo que la chart no crea
+El script, en este orden:
 
-```bash
-bash scripts/4to_entregable/preparar-chart.sh
-```
+1. Crea las claves locales `db/password.txt` y `db/jwt-secret.txt` con valores aleatorios, solo si no existen (no están en Git).
+2. Inicia Minikube con el addon de Ingress.
+3. Construye las imágenes dentro de Minikube, crea los Secrets y el ConfigMap de la base (`preparar-chart.sh`) e instala la chart `petcore`.
+4. Instala Kyverno con sus 4 políticas.
+5. Instala Falco.
+6. Despliega Prometheus y Grafana en el namespace `petcore`.
 
-El script crea el namespace `petcore`, los Secrets (`postgres-secret`,
-`jwt-secret`), el ConfigMap `postgres-init` con los SQL de `db/init/`, y
-construye las imágenes `clinica-veterinaria` y `clinica-frontend` dentro de
-minikube. La primera vez tarda unos minutos. Termina con:
+La primera vez tarda varios minutos. Se puede volver a ejecutar sin problema: lo que ya existe se actualiza. Cada script de `scripts/4to_entregable/` muestra sus opciones con `--ayuda`.
 
-```
-==> Listo. Recursos creados en petcore:
-```
+> Hay **una sola API**: Prometheus y Grafana corren en el namespace `petcore` y miden el `api` que instala la chart.
 
-### 6. Instalar la chart
+### 3. Entrar a la aplicación
 
-```bash
-helm upgrade --install petcore ./helm-chart -n petcore -f helm-chart/values-dev.yaml
-```
-
-`upgrade --install` instala si no existe y actualiza si ya existe. Al terminar,
-Helm muestra `STATUS: deployed` y un mensaje con los pasos siguientes. Para la
-configuración de producción se usa `-f helm-chart/values-prod.yaml`.
-
-### 7. Esperar a que los pods estén listos
-
-```bash
-kubectl get pods -n petcore -w
-```
-
-Resultado esperado (los sufijos de los nombres cambian en cada instalación):
-
-```
-NAME                        READY   STATUS    RESTARTS   AGE
-api-78cf9df9b6-tbw96        1/1     Running   0          40s
-frontend-5bd96bc648-g74cw   1/1     Running   0          40s
-postgres-0                  1/1     Running   0          40s
-```
-
-Durante el arranque, el pod de la API pasa por `Init:0/1` mientras espera a
-PostgreSQL. Salir con `Ctrl + C` cuando los tres estén en `1/1 Running`.
-
-### 8. Acceder a la aplicación
-
-**Desde el navegador:**
+**Desde el navegador** (http://petcore.local):
 
 1. En otra terminal de Git Bash, dejar corriendo (puede pedir permisos de administrador):
 
@@ -350,67 +98,262 @@ PostgreSQL. Salir con `Ctrl + C` cuando los tres estén en `1/1 Running`.
    minikube tunnel
    ```
 
-2. Agregar el nombre `petcore.local` al archivo `hosts` de Windows: abrir el
-   Bloc de notas **como administrador**, abrir
-   `C:\Windows\System32\drivers\etc\hosts` (elegir "Todos los archivos" en el
-   diálogo) y agregar al final:
+2. Agregar el nombre `petcore.local` al archivo `hosts` de Windows. En PowerShell **como administrador**:
 
-   ```
-   127.0.0.1 petcore.local
+   ```powershell
+   Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "127.0.0.1 petcore.local"
    ```
 
-3. Entrar a <http://petcore.local> e iniciar sesión con un usuario de prueba
-   (ver [Datos de prueba](#datos-de-prueba)), por ejemplo
-   `ana.cliente@petcore.com` / `Password123!`.
+3. Abrir <http://petcore.local> e iniciar sesión con un usuario de prueba (ver [Datos de prueba](#datos-de-prueba)), por ejemplo `ana.cliente@petcore.com` / `Password123!`.
 
-**Sin navegador** (con `minikube tunnel` corriendo):
+**Puertos y direcciones de cada servicio** (los `port-forward` dejan la terminal ocupada: abrir una por servicio):
+
+| Servicio | Qué es | Puerto en el cluster | Cómo entrar desde el navegador |
+| --- | --- | --- | --- |
+| Aplicación (frontend) | La página web de la clínica (React servida con Nginx) | 8080 | <http://petcore.local> (con `minikube tunnel` y la línea en `hosts`), o `minikube kubectl -- port-forward svc/frontend 8081:8080 -n petcore` y <http://localhost:8081> |
+| API | El backend (FastAPI). Su documentación interactiva (Swagger) está en `/docs` | 8000 | `minikube kubectl -- port-forward svc/api 8000:8000 -n petcore` y <http://localhost:8000/docs> |
+| Prometheus | Recolecta las métricas de la API | 9090 | `minikube kubectl -- port-forward svc/prometheus 9090:9090 -n petcore` y <http://localhost:9090> |
+| Grafana (`admin` / `admin`) | Muestra los dashboards y las alertas | 3000 | `minikube service grafana -n petcore --url` (muestra la URL; dejar la terminal abierta) |
+| PostgreSQL | La base de datos | 5432 | Solo accesible dentro del cluster, no se abre al navegador |
+| Jenkins (solo con `--con-jenkins`) | El pipeline de CI/CD | 8080 de la máquina | <http://localhost:8080> |
+
+### 4. Comprobar que cada pieza funciona
+
+| Pieza | Comando | Resultado esperado |
+| --- | --- | --- |
+| Aplicación | `minikube kubectl -- get pods -n petcore` | `api`, `frontend`, `postgres-0`, `prometheus` y `grafana` en `1/1 Running` |
+| Releases de Helm | `helm list -A` | `petcore`, `kyverno` y `falco` en `deployed` |
+| Kyverno (políticas) | `minikube kubectl -- get clusterpolicy` | `disallow-latest-tag`, `require-resources`, `disallow-root` y `require-probes` con `READY True` |
+| Kyverno (bloqueo) | `minikube kubectl -- run prueba --image=nginx:latest -n petcore` | **Tiene que dar error**: `admission webhook "validate.kyverno.svc-fail" denied the request`, citando las 4 políticas (`disallow-latest-tag`, `disallow-root`, `require-probes` y `require-resources`). Si el Pod se crea, Kyverno no está funcionando |
+| Falco | `minikube kubectl -- exec -it -n petcore deploy/api -- sh` (escribir `exit`) y después `minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --tail=20` | Alerta `Terminal shell in container` con `k8s.ns.name=petcore` |
+| Prometheus | `minikube kubectl -- port-forward svc/prometheus 9090:9090 -n petcore` y abrir <http://localhost:9090/targets> | El target de la API en estado `UP` |
+| Grafana | `minikube service grafana -n petcore --url` (usuario `admin` / `admin`) | Dashboards, carpeta Pet-Core, **Pet-Core - Monitoreo**, con datos unos 30 s después de correr el script de la sección 5 |
+| Alertas | `bash scripts/4to_entregable/poblar-dashboards.sh --disparar-alertas` (en Git Bash) y, en Grafana, Alerting, Alert rules | Las 2 reglas en `Firing` a los 15 a 45 s |
+| Jenkins (solo si se ejecutó `inicializar-todo.sh` con la opción `--con-jenkins`) | `docker ps --filter name=petcore-jenkins` y abrir <http://localhost:8080> | Contenedor `Up` y la pantalla de Jenkins. Si el script se ejecutó sin esa opción, no aparece nada y es lo normal: Jenkins no se levantó |
+
+### 5. Generar datos para Grafana
+
+El script es de bash y **debe ejecutarse en Git Bash**, dentro de la carpeta del proyecto:
 
 ```bash
-curl -s -H "Host: petcore.local" http://127.0.0.1/api/health
+bash scripts/4to_entregable/poblar-dashboards.sh
 ```
 
-Resultado esperado: `{"status":"ok"}`.
+Genera tráfico real contra la API (registra un cliente, falla logins a propósito, reserva y cancela turnos) para que los paneles tengan datos. Con `--disparar-alertas` hace 12 reservas y 4 logins fallidos, que superan los umbrales de las 2 alertas (más de 10 turnos en 5 minutos y más de 3 logins fallidos en 1 minuto), y las alertas pasan a `Firing` en menos de un minuto (Grafana las evalúa cada 30 segundos). Para que funcione, tiene que haber horarios libres para las 12 reservas: si al final el script muestra `AVISO: solo pude crear X de 12 turnos` con X menor o igual a 10, la alerta de turnos no se dispara. Las reservas y el cliente registrado quedan guardados en la base.
 
-**Swagger de la API** (en otra terminal, dejarla abierta):
+### 6. Borrar todo
+
+El script también debe ejecutarse en Git Bash:
 
 ```bash
-kubectl port-forward svc/api 8000:8000 -n petcore
+bash scripts/4to_entregable/borrar-todo.sh
 ```
 
-Abrir <http://localhost:8000/docs>.
+Borra la aplicación, sus discos, Kyverno, Falco, Prometheus, Grafana y el addon de Ingress, y verifica que no quede nada. Opciones: `--con-jenkins` (también borra Jenkins y su volumen) y `--borrar-cluster` (hace `minikube delete` al final). Si todo salió bien, todas las líneas dicen `[OK]` y termina con `Todo borrado.`
 
-### 9. Actualizar, volver atrás y borrar
+## Demo (entorno local)
+
+**0. Levantar todo.** En Git Bash, desde la raíz del proyecto:
+
+```bash
+bash scripts/4to_entregable/inicializar-todo.sh
+```
+
+Para mostrar también Jenkins, usar `bash scripts/4to_entregable/inicializar-todo.sh --con-jenkins`.
+
+Para entrar a la aplicación por `petcore.local` hay que agregar ese nombre al archivo `hosts` de Windows. Se hace una sola vez, en una PowerShell **como administrador**:
+
+```powershell
+Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "127.0.0.1 petcore.local"
+```
+
+**1. La aplicación**
+
+```bash
+minikube tunnel
+```
+
+Abrir <http://petcore.local>. Iniciar sesión con `ana.cliente@petcore.com` / `Password123!`.
+
+**2. Grafana**
+
+```bash
+minikube kubectl -- port-forward svc/grafana 3000:3000 -n petcore
+```
+
+Abrir <http://localhost:3000> (usuario `admin` / `admin`), Dashboards, carpeta Pet-Core, **Pet-Core - Monitoreo**.
+
+**3. Generar tráfico y disparar las 2 alertas**
+
+```bash
+bash scripts/4to_entregable/poblar-dashboards.sh --disparar-alertas
+```
+
+A los 30 a 45 segundos, en <http://localhost:3000>, Alerting, Alert rules: las 2 reglas aparecen en `Firing`. Los paneles del dashboard se llenan con los datos.
+
+**4. Kyverno bloquea un Pod que incumple las políticas**
+
+```bash
+minikube kubectl -- run prueba --image=nginx:latest -n petcore
+```
+
+Tiene que dar error: `admission webhook "validate.kyverno.svc-fail" denied the request`. Para ver las 4 políticas activas:
+
+```bash
+minikube kubectl -- get clusterpolicy
+```
+
+**5. Falco detecta actividad sospechosa**
+
+En una terminal, dejar corriendo la captura de alertas:
+
+```bash
+bash scripts/4to_entregable/guardar-falco.sh
+```
+
+En otra terminal, abrir una shell en la API y crear un enlace simbólico a un archivo sensible:
+
+```bash
+minikube kubectl -- exec -it -n petcore deploy/api -- sh
+# dentro de la shell:
+ln -s /etc/shadow /tmp/falco-prueba
+exit
+```
+
+Las alertas aparecen en la primera terminal y quedan guardadas en `reports/falco-event.log` (el script agrega líneas al final del archivo).
+
+**6. Jenkins** (solo si se levantó con `--con-jenkins`)
+
+Abrir <http://localhost:8080>, entrar al Job `petcore-pipeline` y presionar Build Now (hacen falta las credenciales cargadas, ver [Jenkins](#jenkins-pipeline-de-cicd-local)).
+
+**Resumen de puertos**
+
+| Qué | Dirección |
+| --- | --- |
+| Aplicación | <http://petcore.local> (puerto 80, con `minikube tunnel`) |
+| Grafana | <http://localhost:3000> |
+| Jenkins | <http://localhost:8080> |
+| Swagger de la API (opcional) | <http://localhost:8000/docs> con `minikube kubectl -- port-forward svc/api 8000:8000 -n petcore` |
+| Prometheus (opcional) | <http://localhost:9090> con `minikube kubectl -- port-forward svc/prometheus 9090:9090 -n petcore` |
+
+## Jenkins (pipeline de CI/CD local)
+
+Jenkins corre en un contenedor Docker (`petcore-jenkins`, imagen `jenkins/jenkins:lts`) fuera de Minikube. Ejecuta el `Jenkinsfile` de la raíz: clona el repositorio, corre Semgrep, Snyk (corta ante vulnerabilidades críticas) y los tests, construye y publica las imágenes en Docker Hub (tag `build-N`) y despliega con Helm en Minikube.
+
+1. Levantarlo, con Minikube ya corriendo y `inicializar-todo.sh` ejecutado antes (crea los Secrets que el despliegue necesita):
+
+   ```bash
+   bash scripts/4to_entregable/inicializar-todo.sh --con-jenkins
+   # o, si el entorno ya está levantado:
+   bash scripts/4to_entregable/jenkins-up.sh
+   ```
+
+2. Abrir <http://localhost:8080>. En ambiente local **no pide usuario ni contraseña**, y el Job `petcore-pipeline` ya está creado.
+3. Cargar **una sola vez** las credenciales en Manage Jenkins, Credentials:
+   - `SNYK_TOKEN` (Secret text): el token de la cuenta de Snyk.
+   - `DOCKER_REGISTRY_CREDS` (Username and password): usuario y contraseña de Docker Hub.
+4. Ejecutar el Job con Build Now.
+
+`jenkins-up.sh` se puede volver a correr: reutiliza el contenedor y conserva plugins, Job y credenciales. Genera en cada arranque el kubeconfig que Jenkins usa para llegar a Minikube, así que cada integrante usa su propio cluster.
+
+Para borrar Jenkins junto con todo lo demás (en Git Bash):
+
+```bash
+bash scripts/4to_entregable/borrar-todo.sh --con-jenkins
+```
+
+## Falco
+
+`inicializar-todo.sh` ya instala Falco. Para **guardar las alertas del namespace `petcore`** en `reports/falco-event.log`, ejecutar desde la raíz del repositorio y dejar la terminal abierta (detener con `Ctrl+C`):
+
+```bash
+bash scripts/4to_entregable/guardar-falco.sh
+```
+
+En PowerShell: `& "$env:ProgramFiles\Git\bin\bash.exe" ./scripts/4to_entregable/guardar-falco.sh`.
+
+Mientras tanto, desde otra terminal, provocar una alerta (por ejemplo, abrir una shell en el pod de la API y crear un enlace simbólico a un archivo sensible):
+
+```bash
+minikube kubectl -- exec -it -n petcore deploy/api -- sh
+# dentro de la shell: ln -s /etc/shadow /tmp/falco-prueba, y después exit
+```
+
+**Instalar Falco a mano** (opcional; el script ya lo hace, con los mismos parámetros):
+
+```bash
+helm repo add falcosecurity https://falcosecurity.github.io/charts --force-update
+helm repo update
+helm upgrade --install falco falcosecurity/falco --version 9.2.2 --kube-context minikube --namespace falco --create-namespace --set driver.kind=modern_ebpf --set tty=true --set falco.json_output=true --set falco.priority=notice --set falco.buffered_outputs=false --set falco.stdout_output.enabled=true --values k8s/4to_entregable/falco-values.yaml --wait --timeout 5m
+```
+
+`k8s/4to_entregable/falco-values.yaml` es la configuración de la entrega final: la excepción del chequeo de PostgreSQL apunta al namespace `petcore`. Para ver las alertas en tiempo real: `minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --follow`.
+
+## Operar la aplicación con Helm
+
+### Instalar solo la aplicación
+
+Si se quiere instalar únicamente la aplicación (API, frontend y PostgreSQL), sin Kyverno, Falco ni monitoreo:
+
+```bash
+minikube start --driver=docker
+minikube addons enable ingress
+bash scripts/4to_entregable/preparar-chart.sh
+helm upgrade --install petcore ./helm-chart -n petcore -f helm-chart/values-dev.yaml
+kubectl get pods -n petcore -w
+```
+
+`preparar-chart.sh` crea el namespace `petcore`, los Secrets (`postgres-secret`, `jwt-secret`), el ConfigMap `postgres-init` y construye las imágenes dentro de Minikube. Requiere que existan `db/password.txt` y `db/jwt-secret.txt` (no están en Git). `inicializar-todo.sh` los crea solos; para crearlos a mano, en Git Bash:
+
+```bash
+mkdir -p db
+[ -s db/password.txt ] || printf '%s' "$(openssl rand -hex 16)" > db/password.txt
+[ -s db/jwt-secret.txt ] || printf '%s' "$(openssl rand -hex 32)" > db/jwt-secret.txt
+```
+
+Durante el arranque, el pod de la API pasa por `Init:0/1` mientras espera a PostgreSQL. Salir con `Ctrl+C` cuando `api`, `frontend` y `postgres-0` estén en `1/1 Running`.
+
+La chart tiene tres juegos de valores: `values.yaml` (por defecto, que usa `inicializar-todo.sh`), `values-dev.yaml` (desarrollo) y `values-prod.yaml` (producción: más réplicas y recursos, sesiones más cortas y bloqueos más largos). Se elige con `-f helm-chart/values-dev.yaml` o `-f helm-chart/values-prod.yaml`.
+
+### Actualizar, volver atrás y borrar
 
 | Acción | Comando |
 | --- | --- |
-| Aplicar cambios de la chart o de los values | `helm upgrade petcore ./helm-chart -n petcore -f helm-chart/values-dev.yaml` |
+| Aplicar cambios de la chart o de los valores | `helm upgrade petcore ./helm-chart -n petcore -f helm-chart/values-dev.yaml` |
 | Reconstruir las imágenes después de cambiar código | `bash scripts/4to_entregable/preparar-chart.sh` y luego `kubectl rollout restart deployment -n petcore` |
 | Ver el historial de versiones | `helm history petcore -n petcore` |
 | Volver a la versión anterior | `helm rollback petcore -n petcore` |
-| Desinstalar la app | `helm uninstall petcore -n petcore` |
+| Desinstalar la aplicación | `helm uninstall petcore -n petcore` |
 | Borrar también los datos de PostgreSQL | `kubectl delete pvc --all -n petcore` |
 | Borrar todo el namespace | `kubectl delete namespace petcore` |
 
-`helm uninstall` no borra el disco de PostgreSQL, a propósito, para no perder
-datos. Los SQL de `db/init/` solo se ejecutan cuando ese disco está vacío: para
-volver a cargar los datos de prueba hay que borrar el PVC.
+`helm uninstall` no borra el disco de PostgreSQL, a propósito, para no perder datos. Los SQL de `db/init/` solo se ejecutan cuando ese disco está vacío: para volver a cargar los datos de prueba hay que borrar el PVC.
 
-### 10. Problemas frecuentes
+## Datos de prueba
 
-| Síntoma | Causa | Solución |
-| --- | --- | --- |
-| `WSL ... execvpe(/bin/bash) failed` | El script se ejecutó desde PowerShell | Usar Git Bash |
-| `helm install` falla con "Faltan recursos en el namespace" | No se ejecutó el paso 5 | Ejecutar `bash scripts/4to_entregable/preparar-chart.sh` |
-| Pod en `ErrImageNeverPull` | La imagen no está construida dentro de minikube | Ejecutar el paso 5 |
-| `minikube status` muestra un error o `Stopped` | minikube está apagado o su contenedor se borró | `minikube start --driver=docker` |
-| <http://petcore.local> no abre | Falta `minikube tunnel` o la línea en `hosts` | Revisar el paso 8 |
-| El login falla después de cambiar `db/password.txt` | PostgreSQL guardó la contraseña anterior en su disco | `helm uninstall`, `kubectl delete pvc --all -n petcore` y volver a los pasos 5 y 6 |
+La primera vez que se levanta el proyecto (con el volumen de PostgreSQL vacío), se cargan usuarios y datos de ejemplo desde `db/init/04_datos_prueba.sql`.
 
-## Ejecutar con Kubernetes y Minikube
+La contraseña de todos los usuarios de prueba es `Password123!`:
+
+| Correo | Rol |
+| --- | --- |
+| ana.cliente@petcore.com | CLIENTE |
+| bruno.vet@petcore.com | VETERINARIO |
+| carla.admin@petcore.com | ADMINISTRADOR |
+
+También incluye 2 mascotas, 3 tipos de atención, la disponibilidad semanal del veterinario y un turno ya agendado.
+
+Si el volumen ya existía antes de agregar este archivo, hay que recrearlo para que los datos se carguen. Hay que borrar el PVC de PostgreSQL (ver [Actualizar, volver atrás y borrar](#actualizar-volver-atrás-y-borrar)).
+
+## Entregables anteriores (referencia)
+
+Las secciones siguientes documentan los entregables 1 a 3 (Blue/Green en Kubernetes, monitoreo en el namespace `clinica-veterinaria` y DevSecOps con scripts de PowerShell). **No hacen falta para levantar ni evaluar la entrega final**: los scripts `.ps1` de `scripts/` quedan como evidencia de esos entregables y la entrega final los reemplaza por los scripts de bash de `scripts/4to_entregable/`.
+
+### Ejecutar con Kubernetes y Minikube
 
 Esta configuración permite ejecutar PostgreSQL, FastAPI y el frontend dentro de un clúster local de Kubernetes. También implementa un despliegue Blue/Green que mantiene las versiones `v1` y `v2` ejecutándose al mismo tiempo.
 
-### Requisitos de Kubernetes
+#### Requisitos de Kubernetes
 
 Docker Desktop debe estar abierto y funcionando.
 
@@ -430,7 +373,7 @@ winget install -e --id Kubernetes.minikube
 
 Después de instalarlos, cerrar y volver a abrir la terminal.
 
-### Iniciar o comprobar Minikube
+#### Iniciar o comprobar Minikube
 
 Los scripts de Blue y Green inician o reanudan Minikube automáticamente. Este paso manual es opcional y sirve para comprobar el clúster antes de ejecutar los scripts.
 
@@ -447,9 +390,9 @@ minikube status
 minikube kubectl -- get nodes
 ```
 
-### Preparación local
+#### Preparación local
 
-Antes de ejecutar los scripts, crear los siguientes archivos como se explica en las secciones anteriores:
+Antes de ejecutar los scripts, crear los siguientes archivos (ver [Instalar solo la aplicación](#instalar-solo-la-aplicación)):
 
 ```text
 db/password.txt
@@ -458,7 +401,7 @@ db/jwt-secret.txt
 
 Estos archivos son locales, no se guardan en Git y cada integrante debe crear los suyos.
 
-### Versiones utilizadas
+#### Versiones utilizadas
 
 | Versión | Rama | Imágenes | Deployments |
 | --- | --- | --- | --- |
@@ -467,7 +410,7 @@ Estos archivos son locales, no se guardan en Git y cada integrante debe crear lo
 
 La rama `blue` conserva la primera versión. La rama `green` contiene las funcionalidades nuevas y la infraestructura necesaria para ejecutar ambas versiones.
 
-### Paso 1: levantar Blue
+#### Paso 1: levantar Blue
 
 Si la rama Blue ya existe localmente, cambiar a ella y actualizarla:
 
@@ -501,7 +444,7 @@ El script:
 
 La versión de `k8s-up.ps1` presente en la rama Green se encuentra protegida para impedir que se construya accidentalmente código Green con la etiqueta `v1`.
 
-### Paso 2: acceder y probar Blue
+#### Paso 2: acceder y probar Blue
 
 Comprobar que los Services seleccionen Blue:
 
@@ -526,9 +469,7 @@ minikube service api --namespace=clinica-veterinaria --url
 
 Agregar `/docs` al final de la URL de la API para abrir la documentación interactiva de FastAPI. Después de comprobar Blue, presionar `Ctrl+C` en las terminales de los túneles antes de continuar. Al iniciar nuevamente Minikube, las URLs locales pueden cambiar.
 
-> No ejecutar `docker compose up` durante esta prueba. Docker Compose crea otro ambiente independiente y no participa en el despliegue Blue/Green.
-
-### Paso 3: desplegar Green junto a Blue
+#### Paso 3: desplegar Green junto a Blue
 
 Sin eliminar los recursos de Minikube, cambiar a la rama Green. Si ya existe localmente:
 
@@ -567,7 +508,7 @@ Los manifiestos nuevos utilizados por este script son:
 | `k8s/api-green-deployment.yaml` | Ejecuta FastAPI `v2` con las etiquetas `app: clinica-api` y `version: green`. |
 | `k8s/frontend-green-deployment.yaml` | Ejecuta el frontend `v2` con las etiquetas `app: clinica-frontend` y `version: green`. |
 
-### Paso 4: comprobar Blue y Green
+#### Paso 4: comprobar Blue y Green
 
 Mostrar los Pods y su versión:
 
@@ -583,7 +524,7 @@ Mostrar las imágenes utilizadas:
 minikube kubectl -- get deployments api-blue api-green frontend-blue frontend-green --namespace=clinica-veterinaria -o "custom-columns=DEPLOYMENT:.metadata.name,IMAGEN:.spec.template.spec.containers[*].image,DISPONIBLES:.status.readyReplicas"
 ```
 
-### Paso 5: cambiar el tráfico a Green
+#### Paso 5: cambiar el tráfico a Green
 
 Ejecutar:
 
@@ -602,7 +543,7 @@ minikube kubectl -- get service frontend --namespace=clinica-veterinaria -o json
 
 Ambos comandos deben mostrar `green`.
 
-### Paso 6: acceder y probar Green
+#### Paso 6: acceder y probar Green
 
 En Windows con el driver de Docker, Minikube crea túneles locales para acceder a los Services. Las URLs de una ejecución anterior pueden dejar de funcionar después de reiniciar Minikube, por lo que deben obtenerse nuevamente.
 
@@ -622,9 +563,7 @@ minikube service api --namespace=clinica-veterinaria --url
 
 Agregar `/docs` al final de la URL obtenida. Por ejemplo, si Minikube muestra `http://127.0.0.1:55000`, la documentación estará en `http://127.0.0.1:55000/docs`.
 
-> No ejecutar `docker compose up` durante esta prueba. Docker Compose crea otro ambiente independiente y no levanta ni modifica los Pods de Kubernetes.
-
-### Paso 7: realizar rollback a Blue
+#### Paso 7: realizar rollback a Blue
 
 Si Green presenta un problema, ejecutar:
 
@@ -637,19 +576,19 @@ Este script devuelve los selectores de ambos Services a `version: blue`. El roll
 > [!NOTE]
 > Si quiere ver inmediatmaente el cambio, debe de desactivar el cache del navegador web. En caso de no desactivarlo puede tardar unos minutos en que la pagina cargue.
 
-### Base de datos compartida
+#### Base de datos compartida
 
 Blue y Green utilizan el mismo StatefulSet de PostgreSQL y el mismo volumen persistente. No existe un volumen diferente para cada versión y el volumen no se guarda en Git.
 
 Los archivos de `db/init/` permiten reconstruir la base inicial en un volumen nuevo. Las modificaciones de base realizadas para Green deben ser compatibles con Blue para que el rollback continúe funcionando.
 
-## Monitoreo con Prometheus y Grafana
+### Monitoreo con Prometheus y Grafana
 
 > Documento completo (qué se mide, por qué, arquitectura y cómo probar cada parte) en
 > [`ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md`](ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md).
 > Esta sección es solo cómo levantarlo y entrar.
 
-### No depende de Blue/Green
+#### No depende de Blue/Green
 
 El monitoreo tiene su **propio Deployment de la API** (`api-monitoring`, sin versiones
 `blue`/`green`), así que no hace falta tener Blue/Green desplegado ni mergeado a ninguna
@@ -667,7 +606,7 @@ que exigen `blue`/`green`) y reusa el mismo Postgres si ya existe. Si en algún 
 esto se mergea a `blue` o `green`, también queda disponible automáticamente al correr esos
 scripts de siempre (aplican toda la carpeta `k8s/`), pero no hace falta esperar a eso.
 
-### Acceder al dashboard
+#### Acceder al dashboard
 
 Prometheus queda **interno** (`ClusterIP`, sin URL propia) a propósito: nadie del equipo
 necesita entrar ahí para el día a día, eso lo hace Grafana. Para abrir Grafana:
@@ -683,15 +622,8 @@ primer login).
 > **Grafana no tiene almacenamiento persistente**: cada vez que se reinicia el Pod (por
 > ejemplo, al volver a correr `k8s-up-monitoring.ps1` o si alguien hace
 > `rollout restart`), la contraseña vuelve a `admin`/`admin`, aunque la hayas cambiado
-> antes. No es un bug — es el mismo motivo por el que el dashboard y el datasource
-> aparecen solos (se vuelven a provisionar desde los ConfigMaps en cada arranque). Si
-> alguna vez Grafana no te deja entrar con ninguna contraseña, reseteala directo:
-> `minikube kubectl -- exec deploy/grafana --namespace=clinica-veterinaria -- grafana cli admin reset-admin-password <nueva>`.
-
-> Si alguna vez hace falta entrar directo a la UI de Prometheus para debuggear un scrape
-> target, se hace puntualmente con:
-> `minikube kubectl -- port-forward svc/prometheus 9090:9090 --namespace=clinica-veterinaria`
-> y abriendo `http://localhost:9090` en el navegador.
+> antes. No es un bug: es el mismo motivo por el que el dashboard y el datasource
+> aparecen solos (se vuelven a provisionar desde los ConfigMaps en cada arranque).
 
 Para probar la API de monitoreo directamente (Swagger, sin pasar por Grafana):
 
@@ -699,19 +631,19 @@ Para probar la API de monitoreo directamente (Swagger, sin pasar por Grafana):
 minikube service api-monitoring --namespace=clinica-veterinaria --url
 ```
 
-### Generar actividad real para ver los paneles y las alertas moverse
+#### Generar actividad real para ver los paneles y las alertas moverse
 
 **Importante**: el frontend de Blue/Green (el de siempre, `localhost:8080`) habla con la
 API de Blue/Green, **no** con `api-monitoring`. Nada de lo que hagas ahí va a aparecer en
 Grafana. Para eso existe `frontend-monitoring`: la misma app, pero ya apuntada a
-`api-monitoring` — `scripts\k8s-up-monitoring.ps1` lo construye y lo despliega solo, no
+`api-monitoring`. `scripts\k8s-up-monitoring.ps1` lo construye y lo despliega solo, no
 hace falta ningún paso manual. Para abrirlo:
 
 ```powershell
 minikube service frontend-monitoring --namespace=clinica-veterinaria --url
 ```
 
-Abrir la URL que muestra — es la app de siempre (entrar, reservar turnos, cancelar,
+Abrir la URL que muestra: es la app de siempre (entrar, reservar turnos, cancelar,
 registrar un cliente, fallar un login a propósito, etc.), pero esta copia sí está
 conectada a la API que Prometheus observa.
 
@@ -719,31 +651,27 @@ Guía paso a paso completa (incluye cómo disparar cada alerta a propósito, qu�
 en cada panel, y qué hacer si algo muestra "No data") en
 [`ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md`](ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md).
 
-### Qué hay hoy y qué falta
+#### Qué incluye
 
-Grafana ya arranca con el dashboard **"Pet-Core — Monitoreo"** armado (carpeta "Pet-Core"),
+Grafana ya arranca con el dashboard **"Pet-Core - Monitoreo"** armado (carpeta "Pet-Core"),
 con 10 paneles: turnos creados, logins fallidos, tasa de requests por endpoint, latencia
 p95 por endpoint, errores 5xx, turnos cancelados, clientes nuevos registrados, CPU y RAM
-del pod, y la correlación entre latencia del endpoint y duración de la query a Postgres —
+del pod, y la correlación entre latencia del endpoint y duración de la query a Postgres,
 todo provisionado como código, sin clickear nada en la UI. **Las 2 reglas de alerta
 también están implementadas y verificadas llegando a `Firing` con datos reales**
 (turnos > 10 en 5 min, logins fallidos > 3 en 1 min).
 
-Lo único que queda pendiente es reunir capturas reales del dashboard y de una alerta en
-`Firing`, y cerrar el informe final — ver
-[`ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md`](ENTREGABLE_2_GRAFANA_PROMETHEUS_MONITOREO_Y_ALERTAS.md#qué-queda-pendiente).
-
-## DevSecOps y reproducción de pruebas
+### DevSecOps y reproducción de pruebas
 
 Esta guía permite repetir las pruebas documentadas en el [Entregable 3 DevSecOps](ENTREGABLE_3_DEVSECOPS.md). El informe contiene las explicaciones y los resultados obtenidos; aquí se reúnen las instrucciones de ejecución y los resultados esperados.
 
 El recorrido es: preparar las herramientas y claves locales, revisar el código, analizar las imágenes, desplegar el entorno de monitoreo, validar las políticas y comprobar Falco. Los enlaces de preparación remiten a los pasos generales del README sin repetirlos aquí.
 
-### Preparar el entorno para las pruebas DevSecOps
+#### Preparar el entorno para las pruebas DevSecOps
 
 Los pasos siguientes están pensados para Windows de 64 bits y PowerShell. Ejecutar los comandos desde la raíz del repositorio. Primero comprobar cada herramienta: si ya está instalada y funciona, no hace falta volver a instalarla. Después de una instalación, cerrar y volver a abrir PowerShell para que reconozca los nuevos comandos.
 
-#### 1. Usar el clúster local
+##### 1. Usar el clúster local
 
 La instalación de Minikube ya está explicada en [Requisitos de Kubernetes](#requisitos-de-kubernetes), y su inicio y verificación en [Iniciar o comprobar Minikube](#iniciar-o-comprobar-minikube). Completar esos pasos si todavía no se hicieron. Para estas pruebas alcanza con tener el nodo en estado `Ready`; no hace falta desplegar Blue ni Green.
 
@@ -758,78 +686,18 @@ minikube kubectl -- config use-context minikube
 
 El contexto utilizado para estas pruebas es `minikube`.
 
-#### 2. Helm
+##### 2. Helm, Node.js y KubeLinter
 
-Helm instala Kyverno y Falco dentro del clúster. Comprobar si ya está disponible:
+Helm, Node.js (con npm) y KubeLinter se instalan con sus instaladores habituales (por ejemplo `winget install --id Helm.Helm -e`). Si se quiere usar exactamente las mismas versiones de las pruebas (Helm 3.21.0 y KubeLinter 0.8.3), los comandos de descarga e instalación manual están en `ENTREGABLE_3_DEVSECOPS.md`, sección 9 "Anexo: instalar a mano las herramientas de las pruebas" (opcional). Para comprobar que están disponibles:
 
 ```powershell
 helm version
-```
-
-Para utilizar la misma versión de Helm 3 empleada en las pruebas, descargar el binario oficial para Windows y agregar su carpeta a la lista de ubicaciones donde Windows busca comandos (`PATH`):
-
-```powershell
-$helmFolder = Join-Path $env:USERPROFILE 'tools\helm'
-$helmArchive = Join-Path $env:TEMP 'petcore-helm-v3.21.0.zip'
-$helmExtract = Join-Path $env:TEMP 'petcore-helm-v3.21.0'
-New-Item -ItemType Directory -Force -Path $helmFolder | Out-Null
-Invoke-WebRequest -Uri 'https://get.helm.sh/helm-v3.21.0-windows-amd64.zip' -OutFile $helmArchive
-Expand-Archive -LiteralPath $helmArchive -DestinationPath $helmExtract -Force
-Copy-Item -LiteralPath (Join-Path $helmExtract 'windows-amd64\helm.exe') -Destination $helmFolder -Force
-[string]$userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
-if (($userPath -split ';') -notcontains $helmFolder) {
-    [Environment]::SetEnvironmentVariable('Path', ($userPath.TrimEnd(';') + ';' + $helmFolder), 'User')
-}
-$env:Path = $helmFolder + ';' + $env:Path
-helm version
-```
-
-El resultado debe identificar Helm `v3.21.0`. Este procedimiento sigue la [instalación mediante binarios oficiales de Helm](https://helm.sh/docs/v3/intro/install/).
-
-#### 3. Node.js y npm
-
-Node.js y npm se utilizan para instalar las dependencias del frontend y ejecutar `npm audit`. Comprobar ambos:
-
-```powershell
 node --version
 npm --version
-```
-
-Si no están instalados, usar el instalador **LTS** de la [página oficial de Node.js](https://nodejs.org/en/download). npm viene incluido con esa instalación, como explica la [guía de npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/). También se puede instalar Node.js LTS con el paquete de Windows:
-
-```powershell
-winget install --id OpenJS.NodeJS.LTS -e
-```
-
-Después de abrir una terminal nueva, repetir los comandos de versión. Para las pruebas del frontend, instalar las dependencias registradas en el proyecto con `npm ci`, como se muestra en el apartado de seguridad del código.
-
-Si PowerShell bloquea `npm.ps1`, usar `npm.cmd` en su lugar, por ejemplo `npm.cmd --version` y `npm.cmd ci`. Esto permite ejecutar npm sin cambiar la configuración de seguridad de PowerShell.
-
-#### 4. KubeLinter
-
-KubeLinter revisa los archivos YAML de Kubernetes. Comprobar si está instalado:
-
-```powershell
 kube-linter version
 ```
 
-Si falta, descargar el ejecutable oficial de la versión `0.8.3`, utilizada para el reporte del proyecto:
-
-```powershell
-$kubeLinterFolder = Join-Path $env:USERPROFILE 'tools\kube-linter'
-New-Item -ItemType Directory -Force -Path $kubeLinterFolder | Out-Null
-Invoke-WebRequest -Uri 'https://github.com/stackrox/kube-linter/releases/download/v0.8.3/kube-linter.exe' -OutFile (Join-Path $kubeLinterFolder 'kube-linter.exe')
-[string]$userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
-if (($userPath -split ';') -notcontains $kubeLinterFolder) {
-    [Environment]::SetEnvironmentVariable('Path', ($userPath.TrimEnd(';') + ';' + $kubeLinterFolder), 'User')
-}
-$env:Path = $kubeLinterFolder + ';' + $env:Path
-kube-linter version
-```
-
-La salida debe mostrar la versión `0.8.3`. El ejecutable proviene de la [publicación oficial de KubeLinter](https://github.com/stackrox/kube-linter/releases/tag/v0.8.3), siguiendo su [guía de instalación](https://docs.kubelinter.io/).
-
-#### 5. Herramientas que no se instalan directamente en Windows
+##### 3. Herramientas que no se instalan directamente en Windows
 
 | Herramienta o servicio | Cómo se prepara |
 |---|---|
@@ -838,11 +706,11 @@ La salida debe mostrar la versión `0.8.3`. El ejecutable proviene de la [public
 | Falco | Lo instala el script `scripts/k8s-up-falco.ps1`, también llamado por el script de monitoring. |
 | FastAPI, PostgreSQL, Nginx, Prometheus y Grafana | Se construyen o descargan como imágenes y se despliegan mediante `scripts/k8s-up-monitoring.ps1`. |
 
-No hace falta instalar Python o PostgreSQL directamente en Windows para este recorrido con Docker y Kubernetes. Para el desarrollo local con Python, la instalación de `uv` ya está explicada en [Instalar uv para desarrollo local](#instalar-uv-para-desarrollo-local).
+No hace falta instalar Python o PostgreSQL directamente en Windows para este recorrido con Docker y Kubernetes.
 
-#### 6. Comprobar los archivos locales y preparar los reportes
+##### 4. Comprobar los archivos locales y preparar los reportes
 
-La creación de las claves está explicada en [Configurar la contraseña de PostgreSQL](#configurar-la-contraseña-de-postgresql) y [Configurar la clave secreta JWT](#configurar-la-clave-secreta-jwt). Si ya se crearon, conservar los archivos existentes; no hace falta generarlos otra vez.
+La creación de las claves está explicada en [Instalar solo la aplicación](#instalar-solo-la-aplicación). Si ya se crearon, conservar los archivos existentes; no hace falta generarlos otra vez.
 
 Comprobar que ambos están disponibles y preparar la carpeta de reportes:
 
@@ -856,7 +724,7 @@ Los dos primeros comandos deben devolver `True`. Si alguno devuelve `False`, com
 
 La preparación está completa cuando el nodo de Minikube está `Ready`, Helm, Node/npm y KubeLinter muestran sus versiones y existen los dos archivos de claves. A continuación se pueden ejecutar las pruebas. Los comandos de análisis escriben los reportes finales en `reports/entregable-3/`; los archivos iniciales se conservan para comparar.
 
-### Revisar la seguridad del código
+#### Revisar la seguridad del código
 
 Estos comandos repiten la revisión de las dependencias del frontend y del código propio. Las salidas se guardan como reportes finales; los archivos iniciales se conservan para mantener la comparación.
 
@@ -869,22 +737,11 @@ cd ..
 docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config auto --output /src/reports/entregable-3/semgrep.txt /src/app /src/frontend/src
 ```
 
-### Analizar las imágenes
+#### Analizar las imágenes
 
-Primero se reconstruyen las imágenes con los Dockerfile actuales y después se analizan con Trivy. Se busca que los reportes correspondan al contenido construido con los cambios, no a una imagen anterior.
+Los comandos para reconstruir las imágenes y analizarlas con Trivy están en `ENTREGABLE_3_DEVSECOPS.md`, sección 3.5 "Comandos utilizados para construir y analizar las imágenes".
 
-```powershell
-New-Item -ItemType Directory -Force -Path .\reports\entregable-3 | Out-Null
-$reportsPath = (Resolve-Path .\reports\entregable-3).Path
-
-docker build --pull --no-cache -t clinica-veterinaria:test .
-docker build --pull --no-cache -f .\frontend\Dockerfile.k8s --build-arg NGINX_CONF=nginx-monitoring.conf -t clinica-frontend:test .\frontend
-
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-backend.txt clinica-veterinaria:test
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$($reportsPath):/reports" -v petcore-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --image-src docker --scanners vuln --severity HIGH,CRITICAL --format table --output /reports/trivy-frontend.txt clinica-frontend:test
-```
-
-### Validar la seguridad en Kubernetes
+#### Validar la seguridad en Kubernetes
 
 La comprobación comienza levantando el entorno con los manifiestos ajustados. Después se instalan las políticas, se prueban los rechazos esperados y se genera el reporte de KubeLinter. Se busca verificar tanto la aplicación de las reglas como la configuración declarada en los YAML.
 
@@ -924,7 +781,7 @@ minikube kubectl -- delete pod pod-conforme -n clinica-veterinaria
 kube-linter lint k8s\*.yaml > reports\entregable-3\kubelinter.txt
 ```
 
-### Probar la detección de Falco
+#### Probar la detección de Falco
 
 La prueba se realiza con dos terminales: una mantiene activa la captura de alertas y la otra abre la shell dentro de la API. Se busca que la acción quede registrada en el log mientras ocurre.
 
@@ -944,7 +801,7 @@ minikube kubectl -- exec -it -n clinica-veterinaria deployment/api-monitoring --
 minikube kubectl -- logs -n falco -l app.kubernetes.io/name=falco -c falco --tail=50
 ```
 
-### Comprobar el estado y los usuarios de los servicios
+#### Comprobar el estado y los usuarios de los servicios
 
 Consultar el estado de los pods:
 
@@ -963,76 +820,3 @@ minikube kubectl -- exec deploy/api-monitoring -n clinica-veterinaria -- id
 ```
 
 Los usuarios esperados son `nobody` (65534), `grafana` (472), `postgres` (999), `nginx` (101) y `app` (10001), respectivamente. La explicación de cada resultado se encuentra en la sección 4.1 del [Entregable 3 DevSecOps](ENTREGABLE_3_DEVSECOPS.md).
-
-## Datos de prueba
-
-La primera vez que se levanta el proyecto (con el volumen de PostgreSQL vacío), se cargan usuarios y datos de ejemplo desde `db/init/04_datos_prueba.sql`.
-
-La contraseña de todos los usuarios de prueba es `Password123!`:
-
-| Correo | Rol |
-| --- | --- |
-| ana.cliente@petcore.com | CLIENTE |
-| bruno.vet@petcore.com | VETERINARIO |
-| carla.admin@petcore.com | ADMINISTRADOR |
-
-> *Aclaración:* El rol administrador no tiene panel implementado en la rama Blue. En Green se agregó una ruta /admin con un aviso de "en construcción" para evitar que el login quede en un estado inconsistente.
-
-También incluye 2 mascotas, 3 tipos de atención, la disponibilidad semanal del veterinario y un turno ya agendado.
-
-Si el volumen ya existía antes de agregar este archivo, hay que recrearlo para que los datos se carguen:
-
-```powershell
-docker compose down
-docker volume rm clinica_veterinaria_devops_postgres_data
-docker compose up
-```
-
-## Proteger endpoints con el middleware
-
-El middleware JWT debe estar registrado en `app/main.py`:
-
-```python
-from app.Middleware.middleware import JWTMiddleware
-
-app.add_middleware(JWTMiddleware)
-```
-
-Para proteger un endpoint, importar `Depends` y `requerir_rol`:
-
-```python
-from fastapi import Depends
-
-from app.Middleware.middleware import requerir_rol
-```
-
-Ejemplo de endpoint exclusivo para administradores:
-
-```python
-@app.get(
-    "/",
-    dependencies=[
-        Depends(
-            requerir_rol("ADMINISTRADOR")
-        )
-    ],
-)
-def hello() -> str:
-    return "Hello, administrador!"
-```
-
-Los roles disponibles son:
-
-```text
-ADMINISTRADOR
-CLIENTE
-VETERINARIO
-```
-
-Una ruta pública no debe incluir `requerir_rol`. El endpoint `/auth/login` debe permanecer público.
-
-Para acceder a una ruta protegida se debe enviar el token obtenido en el login:
-
-```http
-Authorization: Bearer ACCESS_TOKEN
-```

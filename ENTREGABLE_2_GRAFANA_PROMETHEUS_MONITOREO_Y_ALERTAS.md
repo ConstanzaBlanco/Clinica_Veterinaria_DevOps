@@ -405,12 +405,3 @@ Significa que el gráfico no tiene datos para mostrar en el período elegido.
    **Preparar el entorno** al comienzo de esta guía.
 
 Cerrar y abrir la página no soluciona la falta de datos por sí solo.
-
-## Qué queda pendiente
-
-Todo lo de arriba está implementado y verificado en Minikube, incluidas las dos reglas de
-alerta llegando a `Firing` con datos reales. Lo único que falta para cerrar la entrega:
-
-- Reemplazar las capturas de pantalla de este documento (si las hay) por capturas reales
-  del dashboard y de una alerta en estado `Firing`.
-- Armar el informe/documento final de entrega con esa evidencia.
