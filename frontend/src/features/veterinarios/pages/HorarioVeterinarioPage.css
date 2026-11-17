@@ -1,0 +1,128 @@
+.horario-page {
+  padding: 28px;
+}
+
+.horario-mensaje {
+  margin-top: 22px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.horario-mensaje-error {
+  color: var(--error);
+}
+
+.horario-dias {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.horario-dia {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.horario-dia-nombre {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 15px;
+  min-width: 100px;
+  padding-top: 8px;
+}
+
+.horario-dia-franjas {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.horario-sin-franjas {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 8px 0;
+}
+
+.horario-franja-chip {
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--gray-card);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.horario-franja-chip:hover {
+  border-color: var(--navy);
+}
+
+.horario-agregar {
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 8px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.horario-agregar:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.horario-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.horario-form-campo input {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--white);
+}
+
+.horario-form-campo input:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(11, 110, 153, 0.14);
+}
+
+.horario-form-separador {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.horario-form-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.horario-form-error {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--danger, #c0392b);
+}

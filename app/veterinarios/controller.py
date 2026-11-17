@@ -27,7 +27,8 @@ def crear_service(session: Session) -> VeterinarioService:
 @router.get("", response_model=list[VeterinarioResponse])
 def obtener_veterinarios(
     session: Session = Depends(get_session),
-    _usuario: dict = Depends(requerir_rol("CLIENTE")),
+    _usuario: dict = Depends(requerir_rol("CLIENTE", "ADMINISTRADOR")),
 ):
-    """Lista los veterinarios activos, para el selector al reservar un turno."""
+    """Lista los veterinarios activos: el cliente los usa para reservar un
+    turno, y el administrador para elegir a quién editarle el horario."""
     return crear_service(session).listar_veterinarios()
