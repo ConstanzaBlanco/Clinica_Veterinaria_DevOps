@@ -90,27 +90,27 @@ La primera vez tarda varios minutos. Se puede volver a ejecutar sin problema: lo
 
 ### 3. Entrar a la aplicación
 
-**Desde el navegador** (http://petcore.local):
+En una terminal de Git Bash, dejar corriendo (la terminal queda ocupada mientras se use la aplicación):
 
-1. En otra terminal de Git Bash, dejar corriendo (puede pedir permisos de administrador):
+```bash
+minikube kubectl -- port-forward svc/frontend 8081:8080 -n petcore
+```
 
-   ```bash
-   minikube tunnel
-   ```
+Abrir <http://localhost:8081> e iniciar sesión con un usuario de prueba (ver [Datos de prueba](#datos-de-prueba)), por ejemplo `ana.cliente@petcore.com` / `Password123!`.
 
-2. Agregar el nombre `petcore.local` al archivo `hosts` de Windows. En PowerShell **como administrador**:
+**Alternativa con `petcore.local`** (opcional, pasa por el Ingress): agregar el nombre al archivo `hosts` de Windows, una sola vez, en PowerShell **como administrador**:
 
-   ```powershell
-   Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "127.0.0.1 petcore.local"
-   ```
+```powershell
+Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "127.0.0.1 petcore.local"
+```
 
-3. Abrir <http://petcore.local> e iniciar sesión con un usuario de prueba (ver [Datos de prueba](#datos-de-prueba)), por ejemplo `ana.cliente@petcore.com` / `Password123!`.
+Después dejar corriendo `minikube tunnel` en otra terminal de Git Bash (puede pedir permisos de administrador) y abrir <http://petcore.local>.
 
 **Puertos y direcciones de cada servicio** (los `port-forward` dejan la terminal ocupada: abrir una por servicio):
 
 | Servicio | Qué es | Puerto en el cluster | Cómo entrar desde el navegador |
 | --- | --- | --- | --- |
-| Aplicación (frontend) | La página web de la clínica (React servida con Nginx) | 8080 | <http://petcore.local> (con `minikube tunnel` y la línea en `hosts`), o `minikube kubectl -- port-forward svc/frontend 8081:8080 -n petcore` y <http://localhost:8081> |
+| Aplicación (frontend) | La página web de la clínica (React servida con Nginx) | 8080 | `minikube kubectl -- port-forward svc/frontend 8081:8080 -n petcore` y <http://localhost:8081> (o <http://petcore.local> con `minikube tunnel` y la línea en `hosts`) |
 | API | El backend (FastAPI). Su documentación interactiva (Swagger) está en `/docs` | 8000 | `minikube kubectl -- port-forward svc/api 8000:8000 -n petcore` y <http://localhost:8000/docs> |
 | Prometheus | Recolecta las métricas de la API | 9090 | `minikube kubectl -- port-forward svc/prometheus 9090:9090 -n petcore` y <http://localhost:9090> |
 | Grafana (`admin` / `admin`) | Muestra los dashboards y las alertas | 3000 | `minikube service grafana -n petcore --url` (muestra la URL; dejar la terminal abierta) |
@@ -161,19 +161,13 @@ bash scripts/4to_entregable/inicializar-todo.sh
 
 Para mostrar también Jenkins, usar `bash scripts/4to_entregable/inicializar-todo.sh --con-jenkins`.
 
-Para entrar a la aplicación por `petcore.local` hay que agregar ese nombre al archivo `hosts` de Windows. Se hace una sola vez, en una PowerShell **como administrador**:
-
-```powershell
-Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "127.0.0.1 petcore.local"
-```
-
 **1. La aplicación**
 
 ```bash
-minikube tunnel
+minikube kubectl -- port-forward svc/frontend 8081:8080 -n petcore
 ```
 
-Abrir <http://petcore.local>. Iniciar sesión con `ana.cliente@petcore.com` / `Password123!`.
+Abrir <http://localhost:8081>. Iniciar sesión con `ana.cliente@petcore.com` / `Password123!` (cliente) o con `carla.admin@petcore.com` / `Password123!` (administrador).
 
 **2. Grafana**
 
@@ -230,7 +224,7 @@ Abrir <http://localhost:8080>, entrar al Job `petcore-pipeline` y presionar Buil
 
 | Qué | Dirección |
 | --- | --- |
-| Aplicación | <http://petcore.local> (puerto 80, con `minikube tunnel`) |
+| Aplicación | <http://localhost:8081> |
 | Grafana | <http://localhost:3000> |
 | Jenkins | <http://localhost:8080> |
 | Swagger de la API (opcional) | <http://localhost:8000/docs> con `minikube kubectl -- port-forward svc/api 8000:8000 -n petcore` |
