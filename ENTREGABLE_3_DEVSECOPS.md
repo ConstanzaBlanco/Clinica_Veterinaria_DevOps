@@ -30,6 +30,7 @@
 - [6. Hallazgos mantenidos y justificación](#6-hallazgos-mantenidos-y-justificación)
 - [7. Dónde consultar la evidencia](#7-dónde-consultar-la-evidencia)
 - [8. Conclusión](#8-conclusión)
+- [9. Anexo: instalar a mano las herramientas de las pruebas (opcional)](#9-anexo-instalar-a-mano-las-herramientas-de-las-pruebas-opcional)
 
 ## 1. Qué se hizo y cómo se organizó el trabajo
 
@@ -701,3 +702,78 @@ En este entregable se revisó la seguridad de la aplicación desde el código ha
 Las pruebas permitieron comprobar que Kyverno rechazaba los manifiestos que incumplían las políticas y que Falco detectaba la apertura intencional de una shell dentro de la API. Los análisis de npm audit, Semgrep, Trivy y KubeLinter quedaron guardados junto con las decisiones tomadas sobre sus resultados.
 
 No todos los hallazgos desaparecieron. Los que se mantuvieron quedaron explicados en el informe, distinguiendo las alertas justificadas de los riesgos y las limitaciones de la configuración utilizada. De esta forma, la entrega deja registrado qué se cambió, qué se comprobó y cuál fue el resultado de cada revisión.
+
+## 9. Anexo: instalar a mano las herramientas de las pruebas (opcional)
+
+Este anexo es opcional. Sirve para instalar las mismas versiones de las herramientas que se usaron en las pruebas de este entregable, sin usar `winget`. Los comandos son para PowerShell en Windows de 64 bits. Después de una instalación, cerrar y volver a abrir PowerShell.
+
+### 2. Helm
+
+Helm instala Kyverno y Falco dentro del clúster. Comprobar si ya está disponible:
+
+```powershell
+helm version
+```
+
+Para utilizar la misma versión de Helm 3 empleada en las pruebas, descargar el binario oficial para Windows y agregar su carpeta a la lista de ubicaciones donde Windows busca comandos (`PATH`):
+
+```powershell
+$helmFolder = Join-Path $env:USERPROFILE 'tools\helm'
+$helmArchive = Join-Path $env:TEMP 'petcore-helm-v3.21.0.zip'
+$helmExtract = Join-Path $env:TEMP 'petcore-helm-v3.21.0'
+New-Item -ItemType Directory -Force -Path $helmFolder | Out-Null
+Invoke-WebRequest -Uri 'https://get.helm.sh/helm-v3.21.0-windows-amd64.zip' -OutFile $helmArchive
+Expand-Archive -LiteralPath $helmArchive -DestinationPath $helmExtract -Force
+Copy-Item -LiteralPath (Join-Path $helmExtract 'windows-amd64\helm.exe') -Destination $helmFolder -Force
+[string]$userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+if (($userPath -split ';') -notcontains $helmFolder) {
+    [Environment]::SetEnvironmentVariable('Path', ($userPath.TrimEnd(';') + ';' + $helmFolder), 'User')
+}
+$env:Path = $helmFolder + ';' + $env:Path
+helm version
+```
+
+El resultado debe identificar Helm `v3.21.0`. Este procedimiento sigue la [instalación mediante binarios oficiales de Helm](https://helm.sh/docs/v3/intro/install/).
+
+### 3. Node.js y npm
+
+Node.js y npm se utilizan para instalar las dependencias del frontend y ejecutar `npm audit`. Comprobar ambos:
+
+```powershell
+node --version
+npm --version
+```
+
+Si no están instalados, usar el instalador **LTS** de la [página oficial de Node.js](https://nodejs.org/en/download). npm viene incluido con esa instalación, como explica la [guía de npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/). También se puede instalar Node.js LTS con el paquete de Windows:
+
+```powershell
+winget install --id OpenJS.NodeJS.LTS -e
+```
+
+Después de abrir una terminal nueva, repetir los comandos de versión. Para las pruebas del frontend, instalar las dependencias registradas en el proyecto con `npm ci`, como se muestra en el apartado de seguridad del código.
+
+Si PowerShell bloquea `npm.ps1`, usar `npm.cmd` en su lugar, por ejemplo `npm.cmd --version` y `npm.cmd ci`. Esto permite ejecutar npm sin cambiar la configuración de seguridad de PowerShell.
+
+### 4. KubeLinter
+
+KubeLinter revisa los archivos YAML de Kubernetes. Comprobar si está instalado:
+
+```powershell
+kube-linter version
+```
+
+Si falta, descargar el ejecutable oficial de la versión `0.8.3`, utilizada para el reporte del proyecto:
+
+```powershell
+$kubeLinterFolder = Join-Path $env:USERPROFILE 'tools\kube-linter'
+New-Item -ItemType Directory -Force -Path $kubeLinterFolder | Out-Null
+Invoke-WebRequest -Uri 'https://github.com/stackrox/kube-linter/releases/download/v0.8.3/kube-linter.exe' -OutFile (Join-Path $kubeLinterFolder 'kube-linter.exe')
+[string]$userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+if (($userPath -split ';') -notcontains $kubeLinterFolder) {
+    [Environment]::SetEnvironmentVariable('Path', ($userPath.TrimEnd(';') + ';' + $kubeLinterFolder), 'User')
+}
+$env:Path = $kubeLinterFolder + ';' + $env:Path
+kube-linter version
+```
+
+La salida debe mostrar la versión `0.8.3`. El ejecutable proviene de la [publicación oficial de KubeLinter](https://github.com/stackrox/kube-linter/releases/tag/v0.8.3), siguiendo su [guía de instalación](https://docs.kubelinter.io/).
